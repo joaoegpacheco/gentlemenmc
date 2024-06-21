@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import type { FormProps } from "antd";
 import { Button, Form, Select, notification } from "antd";
 import { createClient } from "@supabase/supabase-js";
@@ -15,22 +15,25 @@ type FieldType = {
   data?: any;
 };
 
-
-
 const dataAtual = new Date();
 
 export function FormComand() {
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
 
     const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
+      setLoading(true);
+      try {
         await supabase
           .from("bebidas")
-          .insert([{ name: values.nome, drink: values.bebida }])
-
-          notification.success({ message: 'Bebida adicionada com sucesso!' })
-          
-          form.resetFields()
-      };
+          .insert([{ name: values.nome, drink: values.bebida }]);
+  
+        notification.success({ message: "Bebida adicionada com sucesso!" });
+      } finally {
+        form.resetFields();
+        setLoading(false);
+      }
+    };
 
     return (
   <Form
@@ -103,7 +106,7 @@ export function FormComand() {
       </Select>
     </Form.Item>
 
-    <Button style={{ width: "100%" }} type="primary" htmlType="submit">
+    <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">
       Adicionar
     </Button>
 
