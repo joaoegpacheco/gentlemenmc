@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.43.5",
     "antd": "^5.18.0",
     "code": "^5.2.4",
     "fs": "^0.0.1-security",

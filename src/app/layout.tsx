@@ -32,14 +32,6 @@ export default function RootLayout({
 
     <link rel="preconnect" href="https://fonts.gstatic.com"/>
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;400;700&display=swap" rel="stylesheet"/>
-
-    <link href="css/bootstrap.min.css" rel="stylesheet"/>
-
-    <link href="css/bootstrap-icons.css" rel="stylesheet"/>
-
-    <link href="css/gentlemen.css" rel="stylesheet"/>
-
 </head>
       <body className={inter.className}>{children}</body>
     </html>
