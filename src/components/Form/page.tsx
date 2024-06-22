@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import {  notification } from "antd";
+import React, { useState } from "react";
+import { notification } from "antd";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -11,21 +11,23 @@ const supabase = createClient(
 const dataAtual = new Date();
 
 export function FormComand() {
+  const [loading, setLoading] = useState(false);
 
   const onFinish = async () => {
+    setLoading(true);
     const formulario = document.getElementById("form1");
     //@ts-ignore
     const formData = new FormData(formulario);
     const nome = formData.get("nome");
     const bebida = formData.get("bebida");
 
-    console.log(nome, bebida);
     try {
       await supabase.from("bebidas").insert([{ name: nome, drink: bebida }]);
-
       notification.success({ message: "Bebida adicionada com sucesso!" });
     } catch {
       notification.error({ message: "Houve um erro na hora de cadastrar sua bebida." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,12 +107,21 @@ export function FormComand() {
             <option value="Dose Jack Daniels">Dose Jack Daniels</option>
           </select>
         </div>
+        {loading ? (
+          <input
+          disabled
+          style={{ width: "100%", height: 40, textAlign: "center", backgroundColor: "dodgerblue", border: "dodgerblue", color: "white", borderRadius: 8 }}
+          value="..Carregando.."
+        />
+        ) : (
         <input
           form="form1"
+          disabled={loading}
           style={{ width: "100%", height: 40, backgroundColor: "dodgerblue", border: "dodgerblue", color: "white", borderRadius: 8 }}
           type="submit"
           value="Adicionar"
         />
+        )}
         <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
           <label htmlFor="dataAtual">Data Atual:</label>
           <span>{dataAtual.toDateString()}</span>
