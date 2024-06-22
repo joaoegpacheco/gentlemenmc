@@ -25,9 +25,13 @@ export function FormComand() {
       await supabase.from("bebidas").insert([{ name: nome, drink: bebida }]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
     } catch {
-      notification.error({ message: "Houve um erro na hora de cadastrar sua bebida." });
+      notification.error({
+        message: "Houve um erro na hora de cadastrar sua bebida.",
+      });
     } finally {
       setLoading(false);
+      formData.delete("nome");
+      formData.delete("bebida");
     }
   };
 
@@ -55,7 +59,12 @@ export function FormComand() {
           }}
         >
           <label htmlFor="nome">Nome:</label>
-          <select style={{ width: "100%", height: 40, borderRadius: 4 }} name="nome" required>
+          <select
+            style={{ width: "100%", height: 40, borderRadius: 4 }}
+            name="nome"
+            required
+          >
+            <option selected hidden></option>
             <option value="Alex">Alex</option>
             <option value="André">André</option>
             <option value="Athayde">Athayde</option>
@@ -95,7 +104,12 @@ export function FormComand() {
           }}
         >
           <label htmlFor="bebida">Bebida:</label>
-          <select style={{ width: "100%", height: 40, borderRadius: 4 }} name="bebida" required>
+          <select
+            style={{ width: "100%", height: 40, borderRadius: 4 }}
+            name="bebida"
+            required
+          >
+            <option selected hidden></option>
             <option value="Long Neck">Long Neck</option>
             <option value="Refrigerante">Refrigerante</option>
             <option value="Água">Água</option>
@@ -109,18 +123,33 @@ export function FormComand() {
         </div>
         {loading ? (
           <input
-          disabled
-          style={{ width: "100%", height: 40, textAlign: "center", backgroundColor: "dodgerblue", border: "dodgerblue", color: "white", borderRadius: 8 }}
-          value="..Carregando.."
-        />
+            disabled
+            style={{
+              width: "100%",
+              height: 40,
+              textAlign: "center",
+              backgroundColor: "dodgerblue",
+              border: "dodgerblue",
+              color: "white",
+              borderRadius: 8,
+            }}
+            value="..Carregando.."
+          />
         ) : (
-        <input
-          form="form1"
-          disabled={loading}
-          style={{ width: "100%", height: 40, backgroundColor: "dodgerblue", border: "dodgerblue", color: "white", borderRadius: 8 }}
-          type="submit"
-          value="Adicionar"
-        />
+          <input
+            form="form1"
+            disabled={loading}
+            style={{
+              width: "100%",
+              height: 40,
+              backgroundColor: "dodgerblue",
+              border: "dodgerblue",
+              color: "white",
+              borderRadius: 8,
+            }}
+            type="submit"
+            value="Adicionar"
+          />
         )}
         <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
           <label htmlFor="dataAtual">Data Atual:</label>
