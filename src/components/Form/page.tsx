@@ -91,6 +91,7 @@ export function FormComand() {
             <option value="Zanona">Zanona</option>
             <option value="Zeca">Zeca</option>
             <option value="Zé Carlos">Zé Carlos</option>
+<option value="Zorek">Zorek</option>
             <option value="Robson">Robson</option>
             <option value="Romanel">Romanel</option>
           </select>
