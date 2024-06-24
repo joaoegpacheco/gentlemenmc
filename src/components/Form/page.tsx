@@ -88,6 +88,7 @@ export function FormComand() {
           <Select.Option value="Zanona">Zanona</Select.Option>
           <Select.Option value="Zeca">Zeca</Select.Option>
           <Select.Option value="Zé Carlos">Zé Carlos</Select.Option>
+          <Select.Option value="Zorek">Zorek</Select.Option>
           <Select.Option value="Robson">Robson</Select.Option>
           <Select.Option value="Romanel">Romanel</Select.Option>
         </Select>
