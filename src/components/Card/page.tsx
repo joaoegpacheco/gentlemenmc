@@ -12,6 +12,7 @@ const supabase = createClient(
 
 export function CardComand() {
   const [member, setMember] = useState("");
+  const [totalSoma, setTotalSoma] = useState(0)
   const [dataB, setDataB] = useState([
     {
       created_at: "",
@@ -19,7 +20,7 @@ export function CardComand() {
       drink: "",
       paid: "",
       quantity: 0,
-      price: 0,
+      price: 0
     },
   ]);
 
@@ -31,8 +32,16 @@ export function CardComand() {
         .select("created_at, name, drink, paid, quantity, price")
         // Filters
         .eq("name", `${member}`);
+
+      // Função para calcular a soma dos valores
+      const calcularSoma = (dados: any) => {
+        return dados.reduce((acc: any, curr: any) => acc + curr.price, 0);
+      };
+
+      const totalSoma = calcularSoma(bebidas);
       //@ts-ignore
       setDataB(bebidas);
+      setTotalSoma(totalSoma);
     };
     getData();
   }, [member]);
@@ -83,6 +92,7 @@ export function CardComand() {
         renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}
       >
         <List
+          header={member !== "" && `Total não pago: ${formatarMoeda(totalSoma)}`}
           size="small"
           bordered
           dataSource={dataB}
@@ -99,7 +109,7 @@ export function CardComand() {
             <>
               {member !== "" && (
                 <List.Item>
-                  <Card title={item?.drink ? item?.drink : "Sem drink"}>
+                  <Card title={item?.drink}>
                     <p>Data: {formatarDataHora(item?.created_at)}</p>
                     <p>Quantidade: {item?.quantity}</p>
                     <p>Valor: {formatarMoeda(item?.price)}</p>
