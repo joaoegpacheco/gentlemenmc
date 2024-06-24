@@ -90,7 +90,7 @@ export function FormComand() {
     <Form
       name="comanda"
       form={form}
-      style={{ width: 768, padding: 50 }}
+      style={{ width: "100%", paddingTop: 20 }}
       onFinish={onFinish}
       autoComplete="off"
       clearOnDestroy
