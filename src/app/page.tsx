@@ -1,6 +1,9 @@
 import React from "react";
-import { FormComand } from "@/components/Form/page";
+import TabsComponent from "@/components/Tabs/page";
 
 export default function Home() {
-  return <FormComand />;
+
+  return (
+    <TabsComponent />
+  )
 }

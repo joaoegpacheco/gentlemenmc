@@ -24,16 +24,47 @@ export function FormComand() {
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
+    let valorBebida = 0;
+    switch (values.bebida) {
+      case "Long Neck":
+        valorBebida = 10;
+        break;
+      case "Refrigerante":
+        valorBebida = 6;
+        break;
+      case "Água":
+        valorBebida = 5;
+        break;
+      case "Energético":
+        valorBebida = 12;
+        break;
+      case "Vinho Cordero":
+        valorBebida = 40;
+        break;
+      case "Vinho Luigi Bosca":
+        valorBebida = 80;
+        break;
+      case "Heineken 1L Lata":
+        valorBebida = 20;
+        break;
+      case "Dose Jagermeister":
+        valorBebida = 15;
+        break;
+      case "Dose Jack Daniels":
+        valorBebida = 20;
+        break;
+      default:
+        valorBebida = 0;
+    }
     try {
-      await supabase
-        .from("bebidas")
-        .insert([
-          {
-            name: values.nome,
-            drink: values.bebida,
-            quantity: values.quantidade ? values.quantidade : 1,
-          },
-        ]);
+      await supabase.from("bebidas").insert([
+        {
+          name: values.nome,
+          drink: values.bebida,
+          quantity: values.quantidade ? values.quantidade : 1,
+          price: valorBebida * (values.quantidade ? values.quantidade : 1),
+        },
+      ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
     } catch {
       notification.error({
@@ -46,7 +77,7 @@ export function FormComand() {
     }
   };
 
-  let options = []
+  let options = [];
   for (let i = 1; i <= 20; i++) {
     options.push(
       <Select.Option key={i} value={i}>
