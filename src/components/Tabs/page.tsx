@@ -27,6 +27,6 @@ const items: TabsProps['items'] = [
 //   },
 ];
 
-const TabsComponent: React.FC = () => <Tabs defaultActiveKey="1" items={items} onChange={onChange} />;
+const TabsComponent: React.FC = () => <Tabs style={{width: "100%", padding: 20}} defaultActiveKey="1" items={items} onChange={onChange} />;
 
 export default TabsComponent;
