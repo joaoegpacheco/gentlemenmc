@@ -24,11 +24,16 @@ export function FormComand() {
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
-    console.log(values)
     try {
       await supabase
         .from("bebidas")
-        .insert([{ name: values.nome, drink: values.bebida, quantity: values.quantidade }]);
+        .insert([
+          {
+            name: values.nome,
+            drink: values.bebida,
+            quantity: values.quantidade ? values.quantidade : 1,
+          },
+        ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
     } catch {
       notification.error({
@@ -43,7 +48,11 @@ export function FormComand() {
 
   let options = []
   for (let i = 1; i <= 20; i++) {
-    options.push(<Select.Option key={i} value={i}>{i}</Select.Option>);
+    options.push(
+      <Select.Option key={i} value={i}>
+        {i}
+      </Select.Option>
+    );
   }
 
   return (
@@ -54,14 +63,13 @@ export function FormComand() {
       onFinish={onFinish}
       autoComplete="off"
       clearOnDestroy
-      initialValues={{ nome: "", bebida: "", quantidade: "1" }}
     >
       <Form.Item<FieldType>
         name="nome"
         label="Nome"
         rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
       >
-        <Select size="large">
+        <Select defaultValue={""} size="large">
           <Select.Option value="Alex">Alex</Select.Option>
           <Select.Option value="André">André</Select.Option>
           <Select.Option value="Athayde">Athayde</Select.Option>
@@ -98,7 +106,7 @@ export function FormComand() {
         label="Bebidas"
         rules={[{ required: true, message: "Selecione ao menos um item!" }]}
       >
-        <Select size="large">
+        <Select defaultValue={""} size="large">
           <Select.Option value="Long Neck">Long Neck</Select.Option>
           <Select.Option value="Refrigerante">Refrigerante</Select.Option>
           <Select.Option value="Água">Água</Select.Option>
@@ -118,17 +126,10 @@ export function FormComand() {
           </Select.Option>
         </Select>
       </Form.Item>
-      <Form.Item 
-        name="quantidade"
-        label="Quantidade"
-        rules={[{ required: true, message: "Selecione ao menos uma quantidade." }]}>
-      <Select
-        defaultValue="1"     
-        size="large"
-        placeholder="1"
-      >
-        {options}
-      </Select>
+      <Form.Item<FieldType> name="quantidade" label="Quantidade">
+        <Select defaultValue={1} size="large">
+          {options}
+        </Select>
       </Form.Item>
       <Button
         style={{ width: "100%" }}
