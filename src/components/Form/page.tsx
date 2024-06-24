@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { notification } from "antd";
+import type { FormProps } from "antd";
+import { Button, Form, Select, notification } from "antd";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -8,154 +9,141 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1cXZiam9ic2dmYmZhaGpyemVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg5ODgxOTQsImV4cCI6MjAzNDU2NDE5NH0.4TzTzyJZSAnZckDTCEQrVYg6MLmpyHkg1VvI-gipXAU"
 );
 
+type FieldType = {
+  nome?: string;
+  bebida?: string;
+  quantidade?: number;
+  data?: any;
+};
+
 const dataAtual = new Date();
 
 export function FormComand() {
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async () => {
+  const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
-    const formulario = document.getElementById("form1");
-    //@ts-ignore
-    const formData = new FormData(formulario);
-    const nome = formData.get("nome");
-    const bebida = formData.get("bebida");
-
+    console.log(values)
     try {
-      await supabase.from("bebidas").insert([{ name: nome, drink: bebida }]);
+      await supabase
+        .from("bebidas")
+        .insert([{ name: values.nome, drink: values.bebida, quantity: values.quantidade }]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
     } catch {
       notification.error({
-        message: "Houve um erro na hora de cadastrar sua bebida.",
+        message: "Houve algum erro na hora de cadastrar sua bebida.",
       });
-    } finally {
       setLoading(false);
-      formData.delete("nome");
-      formData.delete("bebida");
+    } finally {
+      form.resetFields();
+      setLoading(false);
     }
   };
 
+  let options = []
+  for (let i = 1; i <= 20; i++) {
+    options.push(<Select.Option key={i} value={i}>{i}</Select.Option>);
+  }
+
   return (
-    <>
-      <form
-        action={() => onFinish()}
-        method="POST"
-        id="form1"
-        autoComplete="off"
-        style={{
-          width: 768,
-          padding: 50,
-          gap: 25,
-          display: "flex",
-          flexDirection: "column",
-        }}
+    <Form
+      name="comanda"
+      form={form}
+      style={{ width: 768, padding: 50 }}
+      onFinish={onFinish}
+      autoComplete="off"
+      clearOnDestroy
+      initialValues={{ nome: "", bebida: "", quantidade: "1" }}
+    >
+      <Form.Item<FieldType>
+        name="nome"
+        label="Nome"
+        rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-            alignItems: "center",
-          }}
-        >
-          <label htmlFor="nome">Nome:</label>
-          <select
-            style={{ width: "100%", height: 40, borderRadius: 4 }}
-            name="nome"
-            required
-          >
-            <option selected hidden></option>
-            <option value="Alex">Alex</option>
-            <option value="André">André</option>
-            <option value="Athayde">Athayde</option>
-            <option value="Bacelar">Bacelar</option>
-            <option value="Baeza">Baeza</option>
-            <option value="Beto">Beto</option>
-            <option value="Cláudio">Cláudio</option>
-            <option value="Fernando">Fernando</option>
-            <option value="Giuliano">Giuliano</option>
-            <option value="Gulitich">Gulitich</option>
-            <option value="Índio">Índio</option>
-            <option value="Jeferson">Jeferson</option>
-            <option value="João Marius">João Marius</option>
-            <option value="Madalosso">Madalosso</option>
-            <option value="Maicon">Maicon</option>
-            <option value="Mega">Mega</option>
-            <option value="Mortari">Mortari</option>
-            <option value="Pacheco">Pacheco</option>
-            <option value="Rafael">Rafael</option>
-            <option value="Rodrigo N.D">Rodrigo N.D</option>
-            <option value="Rodrigo">Rodrigo</option>
-            <option value="Rogério">Rogério</option>
-            <option value="Weriton">Weriton</option>
-            <option value="Zanona">Zanona</option>
-            <option value="Zeca">Zeca</option>
-            <option value="Zé Carlos">Zé Carlos</option>
-            <option value="Robson">Robson</option>
-            <option value="Romanel">Romanel</option>
-          </select>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-            alignItems: "center",
-          }}
-        >
-          <label htmlFor="bebida">Bebida:</label>
-          <select
-            style={{ width: "100%", height: 40, borderRadius: 4 }}
-            name="bebida"
-            required
-          >
-            <option selected hidden></option>
-            <option value="Long Neck">Long Neck</option>
-            <option value="Refrigerante">Refrigerante</option>
-            <option value="Água">Água</option>
-            <option value="Energético">Energético</option>
-            <option value="Vinho Cordero">Vinho Cordero</option>
-            <option value="Vinho Luigi Bosca">Vinho Luigi Bosca</option>
-            <option value="Heineken 1L Lata">Heineken 1L Lata</option>
-            <option value="Dose Jagermeister">Dose Jagermeister</option>
-            <option value="Dose Jack Daniels">Dose Jack Daniels</option>
-          </select>
-        </div>
-        {loading ? (
-          <input
-            disabled
-            style={{
-              width: "100%",
-              height: 40,
-              textAlign: "center",
-              backgroundColor: "dodgerblue",
-              border: "dodgerblue",
-              color: "white",
-              borderRadius: 8,
-            }}
-            value="..Carregando.."
-          />
-        ) : (
-          <input
-            form="form1"
-            disabled={loading}
-            style={{
-              width: "100%",
-              height: 40,
-              backgroundColor: "dodgerblue",
-              border: "dodgerblue",
-              color: "white",
-              borderRadius: 8,
-            }}
-            type="submit"
-            value="Adicionar"
-          />
-        )}
-        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-          <label htmlFor="dataAtual">Data Atual:</label>
-          <span>{dataAtual.toDateString()}</span>
-        </div>
-      </form>
-    </>
+        <Select size="large">
+          <Select.Option value="Alex">Alex</Select.Option>
+          <Select.Option value="André">André</Select.Option>
+          <Select.Option value="Athayde">Athayde</Select.Option>
+          <Select.Option value="Bacelar">Bacelar</Select.Option>
+          <Select.Option value="Baeza">Baeza</Select.Option>
+          <Select.Option value="Beto">Beto</Select.Option>
+          <Select.Option value="Cláudio">Cláudio</Select.Option>
+          <Select.Option value="Fernando">Fernando</Select.Option>
+          <Select.Option value="Giuliano">Giuliano</Select.Option>
+          <Select.Option value="Gulitich">Gulitich</Select.Option>
+          <Select.Option value="Índio">Índio</Select.Option>
+          <Select.Option value="Jeferson">Jeferson</Select.Option>
+          <Select.Option value="João Marius">João Marius</Select.Option>
+          <Select.Option value="Madalosso">Madalosso</Select.Option>
+          <Select.Option value="Maicon">Maicon</Select.Option>
+          <Select.Option value="Mega">Mega</Select.Option>
+          <Select.Option value="Mortari">Mortari</Select.Option>
+          <Select.Option value="Pacheco">Pacheco</Select.Option>
+          <Select.Option value="Rafael">Rafael</Select.Option>
+          <Select.Option value="Rodrigo N.D">Rodrigo N.D</Select.Option>
+          <Select.Option value="Rodrigo">Rodrigo</Select.Option>
+          <Select.Option value="Rogério">Rogério</Select.Option>
+          <Select.Option value="Weriton">Weriton</Select.Option>
+          <Select.Option value="Zanona">Zanona</Select.Option>
+          <Select.Option value="Zeca">Zeca</Select.Option>
+          <Select.Option value="Zé Carlos">Zé Carlos</Select.Option>
+          <Select.Option value="Robson">Robson</Select.Option>
+          <Select.Option value="Romanel">Romanel</Select.Option>
+        </Select>
+      </Form.Item>
+      <Form.Item<FieldType>
+        name="bebida"
+        label="Bebidas"
+        rules={[{ required: true, message: "Selecione ao menos um item!" }]}
+      >
+        <Select size="large">
+          <Select.Option value="Long Neck">Long Neck</Select.Option>
+          <Select.Option value="Refrigerante">Refrigerante</Select.Option>
+          <Select.Option value="Água">Água</Select.Option>
+          <Select.Option value="Energético">Energético</Select.Option>
+          <Select.Option value="Vinho Cordero">Vinho Cordero</Select.Option>
+          <Select.Option value="Vinho Luigi Bosca">
+            Vinho Luigi Bosca
+          </Select.Option>
+          <Select.Option value="Heineken 1L Lata">
+            Heineken 1L Lata
+          </Select.Option>
+          <Select.Option value="Dose Jagermeister">
+            Dose Jagermeister
+          </Select.Option>
+          <Select.Option value="Dose Jack Daniels">
+            Dose Jack Daniels
+          </Select.Option>
+        </Select>
+      </Form.Item>
+      <Form.Item 
+        name="quantidade"
+        label="Quantidade"
+        rules={[{ required: true, message: "Selecione ao menos uma quantidade." }]}>
+      <Select
+        defaultValue="1"     
+        size="large"
+        placeholder="1"
+      >
+        {options}
+      </Select>
+      </Form.Item>
+      <Button
+        style={{ width: "100%" }}
+        loading={loading}
+        type="primary"
+        htmlType="submit"
+      >
+        Adicionar
+      </Button>
+      <Form.Item<FieldType>
+        name="data"
+        label="Data Atual"
+        initialValue={dataAtual.toDateString()}
+      >
+        {dataAtual.toDateString()}
+      </Form.Item>
+    </Form>
   );
 }
