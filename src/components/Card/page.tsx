@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { List, Card, Select } from "antd";
+import { List, Card, Select, ConfigProvider } from "antd";
 import { createClient } from "@supabase/supabase-js";
 import { formatarDataHora } from "@/utils/formatarDataHora.js";
 import { formatarMoeda } from "@/utils/formatarMoeda.js";
@@ -79,34 +79,38 @@ export function CardComand() {
         <Select.Option value="Robson">Robson</Select.Option>
         <Select.Option value="Romanel">Romanel</Select.Option>
       </Select>
-      <List
-        size="small"
-        bordered
-        dataSource={dataB}
-        grid={{
-          gutter: 16,
-          xs: 1,
-          sm: 2,
-          md: 4,
-          lg: 4,
-          xl: 6,
-          xxl: 3,
-        }}
-        renderItem={(item) => (
-          <>
-            {member !== "" && (
-              <List.Item>
-                <Card title={item?.drink ? item?.drink : "Sem drink"}>
-                  <p>Data: {formatarDataHora(item?.created_at)}</p>
-                  <p>Quantidade: {item?.quantity}</p>
-                  <p>Valor: {formatarMoeda(item?.price)}</p>
-                  <p>Pago? {item?.paid ? "Pago" : "Não Pago"}</p>
-                </Card>
-              </List.Item>
-            )}
-          </>
-        )}
-      />
+      <ConfigProvider
+        renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}
+      >
+        <List
+          size="small"
+          bordered
+          dataSource={dataB}
+          grid={{
+            gutter: 16,
+            xs: 1,
+            sm: 2,
+            md: 4,
+            lg: 4,
+            xl: 6,
+            xxl: 3,
+          }}
+          renderItem={(item) => (
+            <>
+              {member !== "" && (
+                <List.Item>
+                  <Card title={item?.drink ? item?.drink : "Sem drink"}>
+                    <p>Data: {formatarDataHora(item?.created_at)}</p>
+                    <p>Quantidade: {item?.quantity}</p>
+                    <p>Valor: {formatarMoeda(item?.price)}</p>
+                    <p>Pago? {item?.paid ? "Pago" : "Não Pago"}</p>
+                  </Card>
+                </List.Item>
+              )}
+            </>
+          )}
+        />
+      </ConfigProvider>
     </>
   );
 }
