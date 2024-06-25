@@ -14,6 +14,7 @@ type FieldType = {
   bebida?: string;
   quantidade?: number;
   data?: any;
+  uuid?: any;
 };
 
 const dataAtual = new Date();
@@ -21,8 +22,14 @@ const dataAtual = new Date();
 export function FormComand() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [keyUser, setKeyUser] = useState("");
+
+  const onChange = (options: any, values: any) => {
+    setKeyUser(values?.key);
+  };
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
+    console.log(values);
     setLoading(true);
     let valorBebida = 0;
     switch (values.bebida) {
@@ -57,8 +64,9 @@ export function FormComand() {
         valorBebida = 0;
     }
     try {
-
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       await supabase.from("bebidas").insert([
         {
@@ -68,6 +76,7 @@ export function FormComand() {
           price: valorBebida * (values.quantidade ? values.quantidade : 1),
           //@ts-ignore
           user: user.email,
+          uuid: keyUser,
         },
       ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
@@ -105,36 +114,181 @@ export function FormComand() {
         label="Nome"
         rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
       >
-        <Select defaultValue={""} size="large">
-          <Select.Option value="Alex">Alex</Select.Option>
-          <Select.Option value="André">André</Select.Option>
-          <Select.Option value="Athayde">Athayde</Select.Option>
-          <Select.Option value="Bacelar">Bacelar</Select.Option>
-          <Select.Option value="Baeza">Baeza</Select.Option>
-          <Select.Option value="Beto">Beto</Select.Option>
-          <Select.Option value="Cláudio">Cláudio</Select.Option>
-          <Select.Option value="Fernando">Fernando</Select.Option>
-          <Select.Option value="Giuliano">Giuliano</Select.Option>
-          <Select.Option value="Gulitich">Gulitich</Select.Option>
-          <Select.Option value="Índio">Índio</Select.Option>
-          <Select.Option value="Jeferson">Jeferson</Select.Option>
-          <Select.Option value="João Marius">João Marius</Select.Option>
-          <Select.Option value="Madalosso">Madalosso</Select.Option>
-          <Select.Option value="Maicon">Maicon</Select.Option>
-          <Select.Option value="Mega">Mega</Select.Option>
-          <Select.Option value="Mortari">Mortari</Select.Option>
-          <Select.Option value="Pacheco">Pacheco</Select.Option>
-          <Select.Option value="Rafael">Rafael</Select.Option>
-          <Select.Option value="Rodrigo N.D">Rodrigo N.D</Select.Option>
-          <Select.Option value="Rodrigo">Rodrigo</Select.Option>
-          <Select.Option value="Rogério">Rogério</Select.Option>
-          <Select.Option value="Weriton">Weriton</Select.Option>
-          <Select.Option value="Zanona">Zanona</Select.Option>
-          <Select.Option value="Zeca">Zeca</Select.Option>
-          <Select.Option value="Zé Carlos">Zé Carlos</Select.Option>
-          <Select.Option value="Zorek">Zorek</Select.Option>
-          <Select.Option value="Robson">Robson</Select.Option>
-          <Select.Option value="Romanel">Romanel</Select.Option>
+        <Select onChange={onChange} defaultValue={""} size="large">
+          <Select.Option
+            key="1f135b00-383f-40cf-9540-48c06bc5c855"
+            value="Alex"
+          >
+            Alex
+          </Select.Option>
+          <Select.Option
+            key="77c5b5a4-d280-462f-93c7-14fca108e20e"
+            value="André"
+          >
+            André
+          </Select.Option>
+          <Select.Option
+            key="33dc3a2b-479c-4536-a1d7-58925cbe620c"
+            value="Athayde"
+          >
+            Athayde
+          </Select.Option>
+          <Select.Option
+            key="0919d6ae-f60c-4770-a00b-80c320014bcc"
+            value="Bacelar"
+          >
+            Bacelar
+          </Select.Option>
+          <Select.Option
+            key="9f31aeb7-3136-4968-8b74-8dc99fcf17d0"
+            value="Baeza"
+          >
+            Baeza
+          </Select.Option>
+          <Select.Option
+            key="e99f4437-3115-498a-85a6-71c920e2a9bc"
+            value="Beto"
+          >
+            Beto
+          </Select.Option>
+          <Select.Option
+            key="cfb348d8-68e9-4891-9ce7-62040784e597"
+            value="Cláudio"
+          >
+            Cláudio
+          </Select.Option>
+          <Select.Option
+            key="f4c33b80-979e-48b9-bb60-cf1c9249c939"
+            value="Fernando"
+          >
+            Fernando
+          </Select.Option>
+          <Select.Option
+            key="e5c6b48d-bb42-4cf9-bf92-cc14fa424282"
+            value="Giuliano"
+          >
+            Giuliano
+          </Select.Option>
+          <Select.Option
+            key="09939f59-1567-4253-a1bd-fc1f627cdc19"
+            value="Gulitich"
+          >
+            Gulitich
+          </Select.Option>
+          <Select.Option
+            key="6a7443c3-bfa5-444a-81b6-dcc36ecf47dd"
+            value="Índio"
+          >
+            Índio
+          </Select.Option>
+          <Select.Option
+            key="9d498ee1-bd55-4c57-be1f-73735b170b8a"
+            value="Jeferson"
+          >
+            Jeferson
+          </Select.Option>
+          <Select.Option
+            key="7804fbe9-a032-43d3-b791-34ccb6b99fcc"
+            value="João Marius"
+          >
+            João Marius
+          </Select.Option>
+          <Select.Option
+            key="8e70a015-e115-43ed-ac26-f9be4e4fa795"
+            value="Madalosso"
+          >
+            Madalosso
+          </Select.Option>
+          <Select.Option
+            key="478aa74d-6492-49f2-bfdc-fc75e7ac7da2"
+            value="Maicon"
+          >
+            Maicon
+          </Select.Option>
+          <Select.Option
+            key="a21965e8-f88c-4f7a-b6ff-3394225581cf"
+            value="Mega"
+          >
+            Mega
+          </Select.Option>
+          <Select.Option
+            key="94bb7a82-46c4-40d4-ac82-e17e467f5d2b"
+            value="Mortari"
+          >
+            Mortari
+          </Select.Option>
+          <Select.Option
+            key="39f0b35a-1465-4c27-9f07-e2c5c997d278"
+            value="Pacheco"
+          >
+            Pacheco
+          </Select.Option>
+          <Select.Option
+            key="d75fd637-c930-4f66-a9be-ce68676f5c10"
+            value="Rafael"
+          >
+            Rafael
+          </Select.Option>
+          <Select.Option
+            key="3f52fd2c-1dfe-4969-8f99-f6ce935a4045"
+            value="Rodrigo N.D"
+          >
+            Rodrigo N.D
+          </Select.Option>
+          <Select.Option
+            key="472c2d35-f0c3-4aee-8da7-89b1f29a271e"
+            value="Rodrigo"
+          >
+            Rodrigo
+          </Select.Option>
+          <Select.Option
+            key="6df6d3ca-36ba-4137-b0e4-09bf61f022b0"
+            value="Rogério"
+          >
+            Rogério
+          </Select.Option>
+          <Select.Option
+            key="1c03f226-6d76-4e7e-9c42-5ba0910f4977"
+            value="Weriton"
+          >
+            Weriton
+          </Select.Option>
+          <Select.Option
+            key="712301d0-f118-4650-b982-35a353103e9d"
+            value="Zanona"
+          >
+            Zanona
+          </Select.Option>
+          <Select.Option
+            key="3407168d-90f3-41af-b183-5d84ef292355"
+            value="Zeca"
+          >
+            Zeca
+          </Select.Option>
+          <Select.Option
+            key="1b8684af-f7bd-4ecb-8fb1-35b8893880ab"
+            value="Zé Carlos"
+          >
+            Zé Carlos
+          </Select.Option>
+          <Select.Option
+            key="06050bc6-be74-45fc-8c10-bab22b24ee21"
+            value="Zorek"
+          >
+            Zorek
+          </Select.Option>
+          <Select.Option
+            key="ab99f83f-af0d-4462-a92f-51787ae9c945"
+            value="Robson"
+          >
+            Robson
+          </Select.Option>
+          <Select.Option
+            key="d3de25e3-8a52-4d05-9c8d-fc87788c01aa"
+            value="Romanel"
+          >
+            Romanel
+          </Select.Option>
         </Select>
       </Form.Item>
       <Form.Item<FieldType>
