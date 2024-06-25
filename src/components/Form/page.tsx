@@ -57,12 +57,17 @@ export function FormComand() {
         valorBebida = 0;
     }
     try {
+
+      const { data: { user } } = await supabase.auth.getUser()
+
       await supabase.from("bebidas").insert([
         {
           name: values.nome,
           drink: values.bebida,
           quantity: values.quantidade ? values.quantidade : 1,
           price: valorBebida * (values.quantidade ? values.quantidade : 1),
+          //@ts-ignore
+          user: user.email,
         },
       ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });

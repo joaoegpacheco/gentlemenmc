@@ -1,9 +1,9 @@
 import React from "react";
-import TabsComponent from "@/components/Tabs/page";
+import { LoginForm } from "@/components/LoginForm/page";
 
 export default function Home() {
 
   return (
-    <TabsComponent />
+    <LoginForm />
   )
 }

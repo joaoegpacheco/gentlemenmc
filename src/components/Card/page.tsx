@@ -21,6 +21,7 @@ export function CardComand() {
       paid: "",
       quantity: 0,
       price: 0,
+      user: "",
     },
   ]);
 
@@ -29,7 +30,7 @@ export function CardComand() {
     const getData = async () => {
       const { data: bebidas } = await supabase
         .from("bebidas")
-        .select("created_at, name, drink, paid, quantity, price")
+        .select("created_at, name, drink, paid, quantity, price, user")
         // Filters
         .eq("name", `${member}`);
 
@@ -124,6 +125,7 @@ export function CardComand() {
                     <p>Quantidade: {item?.quantity}</p>
                     <p>Valor: {formatarMoeda(item?.price)}</p>
                     <p>Pago? {item?.paid ? "Pago" : "Não Pago"}</p>
+                    <p>{item?.user ? `Marcado por: ${item?.user}` : ""}</p>
                   </Card>
                 </List.Item>
               )}
