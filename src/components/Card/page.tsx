@@ -12,7 +12,7 @@ const supabase = createClient(
 
 export function CardComand() {
   const [member, setMember] = useState("");
-  const [totalSoma, setTotalSoma] = useState(0)
+  const [totalSoma, setTotalSoma] = useState(0);
   const [dataB, setDataB] = useState([
     {
       created_at: "",
@@ -20,7 +20,7 @@ export function CardComand() {
       drink: "",
       paid: "",
       quantity: 0,
-      price: 0
+      price: 0,
     },
   ]);
 
@@ -38,7 +38,20 @@ export function CardComand() {
         return dados.reduce((acc: any, curr: any) => acc + curr.price, 0);
       };
 
-      const totalSoma = calcularSoma(bebidas);
+      // Função para calcular a soma dos valores se valorPago for false
+      function calcularSomaValores(transacoes: any) {
+        let soma = 0;
+
+        transacoes.forEach((transacao: any) => {
+          if (!transacao.paid) {
+            soma += parseFloat(transacao.price); // Assumindo que 'valor' é um campo numérico
+          }
+        });
+
+        return soma;
+      }
+
+      const totalSoma = calcularSomaValores(bebidas);
       //@ts-ignore
       setDataB(bebidas);
       setTotalSoma(totalSoma);
@@ -92,7 +105,9 @@ export function CardComand() {
         renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}
       >
         <List
-          header={member !== "" && `Total não pago: ${formatarMoeda(totalSoma)}`}
+          header={
+            member !== "" && `Total não pago: ${formatarMoeda(totalSoma)}`
+          }
           size="small"
           bordered
           dataSource={dataB}
