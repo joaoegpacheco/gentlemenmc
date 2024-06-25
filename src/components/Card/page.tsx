@@ -11,7 +11,7 @@ const supabase = createClient(
 );
 
 export function CardComand() {
-  const [member, setMember] = useState("");
+  const [dataUser, setDataUser] = useState({});
   const [totalSoma, setTotalSoma] = useState(0);
   const [dataB, setDataB] = useState([
     {
@@ -26,13 +26,21 @@ export function CardComand() {
   ]);
 
   useEffect(() => {
-    if (member === "") return;
     const getData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      //@ts-ignore
+      setDataUser(user);
+
+      if (!user) return;
+
       const { data: bebidas } = await supabase
         .from("bebidas")
-        .select("created_at, name, drink, paid, quantity, price, user")
+        .select("created_at, name, drink, paid, quantity, price, user, uuid")
         // Filters
-        .eq("name", `${member}`);
+        //@ts-ignore
+        .eq("uuid", `${user.id}`);
 
       // Função para calcular a soma dos valores se valorPago for false
       function calcularSomaValores(transacoes: any) {
@@ -53,86 +61,42 @@ export function CardComand() {
       setTotalSoma(totalSoma);
     };
     getData();
-  }, [member]);
-
-  const onChangeSelect = (value: any) => {
-    setMember(value);
-  };
+  }, []);
 
   return (
-    <>
-      <Select
-        style={{ width: "100%", marginBottom: 20 }}
-        onChange={onChangeSelect}
-        defaultValue={"Selecione um nome"}
-        size="large"
-      >
-        <Select.Option value="Alex">Alex</Select.Option>
-        <Select.Option value="André">André</Select.Option>
-        <Select.Option value="Athayde">Athayde</Select.Option>
-        <Select.Option value="Bacelar">Bacelar</Select.Option>
-        <Select.Option value="Baeza">Baeza</Select.Option>
-        <Select.Option value="Beto">Beto</Select.Option>
-        <Select.Option value="Cláudio">Cláudio</Select.Option>
-        <Select.Option value="Fernando">Fernando</Select.Option>
-        <Select.Option value="Giuliano">Giuliano</Select.Option>
-        <Select.Option value="Gulitich">Gulitich</Select.Option>
-        <Select.Option value="Índio">Índio</Select.Option>
-        <Select.Option value="Jeferson">Jeferson</Select.Option>
-        <Select.Option value="João Marius">João Marius</Select.Option>
-        <Select.Option value="Madalosso">Madalosso</Select.Option>
-        <Select.Option value="Maicon">Maicon</Select.Option>
-        <Select.Option value="Mega">Mega</Select.Option>
-        <Select.Option value="Mortari">Mortari</Select.Option>
-        <Select.Option value="Pacheco">Pacheco</Select.Option>
-        <Select.Option value="Rafael">Rafael</Select.Option>
-        <Select.Option value="Rodrigo N.D">Rodrigo N.D</Select.Option>
-        <Select.Option value="Rodrigo">Rodrigo</Select.Option>
-        <Select.Option value="Rogério">Rogério</Select.Option>
-        <Select.Option value="Weriton">Weriton</Select.Option>
-        <Select.Option value="Zanona">Zanona</Select.Option>
-        <Select.Option value="Zeca">Zeca</Select.Option>
-        <Select.Option value="Zé Carlos">Zé Carlos</Select.Option>
-        <Select.Option value="Zorek">Zorek</Select.Option>
-        <Select.Option value="Robson">Robson</Select.Option>
-        <Select.Option value="Romanel">Romanel</Select.Option>
-      </Select>
-      <ConfigProvider
-        renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}
-      >
-        <List
-          header={
-            member !== "" && `Total não pago: ${formatarMoeda(totalSoma)}`
-          }
-          size="small"
-          bordered
-          dataSource={dataB}
-          grid={{
-            gutter: 16,
-            xs: 1,
-            sm: 2,
-            md: 4,
-            lg: 4,
-            xl: 6,
-            xxl: 3,
-          }}
-          renderItem={(item) => (
-            <>
-              {member !== "" && (
-                <List.Item>
-                  <Card title={item?.drink}>
-                    <p>Data: {formatarDataHora(item?.created_at)}</p>
-                    <p>Quantidade: {item?.quantity}</p>
-                    <p>Valor: {formatarMoeda(item?.price)}</p>
-                    <p>Pago? {item?.paid ? "Pago" : "Não Pago"}</p>
-                    <p>{item?.user ? `Marcado por: ${item?.user}` : ""}</p>
-                  </Card>
-                </List.Item>
-              )}
-            </>
-          )}
-        />
-      </ConfigProvider>
-    </>
+    <ConfigProvider
+      renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}
+    >
+      <List
+        header={dataUser && `Total não pago: ${formatarMoeda(totalSoma)}`}
+        size="small"
+        bordered
+        dataSource={dataB}
+        grid={{
+          gutter: 16,
+          xs: 1,
+          sm: 2,
+          md: 4,
+          lg: 4,
+          xl: 6,
+          xxl: 3,
+        }}
+        renderItem={(item) => (
+          <>
+            {dataUser !== "" && (
+              <List.Item>
+                <Card title={item?.drink}>
+                  <p>Data: {formatarDataHora(item?.created_at)}</p>
+                  <p>Quantidade: {item?.quantity}</p>
+                  <p>Valor: {formatarMoeda(item?.price)}</p>
+                  <p>Pago? {item?.paid ? "Pago" : "Não Pago"}</p>
+                  <p>{item?.user ? `Marcado por: ${item?.user}` : ""}</p>
+                </Card>
+              </List.Item>
+            )}
+          </>
+        )}
+      />
+    </ConfigProvider>
   );
 }
