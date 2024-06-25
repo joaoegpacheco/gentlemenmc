@@ -33,11 +33,6 @@ export function CardComand() {
         // Filters
         .eq("name", `${member}`);
 
-      // Função para calcular a soma dos valores
-      const calcularSoma = (dados: any) => {
-        return dados.reduce((acc: any, curr: any) => acc + curr.price, 0);
-      };
-
       // Função para calcular a soma dos valores se valorPago for false
       function calcularSomaValores(transacoes: any) {
         let soma = 0;
