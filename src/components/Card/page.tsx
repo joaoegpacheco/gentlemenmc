@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { List, Card, Select, ConfigProvider } from "antd";
+import { List, Card, ConfigProvider } from "antd";
 import { createClient } from "@supabase/supabase-js";
 import { formatarDataHora } from "@/utils/formatarDataHora.js";
 import { formatarMoeda } from "@/utils/formatarMoeda.js";
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 
 const supabase = createClient(
   "https://cuqvbjobsgfbfahjrzeq.supabase.co",
@@ -40,7 +41,8 @@ export function CardComand() {
         .select("created_at, name, drink, paid, quantity, price, user, uuid")
         // Filters
         //@ts-ignore
-        .eq("uuid", `${user.id}`);
+        .eq("uuid", `${user.id}`)
+        .order("created_at", { ascending: false });
 
       // Função para calcular a soma dos valores se valorPago for false
       function calcularSomaValores(transacoes: any) {
@@ -89,7 +91,20 @@ export function CardComand() {
                   <p>Data: {formatarDataHora(item?.created_at)}</p>
                   <p>Quantidade: {item?.quantity}</p>
                   <p>Valor: {formatarMoeda(item?.price)}</p>
-                  <p>Pago? {item?.paid ? "Pago" : "Não Pago"}</p>
+                  <p>
+                    Pago?{" "}
+                    {item?.paid ? (
+                      <CheckOutlined
+                        style={{ color: "green" }}
+                        twoToneColor="green"
+                      />
+                    ) : (
+                      <CloseOutlined
+                        style={{ color: "red" }}
+                        twoToneColor="red"
+                      />
+                    )}
+                  </p>
                   <p>{item?.user ? `Marcado por: ${item?.user}` : ""}</p>
                 </Card>
               </List.Item>
