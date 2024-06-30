@@ -36,6 +36,9 @@ export function FormComand() {
       case "Long Neck":
         valorBebida = 10;
         break;
+      case "Cerveja Lata":
+        valorBebida = 8;
+        break;
       case "Refrigerante":
         valorBebida = 6;
         break;
@@ -43,13 +46,16 @@ export function FormComand() {
         valorBebida = 5;
         break;
       case "Energético":
-        valorBebida = 12;
+        valorBebida = 15;
         break;
       case "Vinho Cordero":
-        valorBebida = 40;
+        valorBebida = 55;
+        break;
+      case "Vinho La Linda":
+        valorBebida = 65;
         break;
       case "Vinho Luigi Bosca":
-        valorBebida = 80;
+        valorBebida = 90;
         break;
       case "Heineken 1L Lata":
         valorBebida = 20;
@@ -59,6 +65,21 @@ export function FormComand() {
         break;
       case "Dose Jack Daniels":
         valorBebida = 20;
+        break;
+      case "Dose Vodka Smirnoff":
+        valorBebida = 15;
+        break;
+      case "Dose Vodka Absolut":
+        valorBebida = 20;
+        break;
+      case "Dose Cachaça":
+        valorBebida = 10;
+        break;
+      case "Caipirinha Vodka Limão":
+        valorBebida = 20;
+        break;
+      case "Caipirinha Cachaça Limão":
+        valorBebida = 15;
         break;
       default:
         valorBebida = 0;
@@ -289,6 +310,12 @@ export function FormComand() {
           >
             Romanel
           </Select.Option>
+          <Select.Option
+            key="a21ad418-5aaa-40ba-a8f4-9b92e1121635"
+            value="Vinicius"
+          >
+            Vinicius
+          </Select.Option>
         </Select>
       </Form.Item>
       <Form.Item<FieldType>
@@ -313,6 +340,19 @@ export function FormComand() {
           </Select.Option>
           <Select.Option value="Dose Jack Daniels">
             Dose Jack Daniels
+          </Select.Option>
+          <Select.Option value="Dose Vodka Smirnoff">
+            Dose Vodka Smirnoff
+          </Select.Option>
+          <Select.Option value="Dose Vodka Absolut">
+            Dose Vodka Absolut
+          </Select.Option>
+          <Select.Option value="Dose Cachaça">Dose Cachaça</Select.Option>
+          <Select.Option value="Caipirinha Vodka Limão">
+            Caipirinha Vodka Limão
+          </Select.Option>
+          <Select.Option value="Caipirinha Cachaça Limão">
+            Caipirinha Cachaça Limão
           </Select.Option>
         </Select>
       </Form.Item>
