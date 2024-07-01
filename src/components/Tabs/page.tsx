@@ -1,13 +1,15 @@
 "use client";
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { Tabs } from 'antd';
+import { List, Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/Card/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import { createClient } from "@supabase/supabase-js";
+import dayjs from 'dayjs';
+
+const { Text } = Typography;
 
 const supabase = createClient(
   "https://cuqvbjobsgfbfahjrzeq.supabase.co",
@@ -52,7 +54,54 @@ export default function TabsComponent() {
     checkIfUserIsLoggedIn();
   }, []);
 
+  const aniversariantes = [
+    { name: "Alex", fullDate: "1974-08-12", day: "12" },
+    { name: "André", fullDate: "1985-05-13", day: "13" },
+    { name: "Athayde", fullDate: "1979-01-24", day: "24" },
+    { name: "Bacellar", fullDate: "1962-09-05", day: "05" },
+    { name: "Beto", fullDate: "1962-09-07", day: "07" },
+    { name: "Claudio", fullDate: "1971-10-08", day: "08" },
+    { name: "Fernando", fullDate: "1967-11-05", day: "05" },
+    { name: "Giuliano", fullDate: "1989-03-28", day: "28" },
+    { name: "Gulitich", fullDate: "1973-02-19", day: "19" },
+    { name: "Índio", fullDate: "1970-06-25", day: "25" },
+    { name: "Jeferson", fullDate: "1974-10-05", day: "05" },
+    { name: "João Marius", fullDate: "1972-02-08", day: "08" },
+    { name: "Madalosso", fullDate: "1988-02-20", day: "20" },
+    { name: "Maicon", fullDate: "1983-02-16", day: "16" },
+    { name: "Mega", fullDate: "1979-07-31", day: "31" },
+    { name: "Mortari", fullDate: "1970-01-18", day: "18" },
+    { name: "Pacheco", fullDate: "1990-03-04", day: "04" },
+    { name: "Rafael", fullDate: "1975-08-09", day: "09" },
+    { name: "Soares", fullDate: "1991-06-19", day: "19" },
+    { name: "Rodrigo ND", fullDate: "1976-08-04", day: "04" },
+    { name: "Rogério", fullDate: "1971-11-03", day: "03" },
+    { name: "Weriton", fullDate: "1976-04-24", day: "24" },
+    { name: "Zanona", fullDate: "1985-01-02", day: "02" },
+    { name: "Zé Carlos", fullDate: "1967-12-08", day: "08" },
+    { name: "Zeca", fullDate: "1970-03-05", day: "05" },
+    { name: "Zorek", fullDate: "1987-10-02", day: "02" },
+  ];
+
+  const birthdaysOfTheMonth = aniversariantes.filter(birthday => {
+    const dateCurrent = new Date();
+    const fullDate = dayjs(birthday.fullDate);
+    return fullDate.month() === dateCurrent.getMonth();
+  }).sort((a, b) => {
+    const dateA = dayjs(a.fullDate);
+    const dateB = dayjs(b.fullDate);
+    return dateA.day() - dateB.day(); 
+  });
+
+  const birthdaysString = birthdaysOfTheMonth.map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
+
   return ( 
-    <Tabs style={{width: "100%", padding: 20}} defaultActiveKey="1" items={items} />
+    <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 15}}>
+      <p>Aniversariantes do mês: </p>
+      <Text strong>{birthdaysString}</Text>
+      </div>
+      <Tabs style={{width: "100%", padding: '0 20px 0'}} defaultActiveKey="1" items={items} />
+    </div>
   )
 };
