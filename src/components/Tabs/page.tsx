@@ -97,9 +97,9 @@ export default function TabsComponent() {
 
   return ( 
     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 15}}>
-      <p>Aniversariantes do mês: </p>
-      <Text strong>{birthdaysString}</Text>
+      <div style={{paddingLeft: 20}}>
+      <p style={{fontSize: 14}}>Aniversariantes do mês: </p>
+      <Text style={{fontSize: 14}} strong>{birthdaysString}</Text>
       </div>
       <Tabs style={{width: "100%", padding: '0 20px 0'}} defaultActiveKey="1" items={items} />
     </div>
