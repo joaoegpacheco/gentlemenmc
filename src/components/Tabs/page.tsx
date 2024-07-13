@@ -92,11 +92,12 @@ export default function TabsComponent() {
   }).sort((a, b) => {
     const dateA = dayjs(a.fullDate);
     const dateB = dayjs(b.fullDate);
-    return dateA.day() - dateB.day(); 
+    return dateB.day() - dateA.day(); 
   });
 
-  const birthdaysString = birthdaysOfTheMonth.sort().map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
+  const birthdaysString = birthdaysOfTheMonth.map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
 
+console.log(birthdaysString)
   return ( 
     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
       <div style={{paddingLeft: 20}}>
