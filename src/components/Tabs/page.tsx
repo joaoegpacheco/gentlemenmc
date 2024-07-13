@@ -95,7 +95,7 @@ export default function TabsComponent() {
     return dateA.day() - dateB.day(); 
   });
 
-  const birthdaysString = birthdaysOfTheMonth.map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
+  const birthdaysString = birthdaysOfTheMonth.sort().map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
 
   return ( 
     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
