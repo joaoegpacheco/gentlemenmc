@@ -29,7 +29,6 @@ export function FormComand() {
   };
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-    console.log(values);
     setLoading(true);
     let valorBebida = 0;
     switch (values.bebida) {

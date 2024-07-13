@@ -97,7 +97,6 @@ export default function TabsComponent() {
 
   const birthdaysString = birthdaysOfTheMonth.map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
 
-console.log(birthdaysString)
   return ( 
     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
       <div style={{paddingLeft: 20}}>
