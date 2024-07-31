@@ -35,9 +35,9 @@ export function FormComand() {
       case "Long Neck":
         valorBebida = 10;
         break;
-      case "Cerveja Lata":
-        valorBebida = 8;
-        break;
+      // case "Cerveja Lata":
+      //   valorBebida = 8;
+      //   break;
       case "Refrigerante":
         valorBebida = 6;
         break;
@@ -47,15 +47,21 @@ export function FormComand() {
       case "Energético":
         valorBebida = 15;
         break;
-      case "Vinho Cordero":
-        valorBebida = 55;
-        break;
+      // case "Vinho Cordero":
+      //   valorBebida = 55;
+      //   break;
       case "Vinho La Linda":
         valorBebida = 65;
         break;
-      case "Vinho Luigi Bosca":
-        valorBebida = 90;
+      case "Vinho Intis":
+        valorBebida = 65;
         break;
+      case "Vinho Finca las Moras":
+        valorBebida = 80;
+        break;
+      // case "Vinho Luigi Bosca":
+      //   valorBebida = 90;
+      //   break;
       case "Heineken 1L Lata":
         valorBebida = 20;
         break;
@@ -65,21 +71,21 @@ export function FormComand() {
       case "Dose Jack Daniels":
         valorBebida = 20;
         break;
-      case "Dose Vodka Smirnoff":
-        valorBebida = 15;
-        break;
-      case "Dose Vodka Absolut":
-        valorBebida = 20;
-        break;
-      case "Dose Cachaça":
-        valorBebida = 10;
-        break;
-      case "Caipirinha Vodka Limão":
-        valorBebida = 20;
-        break;
-      case "Caipirinha Cachaça Limão":
-        valorBebida = 15;
-        break;
+      // case "Dose Vodka Smirnoff":
+      //   valorBebida = 15;
+      //   break;
+      // case "Dose Vodka Absolut":
+      //   valorBebida = 20;
+      //   break;
+      // case "Dose Cachaça":
+      //   valorBebida = 10;
+      //   break;
+      // case "Caipirinha Vodka Limão":
+      //   valorBebida = 20;
+      //   break;
+      // case "Caipirinha Cachaça Limão":
+      //   valorBebida = 15;
+      //   break;
       default:
         valorBebida = 0;
     }
@@ -327,10 +333,12 @@ export function FormComand() {
           <Select.Option value="Refrigerante">Refrigerante</Select.Option>
           <Select.Option value="Água">Água</Select.Option>
           <Select.Option value="Energético">Energético</Select.Option>
-          <Select.Option value="Vinho Cordero">Vinho Cordero</Select.Option>
+          <Select.Option value="Vinho Intis">Vinho Intis</Select.Option>
+          <Select.Option value="Vinho Vinho Finca las Moras">Vinho Vinho Finca las Moras</Select.Option>
+          {/* <Select.Option value="Vinho Cordero">Vinho Cordero</Select.Option>
           <Select.Option value="Vinho Luigi Bosca">
             Vinho Luigi Bosca
-          </Select.Option>
+          </Select.Option> */}
           <Select.Option value="Heineken 1L Lata">
             Heineken 1L Lata
           </Select.Option>
@@ -343,7 +351,7 @@ export function FormComand() {
           <Select.Option value="Dose Vodka Smirnoff">
             Dose Vodka Smirnoff
           </Select.Option>
-          <Select.Option value="Dose Vodka Absolut">
+          {/* <Select.Option value="Dose Vodka Absolut">
             Dose Vodka Absolut
           </Select.Option>
           <Select.Option value="Dose Cachaça">Dose Cachaça</Select.Option>
@@ -352,7 +360,7 @@ export function FormComand() {
           </Select.Option>
           <Select.Option value="Caipirinha Cachaça Limão">
             Caipirinha Cachaça Limão
-          </Select.Option>
+          </Select.Option> */}
         </Select>
       </Form.Item>
       <Form.Item<FieldType> name="quantidade" label="Quantidade">
