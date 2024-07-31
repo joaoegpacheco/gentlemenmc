@@ -334,7 +334,7 @@ export function FormComand() {
           <Select.Option value="Água">Água</Select.Option>
           <Select.Option value="Energético">Energético</Select.Option>
           <Select.Option value="Vinho Intis">Vinho Intis</Select.Option>
-          <Select.Option value="Vinho Vinho Finca las Moras">Vinho Vinho Finca las Moras</Select.Option>
+          <Select.Option value="Vinho Finca las Moras">Vinho Vinho Finca las Moras</Select.Option>
           {/* <Select.Option value="Vinho Cordero">Vinho Cordero</Select.Option>
           <Select.Option value="Vinho Luigi Bosca">
             Vinho Luigi Bosca
