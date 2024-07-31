@@ -71,9 +71,9 @@ export function FormComand() {
       case "Dose Jack Daniels":
         valorBebida = 20;
         break;
-      // case "Dose Vodka Smirnoff":
-      //   valorBebida = 15;
-      //   break;
+      case "Dose Vodka Smirnoff":
+        valorBebida = 15;
+        break;
       // case "Dose Vodka Absolut":
       //   valorBebida = 20;
       //   break;
