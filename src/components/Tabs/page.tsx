@@ -66,7 +66,7 @@ export default function TabsComponent() {
     { name: "Gulitich", fullDate: "1973-02-19", day: "19" },
     { name: "Índio", fullDate: "1970-06-25", day: "25" },
     { name: "Jeferson", fullDate: "1974-10-05", day: "05" },
-    { name: "João Marius", fullDate: "1972-02-08", day: "08" },
+    { name: "João Marius", fullDate: "1972-08-02", day: "08" },
     { name: "Madalosso", fullDate: "1988-02-20", day: "20" },
     { name: "Maicon", fullDate: "1983-02-16", day: "16" },
     { name: "Mega", fullDate: "1979-07-31", day: "31" },
