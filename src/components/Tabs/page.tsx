@@ -90,9 +90,9 @@ export default function TabsComponent() {
     const fullDate = dayjs(birthday.fullDate);
     return fullDate.month() === dateCurrent.getMonth();
   }).sort((a, b) => {
-    const dateA = dayjs(a.fullDate);
-    const dateB = dayjs(b.fullDate);
-    return dateB.day() - dateA.day(); 
+    const dateA = a.day;
+    const dateB = b.day;
+    return Number(dateA) - Number(dateB); 
   });
 
   const birthdaysString = birthdaysOfTheMonth.map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
