@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import type { FormProps } from "antd";
 import { Button, Form, Select, notification } from "antd";
 import { createClient } from "@supabase/supabase-js";
+import { formatarDataHora } from "@/utils/formatarDataHora.js";
 
 const supabase = createClient(
   "https://cuqvbjobsgfbfahjrzeq.supabase.co",
@@ -381,7 +382,7 @@ export function FormComand() {
         label="Data Atual"
         initialValue={dataAtual.toDateString()}
       >
-        {dataAtual.toDateString()}
+        {formatarDataHora(dataAtual)}
       </Form.Item>
     </Form>
   );
