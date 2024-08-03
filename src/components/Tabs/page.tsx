@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from 'react';
-import { List, Tabs, Typography } from 'antd';
+import { Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/Card/page";
@@ -8,6 +8,7 @@ import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import { createClient } from "@supabase/supabase-js";
 import dayjs from 'dayjs';
+import { CalendarEvents } from '../Calendar/page';
 
 const { Text } = Typography;
 
@@ -29,11 +30,17 @@ const items: TabsProps['items'] = [
       },
       {
         key: '3',
+        label: 'Eventos',
+        // children: <CalendarEvents />,
+        children: 'Em construção!',
+      },
+      {
+        key: '4',
         label: 'Alterar senha',
         children: <ChangePasswordForm />,
       },
       {
-        key: '4',
+        key: '5',
         label: <LogoutButton />
       }
 ];
