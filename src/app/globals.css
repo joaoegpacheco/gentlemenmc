@@ -1024,3 +1024,7 @@ strong {
 .fc .fc-daygrid-day-number {
   color: #1677ff;
 }
+
+.fc .fc-view-harness {
+  height: 408px;
+}
