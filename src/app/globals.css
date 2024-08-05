@@ -1016,3 +1016,11 @@ strong {
   }
 }
 
+
+.fc .fc-col-header-cell-cushion {
+  color: #1677ff;
+}
+
+.fc .fc-daygrid-day-number {
+  color: #1677ff;
+}
