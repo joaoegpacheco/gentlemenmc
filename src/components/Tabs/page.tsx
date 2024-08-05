@@ -8,7 +8,7 @@ import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import { createClient } from "@supabase/supabase-js";
 import dayjs from 'dayjs';
-import { CalendarEvents } from '../Calendar/page';
+import CalendarEvents from '../Calendar/page';
 
 const { Text } = Typography;
 
@@ -31,8 +31,8 @@ const items: TabsProps['items'] = [
       {
         key: '3',
         label: 'Eventos',
-        // children: <CalendarEvents />,
-        children: 'Em construção!',
+        children: <CalendarEvents />,
+        // children: 'Em construção!',
       },
       {
         key: '4',
