@@ -19,7 +19,16 @@ const CalendarEvents = () => {
         { title: "Lançamento Loja GTM Custom", date: "2024-08-07" },
         { title: "Encontro Gentlemen", date: "2024-08-14" },
         { title: "Encontro Gentlemen", date: "2024-08-21" },
+        { title: "Viagem Ilha do Mel", date: "2024-08-24" },
         { title: "Encontro Gentlemen", date: "2024-08-28" },
+        { title: "Encontro Gentlemen", date: "2024-09-04" },
+        { title: "Desfile 7 de Setembro", date: "2024-09-07" },
+        { title: "Encontro Gentlemen", date: "2024-09-11" },
+        { title: "Encontro Gentlemen", date: "2024-09-18" },
+        { title: "Encontro Gentlemen", date: "2024-09-25" },
+        { title: "Ida da viagem do Atacama", date: "2024-09-27" },
+        { title: "Sede Fechada", date: "2024-10-04" },
+        { title: "Volta da viagem do Atacama", date: "2024-10-12" },
       ],
       eventClick: function(info) {
         var eventObj = info.event;
