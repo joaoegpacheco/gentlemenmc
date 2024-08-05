@@ -51,7 +51,7 @@ const CalendarEvents = () => {
       locales: allLocales,
       locale: "pt-br",
       headerToolbar: {
-        left: "prev,next today",
+        left: "prev,next",
         center: "title",
         right: false,
       },
