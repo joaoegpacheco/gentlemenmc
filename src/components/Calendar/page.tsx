@@ -21,7 +21,7 @@ const CalendarEvents = () => {
         { title: "Encontro Gentlemen", date: "2024-08-14" },
         { title: "Encontro Gentlemen", date: "2024-08-21" },
         { title: "Ida Viagem Ilha do Mel", date: "2024-08-24" },
-        { title: "Volta Viagem Ilha do Mel", date: "2024-08-24" },
+        { title: "Volta Viagem Ilha do Mel", date: "2024-08-25" },
         { title: "Encontro Gentlemen", date: "2024-08-28" },
         { title: "Encontro Gentlemen", date: "2024-09-04" },
         { title: "Desfile 7 de Setembro", date: "2024-09-07" },
