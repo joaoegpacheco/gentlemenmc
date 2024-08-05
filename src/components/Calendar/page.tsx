@@ -17,6 +17,7 @@ const CalendarEvents = () => {
         { title: "Aniversário Rodrigo N.D", date: "2024-08-04" },
         { title: "Encontro Gentlemen", date: "2024-08-07" },
         { title: "Lançamento Loja GTM Custom", date: "2024-08-07" },
+        { title: "Entrega de donativos na Vila Torres", date: "2024-08-10" },
         { title: "Aniversário do Presidente", date: "2024-08-10" },
         { title: "Encontro Gentlemen", date: "2024-08-14" },
         { title: "Encontro Gentlemen", date: "2024-08-21" },
