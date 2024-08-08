@@ -89,7 +89,8 @@ export default function TabsComponent() {
     { name: "Zeca", fullDate: "1970-03-05", day: "05" },
     { name: "Zorek", fullDate: "1987-10-02", day: "02" },
     { name: "Robson", fullDate: "1987-07-18", day: "18" },
-    { name: "Romanel", fullDate: "1987-11-17", day: "17" },
+    { name: "Jefão", fullDate: "1981-02-04", day: "04" },
+    { name: "Léo", fullDate: "1981-11-22", day: "22" },
   ];
 
   const birthdaysOfTheMonth = aniversariantes.filter(birthday => {
