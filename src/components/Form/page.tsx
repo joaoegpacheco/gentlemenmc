@@ -95,6 +95,13 @@ export function FormComand() {
         data: { user },
       } = await supabase.auth.getUser();
 
+      if (values.nome === "Romanel") {
+        notification.error({
+          message: "Houve algum erro na hora de cadastrar sua bebida.",
+        });
+        return
+      }
+
       await supabase.from("bebidas").insert([
         {
           name: values.nome,
