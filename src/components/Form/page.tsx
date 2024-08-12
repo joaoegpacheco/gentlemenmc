@@ -222,10 +222,22 @@ export function FormComand() {
             Jeferson
           </Select.Option>
           <Select.Option
+            key="9ad4f02c-d869-4cdd-bcf2-e1c41cb9d87a"
+            value="Jefão"
+          >
+            Jefão
+          </Select.Option>
+          <Select.Option
             key="7804fbe9-a032-43d3-b791-34ccb6b99fcc"
             value="João Marius"
           >
             João Marius
+          </Select.Option>
+          <Select.Option
+            key="752c6a95-4a6d-47fc-b573-bb6008c37fe3"
+            value="Léo"
+          >
+            Léo
           </Select.Option>
           <Select.Option
             key="8e70a015-e115-43ed-ac26-f9be4e4fa795"
