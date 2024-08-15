@@ -20,6 +20,8 @@ const CalendarEvents = () => {
         { title: "Entrega de donativos na Vila Torres", date: "2024-08-10" },
         { title: "Aniversário do Presidente", date: "2024-08-10" },
         { title: "Encontro Gentlemen", date: "2024-08-14" },
+        { title: "Targo Clube de Tiro", date: "2024-08-15" },
+        { title: "Passeio PMPR 170 anos", date: "2024-08-17" },
         { title: "Encontro Gentlemen", date: "2024-08-21" },
         { title: "Ida Viagem Ilha do Mel", date: "2024-08-24" },
         { title: "Volta Viagem Ilha do Mel", date: "2024-08-25" },
