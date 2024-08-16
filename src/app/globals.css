@@ -1031,3 +1031,11 @@ strong {
 .fc-direction-ltr {
   height: 470px;
 }
+
+/*---------------------------------------
+    ANT DESIGN              
+-----------------------------------------*/
+
+.ant-form-item-label {
+  width: 85px;
+}

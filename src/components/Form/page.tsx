@@ -398,10 +398,9 @@ export function FormComand() {
       </Button>
       <Form.Item<FieldType>
         name="data"
-        label="Data Atual"
         initialValue={dataAtual.toDateString()}
       >
-        {formatarDataHora(dataAtual)}
+        Data e hora agora: <strong>{formatarDataHora(dataAtual)}</strong>
       </Form.Item>
     </Form>
   );

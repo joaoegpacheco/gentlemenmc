@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/LogoutButton/page";
 import { createClient } from "@supabase/supabase-js";
 import dayjs from 'dayjs';
 import CalendarEvents from '../Calendar/page';
+import ByLaw from '../ByLaw/page';
 
 const { Text } = Typography;
 
@@ -32,13 +33,11 @@ const items: TabsProps['items'] = [
         key: '3',
         label: 'Eventos',
         children: <CalendarEvents />,
-        // children: 'Em construção!',
       },
       {
         key: '4',
         label: 'Estatuto',
-        // children: <CalendarEvents />,
-        children: 'Em construção!',
+        children: <ByLaw />,
       },
       {
         key: '5',
@@ -114,7 +113,7 @@ export default function TabsComponent() {
 
   return ( 
     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-      <div style={{paddingLeft: 20}}>
+      <div style={{padding: '0 20px 0'}}>
       <p style={{fontSize: 14}}>Aniversariantes do mês: </p>
       <Text style={{fontSize: 14}} strong>{birthdaysString}</Text>
       </div>
