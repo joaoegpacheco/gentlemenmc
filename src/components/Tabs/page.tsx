@@ -36,11 +36,17 @@ const items: TabsProps['items'] = [
       },
       {
         key: '4',
+        label: 'Estatuto',
+        // children: <CalendarEvents />,
+        children: 'Em construção!',
+      },
+      {
+        key: '5',
         label: 'Alterar senha',
         children: <ChangePasswordForm />,
       },
       {
-        key: '5',
+        key: '6',
         label: <LogoutButton />
       }
 ];
