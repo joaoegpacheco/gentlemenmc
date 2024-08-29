@@ -30,7 +30,7 @@ const CalendarEvents = () => {
         { title: "Desfile 7 de Setembro", date: "2024-09-07" },
         { title: "Encontro Gentlemen - Mocotó do Cláudio", date: "2024-09-11" },
         { title: "Encontro Gentlemen", date: "2024-09-18" },
-        { title: "Encontro Gentlemen", date: "2024-09-25" },
+        { title: "Projeto Nova Terra - Encontro Gentlemen", date: "2024-09-25" },
         { title: "Ida Viagem do Atacama", date: "2024-09-27" },
         { title: "Sede Fechada", date: "2024-10-04" },
         { title: "Volta Viagem do Atacama", date: "2024-10-12" },
