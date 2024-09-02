@@ -34,8 +34,11 @@ export function FormComand() {
     setLoading(true);
     let valorBebida = 0;
     switch (values.bebida) {
-      case "Long Neck":
+      case "Long Neck Amstel":
         valorBebida = 10;
+        break;
+      case "Long Neck Heineken":
+        valorBebida = 15;
         break;
       // case "Cerveja Lata":
       //   valorBebida = 8;
@@ -67,9 +70,9 @@ export function FormComand() {
       // case "Heineken 1L Lata":
       //   valorBebida = 20;
       //   break;
-      case "Dose Gin":
-        valorBebida = 15;
-        break;
+      // case "Dose Gin":
+      //   valorBebida = 15;
+      //   break;
       case "Dose Jagermeister":
         valorBebida = 15;
         break;
@@ -82,15 +85,15 @@ export function FormComand() {
       // case "Dose Vodka Absolut":
       //   valorBebida = 20;
       //   break;
-      // case "Dose Cachaça":
-      //   valorBebida = 10;
-      //   break;
-      // case "Caipirinha Vodka Limão":
-      //   valorBebida = 20;
-      //   break;
-      // case "Caipirinha Cachaça Limão":
-      //   valorBebida = 15;
-      //   break;
+      case "Dose Cachaça":
+        valorBebida = 10;
+        break;
+      case "Caipirinha Vodka Limão":
+        valorBebida = 20;
+        break;
+      case "Caipirinha Cachaça Limão":
+        valorBebida = 15;
+        break;
       default:
         valorBebida = 0;
     }
@@ -183,7 +186,8 @@ export function FormComand() {
         rules={[{ required: true, message: "Selecione ao menos um item!" }]}
       >
         <Select defaultValue={""} size="large">
-          <Select.Option value="Long Neck">Long Neck</Select.Option>
+          <Select.Option value="Long Neck Amstel">Long Neck Amstel</Select.Option>
+          <Select.Option value="Long Neck Heineken">Long Neck Heineken</Select.Option>
           <Select.Option value="Refrigerante">Refrigerante</Select.Option>
           <Select.Option value="Água">Água</Select.Option>
           <Select.Option value="Energético">Energético</Select.Option>
@@ -196,9 +200,9 @@ export function FormComand() {
           {/* <Select.Option value="Heineken 1L Lata">
             Heineken 1L Lata
           </Select.Option> */}
-          <Select.Option value="Dose Gin">
+          {/* <Select.Option value="Dose Gin">
             Dose Gin
-          </Select.Option>
+          </Select.Option> */}
           <Select.Option value="Dose Jagermeister">
             Dose Jagermeister
           </Select.Option>
@@ -210,14 +214,14 @@ export function FormComand() {
           </Select.Option>
           {/* <Select.Option value="Dose Vodka Absolut">
             Dose Vodka Absolut
-          </Select.Option>
+          </Select.Option> */}
           <Select.Option value="Dose Cachaça">Dose Cachaça</Select.Option>
           <Select.Option value="Caipirinha Vodka Limão">
             Caipirinha Vodka Limão
           </Select.Option>
           <Select.Option value="Caipirinha Cachaça Limão">
             Caipirinha Cachaça Limão
-          </Select.Option> */}
+          </Select.Option>
         </Select>
       </Form.Item>
       <Form.Item<FieldType> name="quantidade" label="Quantidade">
