@@ -70,9 +70,9 @@ export function FormComand() {
       // case "Heineken 1L Lata":
       //   valorBebida = 20;
       //   break;
-      // case "Dose Gin":
-      //   valorBebida = 15;
-      //   break;
+      case "Dose Gin":
+        valorBebida = 15;
+        break;
       case "Dose Jagermeister":
         valorBebida = 15;
         break;
@@ -200,9 +200,9 @@ export function FormComand() {
           {/* <Select.Option value="Heineken 1L Lata">
             Heineken 1L Lata
           </Select.Option> */}
-          {/* <Select.Option value="Dose Gin">
+          <Select.Option value="Dose Gin">
             Dose Gin
-          </Select.Option> */}
+          </Select.Option>
           <Select.Option value="Dose Jagermeister">
             Dose Jagermeister
           </Select.Option>
