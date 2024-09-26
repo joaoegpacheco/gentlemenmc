@@ -95,7 +95,7 @@ export default function TabsComponent() {
     { name: "Zorek", fullDate: "1987-10-02", day: "02" },
     { name: "Robson", fullDate: "1987-07-18", day: "18" },
     { name: "Jefão", fullDate: "1981-02-04", day: "04" },
-    { name: "Léo", fullDate: "1981-11-22", day: "22" },
+    { name: "Léo", fullDate: "1981-09-27", day: "27" },
     { name: "Valdinei", fullDate: "1977-08-06", day: "06" },
   ];
 
