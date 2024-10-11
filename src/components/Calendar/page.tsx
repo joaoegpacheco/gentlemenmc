@@ -34,6 +34,9 @@ const CalendarEvents = () => {
         { title: "Ida Viagem do Atacama", date: "2024-09-27" },
         { title: "Sede Fechada", date: "2024-10-04" },
         { title: "Volta Viagem do Atacama", date: "2024-10-12" },
+{ title: "Dia das Crianças - Pequeno Príncipe", date: "2024-10-12" },
+{ title: "Feijoada - Filantropia para arrecadação em prol da Julia", date: "2024-10-13" },
+{ title: "Encontro Gentlemen", date: "2024-10-16" },
       ],
       eventClick: function(info) {
         var eventObj = info.event;
