@@ -41,7 +41,7 @@ export function FormComand() {
         valorBebida = 12;
         break;
       case "Chopp":
-      valorBebida = 5;
+      valorBebida = 12;
       break;
       case "Refrigerante":
         valorBebida = 6;
