@@ -34,15 +34,18 @@ export function FormComand() {
     setLoading(true);
     let valorBebida = 0;
     switch (values.bebida) {
+      case "Chopp Promoção":
+        valorBebida = 8;
+        break;
       case "Long Neck Amstel":
         valorBebida = 8;
         break;
       case "Long Neck Heineken":
         valorBebida = 12;
         break;
-      case "Chopp":
-      valorBebida = 12;
-      break;
+      // case "Chopp":
+      // valorBebida = 12;
+      // break;
       case "Refrigerante":
         valorBebida = 6;
         break;
@@ -188,7 +191,8 @@ export function FormComand() {
         <Select defaultValue={""} size="large">
           <Select.Option value="Long Neck Amstel">Long Neck Amstel</Select.Option>
           <Select.Option value="Long Neck Heineken">Long Neck Heineken</Select.Option>
-          <Select.Option value="Chopp">Chopp</Select.Option>
+          <Select.Option value="Chopp Promoção">Chopp Promoção</Select.Option>
+          {/* <Select.Option value="Chopp">Chopp</Select.Option> */}
           <Select.Option value="Refrigerante">Refrigerante</Select.Option>
           <Select.Option value="Água">Água</Select.Option>
           <Select.Option value="Energético">Energético</Select.Option>
