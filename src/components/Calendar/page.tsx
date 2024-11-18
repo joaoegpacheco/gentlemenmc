@@ -41,6 +41,11 @@ const CalendarEvents = () => {
         { title: "Costelada do Romanel - Aniversário no feriado", date: "2024-11-20" },
         { title: "💙✨ Gentlemen Blue - Hard Rock Café Curitiba ✨💙", date: "2024-11-23" },
         { title: "💙✨ Gentlemen Blue - TaTtoo Stars no Parque Barigui ✨💙", date: "2024-11-23" },
+        { title: "Chá de Bebê do Nicolas - Rafael e Isabella", date: "2024-12-08" },
+        { title: "Bonde da Casa China - Papai Noel (Evento aberto ao Support)", date: "2024-12-13" },
+        { title: "Início do recesso da diretoria do clube - Retorno 22/01/2025", date: "2024-12-14" },
+        { title: "Retorno das atividades da diretoria do clube", date: "2025-01-22" },
+        { title: "Festa/Entrega cadeira de rodas da Julia", date: "2025-01-22" },
         { title: "Chá de Bar - Casamento Zorek e Rafaela", date: "2025-02-08" },
       ],
       eventClick: function(info) {
