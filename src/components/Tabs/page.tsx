@@ -68,11 +68,12 @@ export default function TabsComponent() {
 
   const aniversariantes = [
     { name: "Alex", fullDate: "1974-08-12", day: "12" },
-    { name: "André", fullDate: "1985-05-13", day: "13" },
+    { name: "André", fullDate: "1985-09-12", day: "12" },
     { name: "Athayde", fullDate: "1979-01-24", day: "24" },
     { name: "Bacellar", fullDate: "1962-09-05", day: "05" },
     { name: "Beto", fullDate: "1962-09-07", day: "07" },
     { name: "Claudio", fullDate: "1971-10-08", day: "08" },
+    { name: "Camargo", fullDate: "1971-06-11", day: "11" },
     { name: "Fernando", fullDate: "1967-11-05", day: "05" },
     { name: "Giuliano", fullDate: "1989-03-28", day: "28" },
     { name: "Gulitich", fullDate: "1973-02-19", day: "19" },
