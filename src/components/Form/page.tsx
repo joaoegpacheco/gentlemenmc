@@ -35,7 +35,7 @@ export function FormComand() {
     let valorBebida = 0;
     switch (values.bebida) {
       case "Chopp Promoção":
-        valorBebida = 8;
+        valorBebida = 5;
         break;
       case "Long Neck Amstel":
         valorBebida = 8;
