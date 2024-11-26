@@ -39,7 +39,7 @@ const CalendarEvents = () => {
         { title: "Encontro Gentlemen", date: "2024-10-16" },
         { title: "Encontro Gentlemen", date: "2024-11-13" },
         { title: "Costelada do Romanel - Aniversário no feriado", date: "2024-11-20" },
-        { title: "💙✨ Gentlemen Blue - Hard Rock Café Curitiba ✨💙", date: "2024-11-30" },
+        { title: "💙✨ Gentlemen Blue - Hard Rock Café Curitiba ✨💙", date: "2024-11-23" },
         { title: "Encontro Gentlemen", date: "2024-11-27" },
         { title: "💙✨ Gentlemen Blue - TaTtoo Stars no Parque Barigui ✨💙", date: "2024-11-30" },
         { title: "💙✨ Gentlemen Blue - TaTtoo Stars no Parque Barigui ✨💙", date: "2024-12-01" },
