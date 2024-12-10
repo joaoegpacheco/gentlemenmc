@@ -1,15 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { List, Card, ConfigProvider } from "antd";
-import { createClient } from "@supabase/supabase-js";
 import { formatarDataHora } from "@/utils/formatarDataHora.js";
 import { formatarMoeda } from "@/utils/formatarMoeda.js";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-
-const supabase = createClient(
-  "https://cuqvbjobsgfbfahjrzeq.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1cXZiam9ic2dmYmZhaGpyemVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg5ODgxOTQsImV4cCI6MjAzNDU2NDE5NH0.4TzTzyJZSAnZckDTCEQrVYg6MLmpyHkg1VvI-gipXAU"
-);
+import supabase from "@/hooks/use-supabase.js";
 
 export function CardComand() {
   const [dataUser, setDataUser] = useState({});

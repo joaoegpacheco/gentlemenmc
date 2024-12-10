@@ -1,71 +1,135 @@
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/Card/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
-import { createClient } from "@supabase/supabase-js";
 import dayjs from 'dayjs';
 import CalendarEvents from '../Calendar/page';
 import ByLaw from '../ByLaw/page';
+import { FormMonthlyFee } from '../FormMonthlyFee/page';
+import supabase from "@/hooks/use-supabase.js";
+import { PostgrestResponse } from '@supabase/supabase-js';
+
+type AdminResponse = PostgrestResponse<{ id: string }>;
 
 const { Text } = Typography;
 
-const supabase = createClient(
-  "https://cuqvbjobsgfbfahjrzeq.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1cXZiam9ic2dmYmZhaGpyemVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg5ODgxOTQsImV4cCI6MjAzNDU2NDE5NH0.4TzTzyJZSAnZckDTCEQrVYg6MLmpyHkg1VvI-gipXAU"
-);
-
 const items: TabsProps['items'] = [
+  {
+      key: '1',
+      label: 'Marcar',
+      children: <FormComand />,
+    },
     {
-        key: '1',
-        label: 'Marcar',
-        children: <FormComand />,
-      },
-      {
-        key: '2',
-        label: 'Ver marcações',
-        children: <CardComand />,
-      },
-      {
-        key: '3',
-        label: 'Eventos',
-        children: <CalendarEvents />,
-      },
-      {
-        key: '4',
-        label: 'Estatuto',
-        children: <ByLaw />,
-      },
-      {
-        key: '5',
-        label: 'Alterar senha',
-        children: <ChangePasswordForm />,
-      },
-      {
-        key: '6',
-        label: <LogoutButton />
-      }
+      key: '2',
+      label: 'Ver marcações',
+      children: <CardComand />,
+    },
+    {
+      key: '3',
+      label: 'Eventos',
+      children: <CalendarEvents />,
+    },
+    {
+      key: '4',
+      label: 'Estatuto',
+      children: <ByLaw />,
+    },
+    {
+      key: '5',
+      label: 'Alterar senha',
+      children: <ChangePasswordForm />,
+    },
+    {
+      key: '6',
+      label: <LogoutButton />
+    }
+];
+
+const itemsAdmin: TabsProps['items'] = [
+  {
+    key: '1',
+    label: 'Marcar',
+    children: <FormComand />,
+  },
+  {
+    key: '2',
+    label: 'Ver marcações',
+    children: <CardComand />,
+  },
+  {
+    key: '3',
+    label: 'Eventos',
+    children: <CalendarEvents />,
+  },
+  {
+    key: '4',
+    label: 'Estatuto',
+    children: <ByLaw />,
+  },
+  {
+    key: '5',
+    label: 'Alterar senha',
+    children: <ChangePasswordForm />,
+  },
+  {
+    key: '6',
+    label: <LogoutButton />
+  },
+  {
+    key: '7',
+    label: 'Mensalidade',
+    children: <FormMonthlyFee />,
+  }
 ];
 
 export default function TabsComponent() { 
 
+  const [admin, setAdmin] = useState<boolean | null>(null);
+
   useEffect(() => {
     const checkIfUserIsLoggedIn = async () => {
       const session = supabase.auth.getSession();
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (!session || !user) {
-        // Se o usuário não estiver logado, redirecione para a página principal
-        window.location.href = "/";
+      let admins: AdminResponse | null = null;
+
+      try {
+        admins = await supabase
+          .from('admins')
+          .select("id")
+          .eq('id', user?.id);
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+        setAdmin(false);
+        return;
       }
+
+      if (!admins || !user) {
+        // Se o usuário não estiver logado ou não houver admins, redirecione para a página principal
+        window.location.href = "/";
+        return;
+      }
+
+      let isAdmin = false;
+
+      if (Array.isArray(admins.data)) {
+        // If admins is an array, we need to check each object
+        isAdmin = admins.data.some((admin: { id: string }) => admin.id === user.id);
+      } else if (admins.data && typeof admins.data === 'object') {
+        // If admins is a single object, we can directly compare
+        isAdmin = true;
+      }
+
+      setAdmin(isAdmin);
     };
 
     checkIfUserIsLoggedIn();
   }, []);
-
+  
   const aniversariantes = [
     { name: "Alex", fullDate: "1974-08-12", day: "12" },
     { name: "André", fullDate: "1985-09-12", day: "12" },
@@ -118,7 +182,7 @@ export default function TabsComponent() {
       <p style={{fontSize: 14}}>Aniversariantes do mês: </p>
       <Text style={{fontSize: 14}} strong>{birthdaysString}</Text>
       </div>
-      <Tabs style={{width: "100%", padding: '0 20px 0'}} defaultActiveKey="1" items={items} />
+      <Tabs style={{width: "100%", padding: '0 20px 0'}} defaultActiveKey="1" items={admin ? itemsAdmin : items} />
     </div>
   )
 };
