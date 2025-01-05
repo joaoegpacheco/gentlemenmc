@@ -32,7 +32,7 @@ export function FormMonthlyFee() {
         paid: true,
         month: values.month,
         //@ts-ignore
-        uuid: keyUser,
+        uuid: keyUser
       },
     ])
     .select()

@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 import { FormComand } from "@/components/Form/page";
-import { CardComand } from "@/components/Card/page";
+import { CardComand } from "@/components/CardDrinks/page";
+import { CardMonthlyFee } from "@/components/CardMonthlyFee/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from 'dayjs';
@@ -62,25 +63,30 @@ const itemsAdmin: TabsProps['items'] = [
   },
   {
     key: '3',
+    label: 'Ver mensalidades',
+    children: <CardMonthlyFee />,
+  },
+  {
+    key: '4',
     label: 'Eventos',
     children: <CalendarEvents />,
   },
   {
-    key: '4',
+    key: '5',
     label: 'Estatuto',
     children: <ByLaw />,
   },
   {
-    key: '5',
+    key: '6',
     label: 'Alterar senha',
     children: <ChangePasswordForm />,
   },
   {
-    key: '6',
+    key: '7',
     label: <LogoutButton />
   },
   {
-    key: '7',
+    key: '8',
     label: 'Mensalidade',
     children: <FormMonthlyFee />,
   }
