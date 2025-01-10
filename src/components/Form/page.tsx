@@ -196,7 +196,7 @@ export function FormComand() {
           <Select.Option value="Chopp">Chopp</Select.Option>
           <Select.Option value="Long Neck Stella Artois - Pure Gold">Long Neck Stella Artois - Pure Gold</Select.Option>
           <Select.Option value="Long Neck Stella Artois">Long Neck Stella Artois</Select.Option>
-          <Select.Option value="Long Neck Heineken/Corona">Long Neck Heineken</Select.Option>
+          <Select.Option value="Long Neck Heineken/Corona">Long Neck Heineken/Corona</Select.Option>
           {/* <Select.Option value="Chopp Promoção">Chopp Promoção</Select.Option> */}
           <Select.Option value="Refrigerante">Refrigerante</Select.Option>
           <Select.Option value="Água">Água</Select.Option>
