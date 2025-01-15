@@ -32,9 +32,9 @@ export function FormComand() {
       case "Chopp Promoção":
         valorBebida = 5;
         break;
-      // case "Long Neck Amstel":
-      //   valorBebida = 8;
-      //   break;
+      case "Carteira de Cigarro":
+        valorBebida = 14;
+        break;
       case "Long Neck Stella Artois":
         valorBebida = 10;
         break;
@@ -227,9 +227,9 @@ export function FormComand() {
           {/* <Select.Option value="Caipirinha Vodka Limão">
             Caipirinha Vodka Limão
           </Select.Option> */}
-          {/* <Select.Option value="Caipirinha Cachaça Limão">
-            Caipirinha Cachaça Limão
-          </Select.Option> */}
+          <Select.Option value="Carteira de Cigarro">
+            Carteira de Cigarro
+          </Select.Option>
         </Select>
       </Form.Item>
       <Form.Item<FieldType> name="quantidade" label="Quantidade">
