@@ -50,9 +50,12 @@ const CalendarEvents = () => {
         { title: "Entrega do cheque na sede para o hospital Angelina Caron - Ala SUS", date: "2024-12-14" },
         { title: "Confraternização de final de ano", date: "2024-12-15" },
         { title: "Início do recesso da diretoria do clube - Retorno 22/01/2025", date: "2024-12-16" },
+        { title: "Primeiro Encontro Gentlemen 2025", date: "2025-01-15" },
         { title: "Retorno das atividades da diretoria do clube", date: "2025-01-22" },
-        { title: "Festa/Entrega cadeira de rodas da Julia", date: "2025-01-22" },
-        { title: "Chá de Bar - Casamento Zorek e Rafaela", date: "2025-02-08" },
+        { title: "Encontro Gentlemen", date: "2025-01-22" },
+        { title: "Encontro Gentlemen", date: "2025-01-29" },
+        { title: "Encontro Gentlemen", date: "2025-02-06" },
+        { title: "Festa/Entrega cadeira de rodas da Julia", date: "2025-02-08" },
       ],
       eventClick: function(info) {
         var eventObj = info.event;
