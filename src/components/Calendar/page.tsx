@@ -54,7 +54,7 @@ const CalendarEvents = () => {
         { title: "Retorno das atividades da diretoria do clube", date: "2025-01-22" },
         { title: "Encontro Gentlemen", date: "2025-01-22" },
         { title: "Encontro Gentlemen", date: "2025-01-29" },
-        { title: "Encontro Gentlemen", date: "2025-02-06" },
+        { title: "Encontro Gentlemen", date: "2025-02-05" },
         { title: "Festa/Entrega cadeira de rodas da Julia", date: "2025-02-08" },
       ],
       eventClick: function(info) {
