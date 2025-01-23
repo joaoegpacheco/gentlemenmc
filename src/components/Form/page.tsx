@@ -36,7 +36,7 @@ export function FormComand() {
         valorBebida = 14;
         break;
       case "Long Neck Stella Artois":
-        valorBebida = 10;
+        valorBebida = 8;
         break;
       case "Long Neck Stella Artois - Pure Gold":
         valorBebida = 12;
@@ -193,10 +193,11 @@ export function FormComand() {
         rules={[{ required: true, message: "Selecione ao menos um item!" }]}
       >
         <Select defaultValue={""} size="large">
-          <Select.Option value="Chopp">Chopp</Select.Option>
-          <Select.Option value="Long Neck Stella Artois - Pure Gold">Long Neck Stella Artois - Pure Gold</Select.Option>
+          {/* <Select.Option value="Chopp">Chopp</Select.Option> */}
+          {/* <Select.Option value="Long Neck Stella Artois - Pure Gold">Long Neck Stella Artois - Pure Gold</Select.Option> */}
           <Select.Option value="Long Neck Stella Artois">Long Neck Stella Artois</Select.Option>
-          <Select.Option value="Long Neck Heineken/Corona">Long Neck Heineken/Corona</Select.Option>
+          <Select.Option value="Long Neck Heineken/Corona">Long Neck Corona</Select.Option>
+          <Select.Option value="Long Neck Heineken/Corona">Long Neck Heineken</Select.Option>
           {/* <Select.Option value="Chopp Promoção">Chopp Promoção</Select.Option> */}
           <Select.Option value="Refrigerante">Refrigerante</Select.Option>
           <Select.Option value="Água">Água</Select.Option>
