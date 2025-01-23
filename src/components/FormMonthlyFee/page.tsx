@@ -98,7 +98,7 @@ export function FormMonthlyFee() {
       </Form.Item>
       <Form.Item<FieldType>
         name="date"
-        label="Data"
+        label="Data Limite"
       >
         <div style={wrapperStyle}>
           <Calendar fullscreen={false} onChange={onPanelChange} />
