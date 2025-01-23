@@ -62,11 +62,6 @@ const itemsAdmin: TabsProps['items'] = [
     children: <CardComand />,
   },
   {
-    key: '3',
-    label: 'Ver mensalidades',
-    children: <CardMonthlyFee />,
-  },
-  {
     key: '4',
     label: 'Eventos',
     children: <CalendarEvents />,
@@ -87,7 +82,7 @@ const itemsAdmin: TabsProps['items'] = [
   },
   {
     key: '8',
-    label: 'Mensalidade',
+    label: 'Atualizar Pago Bebidas',
     children: <FormMonthlyFee />,
   }
 ];

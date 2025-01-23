@@ -1,51 +1,48 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import type { FormProps } from "antd";
-import { Button, Form, Select, notification } from "antd";
+import type { Dayjs } from 'dayjs';
+import { Button, Calendar, Form, Select, notification, theme } from "antd";
 import supabase from "@/hooks/use-supabase.js";
 
 type FieldType = {
-  month?: any;
-  uuid?: any;
+  date?: any;
+  name?: any;
 };
 
 const dataAtual = new Date();
 
 export function FormMonthlyFee() {
+  const { token } = theme.useToken();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [keyUser, setKeyUser] = useState("");
+  const [date, setDate] = useState("");
   const [members, setMembers] = useState([])
 
   const onChange = (options: any, values: any) => {
-    setKeyUser(values?.key);
+    setKeyUser(options);
   };
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
     try {
-
+      
     const { data, error } = await supabase
-    .from('mansalidades')
-    .insert([
-      {
-        paid: true,
-        month: values.month,
-        //@ts-ignore
-        uuid: keyUser
-      },
-    ])
+    .from('bebidas')
+    .update({ paid: true })
+    .eq('name', keyUser)
+    .gt('created_at', date)
     .select()
-        
-      if (data) {notification.success({ message: "Mensalidade adicionada com sucesso!" })}
-      if (error) {notification.error({ message: "Erro ao adicionar mensalidade!" })}
-    } catch {
+
+      if (error) throw error;
+      notification.success({ message: `A conta do ${keyUser} foi paga com sucesso!` });
+    } catch (error: any) {
       notification.error({
-        message: "Houve algum erro na hora de cadastrar mensalidade.",
+        message: `Erro ao tentar pagar a conta: ${error.message}`,
       });
-      setLoading(false);
+      console.error("Error trying to changing paid:", error.message);
     } finally {
-      form.resetFields();
       setLoading(false);
     }
   };
@@ -61,9 +58,19 @@ export function FormMonthlyFee() {
         
   },[])
 
+  const wrapperStyle: React.CSSProperties = {
+    width: 300,
+    border: `1px solid ${token.colorBorderSecondary}`,
+    borderRadius: token.borderRadiusLG,
+  };
+
+  const onPanelChange = (value: Dayjs) => {
+    setDate(value.format('YYYY-MM-DD'));
+  };
+
   return (
     <Form
-      name="mensalidade"
+      name="updatePaid"
       form={form}
       style={{ width: "100%", paddingTop: 20 }}
       onFinish={onFinish}
@@ -71,7 +78,7 @@ export function FormMonthlyFee() {
       clearOnDestroy
     >
       <Form.Item<FieldType>
-        name="uuid"
+        name="name"
         label="Nome"
         rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
       >
@@ -90,24 +97,12 @@ export function FormMonthlyFee() {
         </Select>
       </Form.Item>
       <Form.Item<FieldType>
-        name="month"
-        label="Mês"
-        rules={[{ required: true, message: "Selecione ao menos um mês!" }]}
+        name="date"
+        label="Data"
       >
-        <Select defaultValue={""} size="large">
-          <Select.Option value="Janeiro">Janeiro</Select.Option>
-          <Select.Option value="Fevereiro">Fevereiro</Select.Option>
-          <Select.Option value="Março">Março</Select.Option>
-          <Select.Option value="Abril">Abril</Select.Option>
-          <Select.Option value="Maio">Maio</Select.Option>
-          <Select.Option value="Junho">Junho</Select.Option>
-          <Select.Option value="Julho">Julho</Select.Option>
-          <Select.Option value="Agosto">Agosto</Select.Option>
-          <Select.Option value="Setembro">Setembro</Select.Option>
-          <Select.Option value="Outubro">Outubro</Select.Option>
-          <Select.Option value="Novembro">Novembro</Select.Option>
-          <Select.Option value="Dezembro">Dezembro</Select.Option>
-        </Select>
+        <div style={wrapperStyle}>
+          <Calendar fullscreen={false} onChange={onPanelChange} />
+        </div>
       </Form.Item>
       <Button
         style={{ width: "100%" }}
@@ -115,7 +110,7 @@ export function FormMonthlyFee() {
         type="primary"
         htmlType="submit"
       >
-        Adicionar
+        Atualizar
       </Button>
     </Form>
   );
