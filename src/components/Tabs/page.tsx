@@ -4,7 +4,6 @@ import { Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/CardDrinks/page";
-import { CardMonthlyFee } from "@/components/CardMonthlyFee/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from 'dayjs';
@@ -93,7 +92,6 @@ export default function TabsComponent() {
 
   useEffect(() => {
     const checkIfUserIsLoggedIn = async () => {
-      const session = supabase.auth.getSession();
       const { data: { user } } = await supabase.auth.getUser();
 
       let admins: AdminResponse | null = null;

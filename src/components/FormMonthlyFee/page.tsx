@@ -32,7 +32,7 @@ export function FormMonthlyFee() {
     .from('bebidas')
     .update({ paid: true })
     .eq('name', keyUser)
-    .gt('created_at', date)
+    .lte('created_at', date)
     .select()
 
       if (error) throw error;
