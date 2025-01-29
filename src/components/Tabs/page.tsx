@@ -78,17 +78,17 @@ const itemsAdmin: TabsProps['items'] = [
   },
   {
     key: '7',
-    label: <LogoutButton />
-  },
-  {
-    key: '8',
     label: 'Atualizar Pago Bebidas',
     children: <FormMonthlyFee />,
   },
   {
-    key: '9',
+    key: '8',
     label: 'Dívidas todos',
     children: <CardComandAll />,
+  },
+  {
+    key: '9',
+    label: <LogoutButton />
   },
 ];
 
