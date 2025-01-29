@@ -4,6 +4,7 @@ import { Tabs, Typography } from 'antd';
 import type { TabsProps } from 'antd';
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/CardDrinks/page";
+import { CardComandAll } from "@/components/CardDrinksAll/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from 'dayjs';
@@ -83,7 +84,12 @@ const itemsAdmin: TabsProps['items'] = [
     key: '8',
     label: 'Atualizar Pago Bebidas',
     children: <FormMonthlyFee />,
-  }
+  },
+  {
+    key: '9',
+    label: 'Dívidas todos',
+    children: <CardComandAll />,
+  },
 ];
 
 export default function TabsComponent() { 
