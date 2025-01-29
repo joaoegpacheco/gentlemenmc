@@ -125,6 +125,7 @@ export function FormComand() {
           //@ts-ignore
           user: user.email,
           uuid: keyUser,
+          created_at: dataAtual
         },
       ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
