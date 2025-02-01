@@ -150,7 +150,7 @@ export default function TabsComponent() {
     { name: "Índio", fullDate: "1970-06-25", day: "25" },
     { name: "Jefão", fullDate: "1981-02-04", day: "04" },
     { name: "Jeferson", fullDate: "1974-10-05", day: "05" },
-    { name: "João Marius", fullDate: "1972-08-02", day: "02" },
+    { name: "João Marius", fullDate: "1972-02-08", day: "08" },
     { name: "Léo", fullDate: "1981-09-27", day: "27" },
     { name: "Luiz", fullDate: "1981-09-27", day: "27" },
     { name: "Madalosso", fullDate: "1988-02-20", day: "20" },
