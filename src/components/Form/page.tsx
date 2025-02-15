@@ -30,10 +30,10 @@ export function FormComand() {
     let valorBebida = 0;
     switch (values.bebida) {
       case "Chopp Pilsen":
-        valorBebida = 10;
+        valorBebida = 8;
         break;
       case "Chopp Mutum":
-        valorBebida = 20;
+        valorBebida = 15;
         break;
       case "Carteira de Cigarro":
         valorBebida = 14;
