@@ -37,8 +37,11 @@ export function FormComand() {
     setLoading(true);
     let valorBebida = 0;
     switch (values.bebida) {
-      case "Chopp Promoção":
-        valorBebida = 5;
+      case "Chopp Pilsen":
+        valorBebida = 8;
+        break;
+      case "Chopp Mutum":
+        valorBebida = 15;
         break;
       case "Carteira de Cigarro":
         valorBebida = 14;
@@ -202,8 +205,8 @@ export function FormComand() {
         rules={[{ required: true, message: "Selecione ao menos um item!" }]}
       >
         <Select defaultValue={""} size="large">
-          {/* <Select.Option value="Chopp">Chopp</Select.Option> */}
-          {/* <Select.Option value="Long Neck Stella Artois - Pure Gold">Long Neck Stella Artois - Pure Gold</Select.Option> */}
+          <Select.Option value="Chopp Pilsen">Chopp Pilsen</Select.Option>
+          <Select.Option value="Chopp Mutum">Chopp Mutum</Select.Option>
           <Select.Option value="Long Neck Stella Artois">Long Neck Stella Artois</Select.Option>
           <Select.Option value="Long Neck Heineken/Corona">Long Neck Corona</Select.Option>
           <Select.Option value="Long Neck Heineken/Corona">Long Neck Heineken</Select.Option>
