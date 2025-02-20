@@ -10,6 +10,7 @@ type FieldType = {
   bebida?: string;
   quantidade?: number;
   uuid?: any;
+  data?: string;
 };
 
 type MemberType = {
@@ -44,6 +45,7 @@ export function FormComand() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [keyUser, setKeyUser] = useState("");
+  const [nameUser, setNameUser] = useState("");
   const [members, setMembers] = useState<Record<string, MemberType>>({});
 
   useEffect(() => {
@@ -80,7 +82,10 @@ export function FormComand() {
     fetchMembers();
   }, []);
 
-  const handleChange = (_: any, values: any) => setKeyUser(values?.key);
+  const handleChange = (_: any, values: any) => {
+    setKeyUser(values?.value)
+    setNameUser(values?.title)
+  };
 
   const handleSubmit: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
@@ -97,7 +102,7 @@ export function FormComand() {
 
       await supabase.from("bebidas").insert([
         {
-          name: values.nome,
+          name: nameUser,
           drink: values.bebida,
           quantity: quantidade,
           price: valorBebida * quantidade,
@@ -130,7 +135,7 @@ export function FormComand() {
       {Object.keys(members).length > 0 ? ( // Verifica se há membros carregados
         <Select onChange={handleChange} size="large" placeholder="Selecione um membro">
         {Object.values(members).map((member, index) => (
-          <Select.Option key={index} value={member.user_id}>
+          <Select.Option key={index} value={member.user_id} title={member.user_name}>
             {member.user_name}
           </Select.Option>
         ))}
@@ -153,9 +158,8 @@ export function FormComand() {
         <Select defaultValue={1} size="large">{optionsQuantidade}</Select>
       </Form.Item>
       <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">Adicionar</Button>
-      {/* @ts-ignore */}
-      <Form.Item<FieldType> name="data" initialValue={new Date().toDateString()}> 
-        Data e hora agora: <strong>{formatarDataHora(new Date())}</strong>
+      <Form.Item<FieldType> name="data">
+        Data e hora agora: <strong suppressHydrationWarning>{formatarDataHora(new Date())}</strong>
       </Form.Item>
     </Form>
   );
