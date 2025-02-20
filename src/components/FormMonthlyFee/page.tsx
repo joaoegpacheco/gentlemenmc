@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import type { FormProps } from "antd";
 import type { Dayjs } from 'dayjs';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { Button, Calendar, Form, Select, notification, theme } from "antd";
 import supabase from "@/hooks/use-supabase.js";
 
@@ -64,8 +67,12 @@ export function FormMonthlyFee() {
     borderRadius: token.borderRadiusLG,
   };
 
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+
   const onPanelChange = (value: Dayjs) => {
-    setDate(value.format('YYYY-MM-DD'));
+    const formattedDate = value.tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ"); 
+    setDate(formattedDate);
   };
 
   return (
