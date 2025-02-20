@@ -14,14 +14,7 @@ type FieldType = {
 };
 
 const dataAtual = new Date();
-const formatter = new Intl.DateTimeFormat("pt-BR", { 
-    timeZone: "America/Sao_Paulo",
-    dateStyle: "full",
-    timeStyle: "full"
-});
-
-console.log(formatter.format(dataAtual)); 
-
+const dataBrasilia = new Date(dataAtual.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
 
 export function FormComand() {
   const [form] = Form.useForm();
@@ -136,7 +129,7 @@ export function FormComand() {
           //@ts-ignore
           user: user.email,
           uuid: keyUser,
-          created_at: formatter.format(dataAtual)
+          created_at: dataBrasilia
         },
       ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
