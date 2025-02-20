@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { FormProps } from "antd";
 import { Button, Form, Select, notification } from "antd";
 import { formatarDataHora } from "@/utils/formatarDataHora.js";
@@ -9,252 +9,153 @@ type FieldType = {
   nome?: string;
   bebida?: string;
   quantidade?: number;
-  data?: any;
   uuid?: any;
 };
 
-const dataAtual = new Date();
-const dataBrasilia = new Date(dataAtual.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+type MemberType = {
+  user_id: string;
+  user_name: string;
+};
+
+
+const BEBIDAS_PRECOS: Record<string, number> = {
+  // "Chopp Pilsen": 10,
+  // "Chopp Mutum": 15,
+  // "Carteira de Cigarro": 14,
+  "Long Neck Stella Artois": 8,
+  // "Long Neck Stella Artois - Pure Gold": 12,
+  "Long Neck Heineken/Corona": 12,
+  "Refrigerante": 6,
+  "Água": 5,
+  "Energético": 15,
+  "Vinho Intis": 65,
+  "Vinho Finca las Moras": 80,
+  "Dose Gin": 15,
+  "Dose Jagermeister": 15,
+  "Dose Whiskey": 20,
+  "Dose Vodka": 15,
+  // "Dose Cachaça": 10,
+  "Dose Campari": 10,
+  // "Caipirinha Vodka Limão": 20,
+  // "Caipirinha Cachaça Limão": 15,
+};
 
 export function FormComand() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [keyUser, setKeyUser] = useState("");
-  const [members, setMembers] = useState([])
+  const [members, setMembers] = useState<Record<string, MemberType>>({});
 
-  const onChange = (options: any, values: any) => {
-    setKeyUser(values?.key);
-  };
-
-  const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-    setLoading(true);
-    let valorBebida = 0;
-    switch (values.bebida) {
-      case "Chopp Pilsen":
-        valorBebida = 8;
-        break;
-      case "Chopp Mutum":
-        valorBebida = 15;
-        break;
-      case "Carteira de Cigarro":
-        valorBebida = 14;
-        break;
-      case "Long Neck Stella Artois":
-        valorBebida = 8;
-        break;
-      case "Long Neck Stella Artois - Pure Gold":
-        valorBebida = 12;
-        break;
-      case "Long Neck Heineken/Corona":
-        valorBebida = 12;
-        break;
-      case "Chopp":
-        valorBebida = 10;
-      break;
-      case "Refrigerante":
-        valorBebida = 6;
-        break;
-      case "Água":
-        valorBebida = 5;
-        break;
-      case "Energético":
-        valorBebida = 15;
-        break;
-      // case "Vinho Cordero":
-      //   valorBebida = 55;
-      //   break;
-      // case "Vinho La Linda":
-      //   valorBebida = 65;
-      //   break;
-      case "Vinho Intis":
-        valorBebida = 65;
-        break;
-      case "Vinho Finca las Moras":
-        valorBebida = 80;
-        break;
-      // case "Vinho Luigi Bosca":
-      //   valorBebida = 90;
-      //   break;
-      // case "Heineken 1L Lata":
-      //   valorBebida = 20;
-      //   break;
-      case "Dose Gin":
-        valorBebida = 15;
-        break;
-      case "Dose Jagermeister":
-        valorBebida = 15;
-        break;
-      case "Dose Jack Daniels":
-        valorBebida = 20;
-        break;
-      case "Dose Vodka Smirnoff":
-        valorBebida = 15;
-        break;
-      // case "Dose Vodka Absolut":
-      //   valorBebida = 20;
-      //   break;
-      case "Dose Cachaça":
-        valorBebida = 10;
-        break;
-      case "Dose Campari":
-        valorBebida = 10;
-        break;
-      case "Caipirinha Vodka Limão":
-        valorBebida = 20;
-        break;
-      case "Caipirinha Cachaça Limão":
-        valorBebida = 15;
-        break;
-      default:
-        valorBebida = 0;
-    }
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (values.nome === "Romanel") {
-        notification.error({
-          message: "Houve algum erro na hora de cadastrar sua bebida.",
-        });
-        return
+  useEffect(() => {
+    async function fetchMembers() {
+      const { data: membros, error } = await supabase
+        .from("membros")
+        .select("user_id, user_name")
+        .order("user_name", { ascending: true });
+  
+      if (error) {
+        console.error("Erro ao buscar membros:", error);
+        return;
       }
+
+      if (!membros || membros.length === 0) {
+        console.warn("Nenhum membro encontrado.");
+        return;
+      }
+  
+      console.log("Membros recebidos da API:", membros);
+  
+      if (membros) {
+        const membrosMap = membros.reduce((acc, membro) => {
+          if (membro.user_id) {
+            acc[membro.user_id] = membro;
+          }
+          return acc;
+        }, {} as Record<string, MemberType>);
+  
+        setMembers(membrosMap);
+        console.log("Membros mapeados:", membrosMap)
+      }
+    }
+    fetchMembers();
+  }, []);
+
+  const handleChange = (_: any, values: any) => setKeyUser(values?.key);
+
+  const handleSubmit: FormProps<FieldType>["onFinish"] = async (values) => {
+    setLoading(true);
+
+    if (values.nome === "Romanel") {
+      notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida." });
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const quantidade = values.quantidade || 1;
+      const valorBebida = BEBIDAS_PRECOS[values.bebida || ""] || 0;
 
       await supabase.from("bebidas").insert([
         {
           name: values.nome,
           drink: values.bebida,
-          quantity: values.quantidade ? values.quantidade : 1,
-          price: valorBebida * (values.quantidade ? values.quantidade : 1),
-          //@ts-ignore
-          user: user.email,
-          uuid: keyUser
+          quantity: quantidade,
+          price: valorBebida * quantidade,
+          user: user?.email,
+          uuid: keyUser,
         },
       ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
-    } catch {
-      notification.error({
-        message: "Houve algum erro na hora de cadastrar sua bebida.",
-      });
-      setLoading(false);
-    } finally {
       form.resetFields();
+    } catch {
+      notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida." });
+    } finally {
       setLoading(false);
     }
   };
 
-  let options = [];
-  for (let i = 1; i <= 20; i++) {
-    options.push(
-      <Select.Option key={i} value={i}>
-        {i}
-      </Select.Option>
-    );
-  }
-
-  useEffect(() => {
-
-    const members = async () => {
-      let { data: membros } = await supabase.from('membros').select('user_id,user_name').order('user_name', { ascending: true })
-      //@ts-ignore
-      setMembers(membros)
-    }
-    members()
-        
-  },[])
+  const optionsQuantidade = useMemo(() => 
+    Array.from({ length: 20 }, (_, i) => (
+      <Select.Option key={i + 1} value={i + 1}>{i + 1}</Select.Option>
+    )), []
+  );
 
   return (
-    <Form
-      name="comanda"
-      form={form}
-      style={{ width: "100%", paddingTop: 20 }}
-      onFinish={onFinish}
-      autoComplete="off"
-      clearOnDestroy
-    >
-      <Form.Item<FieldType>
-        name="nome"
-        label="Nome"
+    <Form name="comanda" form={form} style={{ width: "100%", paddingTop: 20 }} onFinish={handleSubmit} autoComplete="off">
+      <Form.Item<FieldType> 
+        name="nome" 
+        label="Nome" 
         rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
-      >
-        <Select onChange={onChange} defaultValue={""} size="large">
-          {members.map(member => (
-            <Select.Option
-            //@ts-ignore
-            key={member?.user_id}
-            //@ts-ignore
-            value={member?.user_name}
-          >
-            {//@ts-ignore
-            member?.user_name}
+      > 
+      {Object.keys(members).length > 0 ? ( // Verifica se há membros carregados
+        <Select onChange={handleChange} size="large" placeholder="Selecione um membro">
+        {Object.values(members).map((member, index) => (
+          <Select.Option key={index} value={member.user_id}>
+            {member.user_name}
           </Select.Option>
+        ))}
+      </Select>
+      ) : (
+        <Select
+          disabled
+          options={[{ value: 'Carregando membros...', label: 'Carregando membros...' }]}
+        />
+      )}
+      </Form.Item>
+      <Form.Item<FieldType> name="bebida" label="Bebidas" rules={[{ required: true, message: "Selecione ao menos um item!" }]}> 
+        <Select size="large" placeholder="Selecione uma bebida">
+          {Object.keys(BEBIDAS_PRECOS).map(bebida => (
+            <Select.Option key={bebida} value={bebida}>{bebida}</Select.Option>
           ))}
         </Select>
       </Form.Item>
-      <Form.Item<FieldType>
-        name="bebida"
-        label="Bebidas"
-        rules={[{ required: true, message: "Selecione ao menos um item!" }]}
-      >
-        <Select defaultValue={""} size="large">
-          <Select.Option value="Chopp Pilsen">Chopp Pilsen</Select.Option>
-          <Select.Option value="Chopp Mutum">Chopp Mutum</Select.Option>
-          <Select.Option value="Long Neck Stella Artois">Long Neck Stella Artois</Select.Option>
-          <Select.Option value="Long Neck Heineken/Corona">Long Neck Corona</Select.Option>
-          <Select.Option value="Long Neck Heineken/Corona">Long Neck Heineken</Select.Option>
-          {/* <Select.Option value="Chopp Promoção">Chopp Promoção</Select.Option> */}
-          <Select.Option value="Refrigerante">Refrigerante</Select.Option>
-          <Select.Option value="Água">Água</Select.Option>
-          <Select.Option value="Energético">Energético</Select.Option>
-          <Select.Option value="Vinho Intis">Vinho Intis</Select.Option>
-          <Select.Option value="Vinho Finca las Moras">Vinho Finca las Moras</Select.Option>
-          {/* <Select.Option value="Vinho Cordero">Vinho Cordero</Select.Option>
-          <Select.Option value="Vinho Luigi Bosca">
-            Vinho Luigi Bosca
-          </Select.Option> */}
-          {/* <Select.Option value="Heineken 1L Lata">
-            Heineken 1L Lata
-          </Select.Option> */}
-          <Select.Option value="Dose Gin">
-            Dose Gin
-          </Select.Option>
-          <Select.Option value="Dose Jagermeister">
-            Dose Jagermeister
-          </Select.Option>
-          <Select.Option value="Dose Jack Daniels">
-            Dose Jack Daniels
-          </Select.Option>
-          {/* <Select.Option value="Dose Vodka Smirnoff">
-            Dose Vodka Smirnoff
-          </Select.Option> */}
-          <Select.Option value="Dose Cachaça">Dose Cachaça</Select.Option>
-          <Select.Option value="Dose Campari">Dose Campari</Select.Option>
-          {/* <Select.Option value="Caipirinha Vodka Limão">
-            Caipirinha Vodka Limão
-          </Select.Option> */}
-          <Select.Option value="Carteira de Cigarro">
-            Carteira de Cigarro
-          </Select.Option>
-        </Select>
+      <Form.Item<FieldType> name="quantidade" label="Quantidade"> 
+        <Select defaultValue={1} size="large">{optionsQuantidade}</Select>
       </Form.Item>
-      <Form.Item<FieldType> name="quantidade" label="Quantidade">
-        <Select defaultValue={1} size="large">
-          {options}
-        </Select>
-      </Form.Item>
-      <Button
-        style={{ width: "100%" }}
-        loading={loading}
-        type="primary"
-        htmlType="submit"
-      >
-        Adicionar
-      </Button>
-      <Form.Item<FieldType>
-        name="data"
-        initialValue={dataAtual.toDateString()}
-      >
-        Data e hora agora: <strong>{formatarDataHora(dataAtual)}</strong>
+      <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">Adicionar</Button>
+      {/* @ts-ignore */}
+      <Form.Item<FieldType> name="data" initialValue={new Date().toDateString()}> 
+        Data e hora agora: <strong>{formatarDataHora(new Date())}</strong>
       </Form.Item>
     </Form>
   );
