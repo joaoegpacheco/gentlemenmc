@@ -128,8 +128,7 @@ export function FormComand() {
           price: valorBebida * (values.quantidade ? values.quantidade : 1),
           //@ts-ignore
           user: user.email,
-          uuid: keyUser,
-          created_at: dataBrasilia
+          uuid: keyUser
         },
       ]);
       notification.success({ message: "Bebida adicionada com sucesso!" });
