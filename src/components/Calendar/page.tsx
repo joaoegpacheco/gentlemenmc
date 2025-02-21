@@ -5,75 +5,90 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import allLocales from "@fullcalendar/core/locales-all";
 
+const events = [
+  { title: "Primeiro Encontro Gentlemen 2025", date: "2025-01-15" },
+  { title: "Treinamento Safe Rider - Teórico", date: "2025-02-08" },
+  { title: "Open House/Entrega cadeira de rodas da Julia", date: "2025-02-15" },
+  { title: "Evento Exonerados", date: "2025-02-22" },
+  { title: "Evento Casa China", date: "2025-02-22" },
+  { title: "Evento Oficina Souls & Machines", date: "2025-02-22" },
+  { title: "Aniversário Gulitich e Vanderleia", date: "2025-02-23" },
+  { title: "Treinamento Safe Rider - Prático", date: "2025-03-15" },
+  { title: "Encontro Guarapuava/PR", date: "2025-03-29" },
+  { title: "Encontro Guarapuava/PR", date: "2025-03-30" },
+  { title: "Bate e Volta Costelada do bar do Nando - Apiaí/SP", date: "2025-04-12" },
+  { title: "Bate e Volta parque histórico - Carambeí/PR", date: "2025-04-26" },
+  { title: "Bate e Volta serra Dona Francisca - Pirabeiraba/SC", date: "2025-05-11" },
+  { title: "Serra da Macaca e Rastro da Serpente - Capão Bonito/SP", date: "2025-05-24" },
+  { title: "Serra da Macaca e Rastro da Serpente - Capão Bonito/SP", date: "2025-05-25" },
+  { title: "Bate e Volta São Bento do Sul/SC", date: "2025-06-06" },
+  { title: "Bate e Volta São Francisco do Sul/SC", date: "2025-06-22" },
+  { title: "Bate e Volta Piraí do Sul/PR - Rota 090", date: "2025-07-06" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-24" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-25" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-26" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-27" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-28" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-29" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-30" },
+  { title: "Encontro Capital Moto Week - Brasília/DF", date: "2025-07-31" },
+  { title: "Encontro Harley Club Paraguay - Assuncion/PY", date: "2025-08-13" },
+  { title: "Encontro Harley Club Paraguay - Assuncion/PY", date: "2025-08-14" },
+  { title: "Encontro Harley Club Paraguay - Assuncion/PY", date: "2025-08-15" },
+  { title: "Encontro Harley Club Paraguay - Assuncion/PY", date: "2025-08-16" },
+  { title: "Encontro Harley Club Paraguay - Assuncion/PY", date: "2025-08-17" },
+  { title: "Parque Malwee - Pomerode/SC", date: "2025-08-30" },
+  { title: "Parque Malwee - Pomerode/SC", date: "2025-08-31" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-07" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-08" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-09" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-10" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-11" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-12" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-13" },
+  { title: "Churrascaria Costela de Chão - Ponta Grossa/PR", date: "2025-09-14" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-14" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-15" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-16" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-17" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-18" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-19" },
+  { title: "Viagem Internacional - Mendonza/AR", date: "2025-09-20" },
+  { title: "Bate e Volta - Estrada Bonita/SC", date: "2025-10-04" },
+  { title: "Lucky Friends Rodeo - Sorocaba/SP", date: "2025-10-17" },
+  { title: "Lucky Friends Rodeo - Sorocaba/SP", date: "2025-10-18" },
+  { title: "Lucky Friends Rodeo - Sorocaba/SP", date: "2025-10-19" },
+  { title: "Bate e Volta - Campo do Tenente/Lapa/PR", date: "2025-11-02" },
+  { title: "Liberty Drag Race - Balneário Camboriú/SC", date: "2025-11-15" },
+  { title: "Liberty Drag Race - Balneário Camboriú/SC", date: "2025-11-16" },
+  { title: "Encontro Herley Club Paraguay - Ciudad del Este/PY", date: "2025-12-04" },
+  { title: "Encontro Herley Club Paraguay - Ciudad del Este/PY", date: "2025-12-05" },
+  { title: "Encontro Herley Club Paraguay - Ciudad del Este/PY", date: "2025-12-06" },
+  { title: "Encontro Herley Club Paraguay - Ciudad del Este/PY", date: "2025-12-07" },
+  { title: "Bate e Volta Surpresa - Encerramento das atividades 2025", date: "2025-12-20" },
+  { title: "Festa Pomerana - Pomerode/SC", date: "2026-01-17" },
+  { title: "Festa Pomerana - Pomerode/SC", date: "2026-01-18" },
+];
+
 const CalendarEvents = () => {
   const calendarRef = useRef(null);
 
   useEffect(() => {
-    //@ts-ignore
+    if (!calendarRef.current) return;
+    
     const calendar = new Calendar(calendarRef.current, {
       plugins: [dayGridPlugin, interactionPlugin],
       initialView: "dayGridMonth",
-      events: [
-        { title: "Aniversário Rodrigo N.D", date: "2024-08-04" },
-        { title: "Encontro Gentlemen", date: "2024-08-07" },
-        { title: "Lançamento Loja GTM Custom", date: "2024-08-07" },
-        { title: "Entrega de donativos na Vila Torres", date: "2024-08-10" },
-        { title: "Aniversário do Presidente", date: "2024-08-10" },
-        { title: "Encontro Gentlemen", date: "2024-08-14" },
-        { title: "Targo Clube de Tiro", date: "2024-08-15" },
-        { title: "Passeio PMPR 170 anos", date: "2024-08-17" },
-        { title: "Encontro Gentlemen - Tainha do VP", date: "2024-08-21" },
-        { title: "Ida Viagem Ilha do Mel", date: "2024-08-24" },
-        { title: "Volta Viagem Ilha do Mel", date: "2024-08-25" },
-        { title: "Encontro Gentlemen - Noite Árabe com as mulheres", date: "2024-08-28" },
-        { title: "Encontro Gentlemen - Jack Burguer do João Marius", date: "2024-09-04" },
-        { title: "Desfile 7 de Setembro", date: "2024-09-07" },
-        { title: "Encontro Gentlemen - Mocotó do Cláudio", date: "2024-09-11" },
-        { title: "Encontro Gentlemen - Pizza do Rogério com as mulheres", date: "2024-09-18" },
-        { title: "Projeto Nova Terra", date: "2024-09-25" },
-        { title: "Ida Viagem do Atacama", date: "2024-09-27" },
-        { title: "Sede Fechada", date: "2024-10-04" },
-        { title: "Volta Viagem do Atacama", date: "2024-10-12" },
-        { title: "Dia das Crianças - Pequeno Príncipe", date: "2024-10-12" },
-        { title: "Feijoada - Filantropia para arrecadação em prol da Julia", date: "2024-10-13" },
-        { title: "Encontro Gentlemen", date: "2024-10-16" },
-        { title: "Encontro Gentlemen", date: "2024-11-13" },
-        { title: "Costelada do Romanel - Aniversário no feriado", date: "2024-11-20" },
-        { title: "💙✨ Gentlemen Blue - Hard Rock Café Curitiba ✨💙", date: "2024-11-23" },
-        { title: "Encontro Gentlemen", date: "2024-11-27" },
-        { title: "💙✨ Gentlemen Blue - TaTtoo Stars no Parque Barigui ✨💙", date: "2024-11-30" },
-        { title: "💙✨ Gentlemen Blue - TaTtoo Stars no Parque Barigui ✨💙", date: "2024-12-01" },
-        { title: "Penultimo Encontro Gentlemen 2024", date: "2024-12-04" },
-        { title: "Chá de Bebê do Nicolas - Rafael e Isabella", date: "2024-12-08" },
-        { title: "Último Encontro Gentlemen 2024", date: "2024-12-11" },
-        { title: "Bonde da Casa China - Papai Noel (Evento aberto ao Support)", date: "2024-12-13" },
-        { title: "Entrega do cheque na sede para o hospital Angelina Caron - Ala SUS", date: "2024-12-14" },
-        { title: "Confraternização de final de ano", date: "2024-12-15" },
-        { title: "Início do recesso da diretoria do clube - Retorno 22/01/2025", date: "2024-12-16" },
-        { title: "Primeiro Encontro Gentlemen 2025", date: "2025-01-15" },
-        { title: "Retorno das atividades da diretoria do clube", date: "2025-01-22" },
-        { title: "Encontro Gentlemen", date: "2025-01-22" },
-        { title: "Encontro Gentlemen", date: "2025-01-29" },
-        { title: "Encontro Gentlemen", date: "2025-02-05" },
-        { title: "Festa/Entrega cadeira de rodas da Julia", date: "2025-02-08" },
-      ],
-      eventClick: function(info) {
-        var eventObj = info.event;
-  
-        if (eventObj.url) {
-          alert(
-            'Clicked ' + eventObj.title + '.\n' +
-            'Will open ' + eventObj.url + ' in a new tab'
-          );
-  
-          window.open(eventObj.url);
-  
-          info.jsEvent.preventDefault(); // prevents browser from following link in current tab.
+      events,
+      eventClick: ({ event, jsEvent }) => {
+        if (event.url) {
+          alert(`Clicked ${event.title}.\nWill open ${event.url} in a new tab`);
+          window.open(event.url);
+          jsEvent.preventDefault();
         } else {
-          alert(eventObj.title);
+          alert(event.title);
         }
       },
-      ignoreTimezone: false,
       buttonText: {
         prev: "ant.",
         next: "prox.",
@@ -87,9 +102,9 @@ const CalendarEvents = () => {
       locales: allLocales,
       locale: "pt-br",
       headerToolbar: {
-        left: "prev,next",
-        center: "title",
-        right: false,
+        // left: "prev,next",
+        // center: "title",
+        right: "prev,next",
       },
     });
 
