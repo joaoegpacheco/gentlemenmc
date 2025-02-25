@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import type { FormProps } from "antd";
 import { Button, Form, Select, notification } from "antd";
 import { formatarDataHora } from "@/utils/formatarDataHora.js";
-import supabase from "@/hooks/use-supabase.js";
+import { supabase } from "@/hooks/use-supabase.js";
 
 type FieldType = {
   nome?: string;

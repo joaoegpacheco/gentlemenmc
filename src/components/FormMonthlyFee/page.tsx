@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { Button, Calendar, Form, Select, notification, theme } from "antd";
-import supabase from "@/hooks/use-supabase.js";
+import { supabase } from "@/hooks/use-supabase.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);

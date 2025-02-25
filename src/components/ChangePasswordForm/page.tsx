@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Input, Button, notification } from "antd";
-import supabase from "@/hooks/use-supabase.js";
+import { supabase } from "@/hooks/use-supabase.js";
 
 export const ChangePasswordForm = () => {
   const [loading, setLoading] = useState(false);

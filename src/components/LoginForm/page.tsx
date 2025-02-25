@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Form, Input, Button, notification } from "antd";
-import supabase from "@/hooks/use-supabase";
+import { supabase } from "@/hooks/use-supabase";
 
 interface LoginFormValues {
   email: string;

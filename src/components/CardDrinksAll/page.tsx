@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { List, Card, ConfigProvider } from "antd";
 import { formatarMoeda } from "@/utils/formatarMoeda.js";
-import supabase from "@/hooks/use-supabase.js";
+import { supabase } from "@/hooks/use-supabase.js";
 
 export function CardComandAll() {
   const [totalSoma, setTotalSoma] = useState(0);

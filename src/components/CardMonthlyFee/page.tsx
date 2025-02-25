@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { List, Card, ConfigProvider, notification } from "antd";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import supabase from "@/hooks/use-supabase.js";
+import { supabase } from "@/hooks/use-supabase.js";
 
 export function CardMonthlyFee() {
   const [dataB, setDataB] = useState([

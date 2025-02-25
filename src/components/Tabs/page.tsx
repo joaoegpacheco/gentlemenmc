@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 import CalendarEvents from "../Calendar/page";
 import ByLaw from "../ByLaw/page";
 import { FormMonthlyFee } from "../FormMonthlyFee/page";
-import supabase from "@/hooks/use-supabase";
+import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
 
 interface AdminData {
