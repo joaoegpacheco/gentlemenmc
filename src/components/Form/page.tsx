@@ -64,9 +64,7 @@ export function FormComand() {
         console.warn("Nenhum membro encontrado.");
         return;
       }
-  
-      console.log("Membros recebidos da API:", membros);
-  
+    
       if (membros) {
         const membrosMap = membros.reduce((acc, membro) => {
           if (membro.user_id) {
@@ -76,7 +74,6 @@ export function FormComand() {
         }, {} as Record<string, MemberType>);
   
         setMembers(membrosMap);
-        console.log("Membros mapeados:", membrosMap)
       }
     }
     fetchMembers();
