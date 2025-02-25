@@ -1,8 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUBABASE_WEB,
-    process.env.NEXT_PUBLIC_SUBABASE_KEY
-  );
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export default supabase;
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("As variáveis de ambiente do Supabase não estão definidas!");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
