@@ -8,10 +8,14 @@ export const LogoutButton: React.FC = () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
+      // Remover o cookie authToken
+      document.cookie = "authToken=; path=/; max-age=0;";
+
       notification.success({
         message: "Logout realizado com sucesso!",
       });
 
+      // Redirecionar para a página inicial
       window.location.href = "/";
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
