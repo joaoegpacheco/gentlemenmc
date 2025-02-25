@@ -1,20 +1,24 @@
 import React from "react";
 import { Button, notification } from "antd";
-import supabase from "@/hooks/use-supabase.js";
+import supabase from "@/hooks/use-supabase";
 
-export const LogoutButton = () => {
+export const LogoutButton: React.FC = () => {
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
 
-    if (error) {
-      console.error("Erro ao fazer logout:", error.message);
-      notification.error({
-        message: `Falha ao fazer logout.`,
+      notification.success({
+        message: "Logout realizado com sucesso!",
       });
-    } else {
-      notification.success({ message: "Logout realizado com sucesso!" });
-      // Redirecione o usuário para a página inicial ou qualquer outra página após o logout
+
       window.location.href = "/";
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+      notification.error({
+        message: "Falha ao fazer logout",
+        description: (error as Error).message || "Tente novamente.",
+      });
     }
   };
 

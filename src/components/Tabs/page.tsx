@@ -1,141 +1,77 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { Tabs, Typography } from 'antd';
-import type { TabsProps } from 'antd';
+import React, { useEffect, useState } from "react";
+import { Tabs, Typography } from "antd";
+import type { TabsProps } from "antd";
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/CardDrinks/page";
 import { CardComandAll } from "@/components/CardDrinksAll/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
-import dayjs from 'dayjs';
-import CalendarEvents from '../Calendar/page';
-import ByLaw from '../ByLaw/page';
-import { FormMonthlyFee } from '../FormMonthlyFee/page';
-import supabase from "@/hooks/use-supabase.js";
-import { PostgrestResponse } from '@supabase/supabase-js';
+import dayjs from "dayjs";
+import CalendarEvents from "../Calendar/page";
+import ByLaw from "../ByLaw/page";
+import { FormMonthlyFee } from "../FormMonthlyFee/page";
+import supabase from "@/hooks/use-supabase";
+import { PostgrestResponse } from "@supabase/supabase-js";
 
-type AdminResponse = PostgrestResponse<{ id: string }>;
+interface AdminData {
+  id: string;
+}
+
+interface Birthday {
+  name: string;
+  fullDate: string;
+  day: string;
+}
 
 const { Text } = Typography;
 
-const items: TabsProps['items'] = [
-  {
-      key: '1',
-      label: 'Marcar',
-      children: <FormComand />,
-    },
-    {
-      key: '2',
-      label: 'Ver marcações',
-      children: <CardComand />,
-    },
-    {
-      key: '3',
-      label: 'Eventos',
-      children: <CalendarEvents />,
-    },
-    {
-      key: '4',
-      label: 'Estatuto',
-      children: <ByLaw />,
-    },
-    {
-      key: '5',
-      label: 'Alterar senha',
-      children: <ChangePasswordForm />,
-    },
-    {
-      key: '6',
-      label: <LogoutButton />
-    }
+const items: TabsProps["items"] = [
+  { key: "1", label: "Marcar", children: <FormComand /> },
+  { key: "2", label: "Ver marcações", children: <CardComand /> },
+  { key: "3", label: "Eventos", children: <CalendarEvents /> },
+  { key: "4", label: "Estatuto", children: <ByLaw /> },
+  { key: "5", label: "Alterar senha", children: <ChangePasswordForm /> },
+  { key: "6", label: <LogoutButton /> },
 ];
 
-const itemsAdmin: TabsProps['items'] = [
-  {
-    key: '1',
-    label: 'Marcar',
-    children: <FormComand />,
-  },
-  {
-    key: '2',
-    label: 'Ver marcações',
-    children: <CardComand />,
-  },
-  {
-    key: '4',
-    label: 'Eventos',
-    children: <CalendarEvents />,
-  },
-  {
-    key: '5',
-    label: 'Estatuto',
-    children: <ByLaw />,
-  },
-  {
-    key: '6',
-    label: 'Alterar senha',
-    children: <ChangePasswordForm />,
-  },
-  {
-    key: '7',
-    label: 'Atualizar Pago Bebidas',
-    children: <FormMonthlyFee />,
-  },
-  {
-    key: '8',
-    label: 'Dívidas todos',
-    children: <CardComandAll />,
-  },
-  {
-    key: '9',
-    label: <LogoutButton />
-  },
+const itemsAdmin: TabsProps["items"] = [
+  ...items.slice(0, 5),
+  { key: "7", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
+  { key: "8", label: "Dívidas todos", children: <CardComandAll /> },
+  { key: "9", label: <LogoutButton /> },
 ];
 
-export default function TabsComponent() { 
-
+export default function TabsComponent() {
   const [admin, setAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkIfUserIsLoggedIn = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    const checkIfUserIsAdmin = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
 
-      let admins: AdminResponse | null = null;
-
-      try {
-        admins = await supabase
-          .from('admins')
-          .select("id")
-          .eq('id', user?.id);
-      } catch (error) {
-        console.error('Error fetching admin data:', error);
-        setAdmin(false);
-        return;
-      }
-
-      if (!admins || !user) {
-        // Se o usuário não estiver logado ou não houver admins, redirecione para a página principal
+      if (!user) {
         window.location.href = "/";
         return;
       }
 
-      let isAdmin = false;
+      try {
+        const { data: admins }: PostgrestResponse<AdminData> = await supabase
+          .from("admins")
+          .select("id")
+          .eq("id", user.id);
 
-      if (Array.isArray(admins.data)) {
-        // If admins is an array, we need to check each object
-        isAdmin = admins.data.some((admin: { id: string }) => admin.id === user.id);
-      } else if (admins.data && typeof admins.data === 'object') {
-        // If admins is a single object, we can directly compare
-        isAdmin = true;
+        setAdmin(!!admins?.length);
+      } catch (error) {
+        console.error("Error fetching admin data:", error);
+        setAdmin(false);
       }
-
-      setAdmin(isAdmin);
     };
 
-    checkIfUserIsLoggedIn();
+    checkIfUserIsAdmin();
   }, []);
-  
-  const aniversariantes = [
+
+  const birthdays: Birthday[] = [
     { name: "Alex", fullDate: "1974-08-12", day: "12" },
     { name: "André", fullDate: "1985-09-12", day: "12" },
     { name: "Athayde", fullDate: "1979-01-24", day: "24" },
@@ -172,25 +108,25 @@ export default function TabsComponent() {
     { name: "Zorek", fullDate: "1987-10-02", day: "02" },
   ];
 
-  const birthdaysOfTheMonth = aniversariantes.filter(birthday => {
-    const dateCurrent = new Date();
-    const fullDate = dayjs(birthday.fullDate);
-    return fullDate.month() === dateCurrent.getMonth();
-  }).sort((a, b) => {
-    const dateA = a.day;
-    const dateB = b.day;
-    return Number(dateA) - Number(dateB); 
-  });
+  const birthdaysOfTheMonth = birthdays
+    .filter((birthday) => dayjs(birthday.fullDate).month() === new Date().getMonth())
+    .sort((a, b) => Number(a.day) - Number(b.day));
 
-  const birthdaysString = birthdaysOfTheMonth.map((birthday: any) => `${birthday.name} (${birthday.day})`).join(', ');
+  const birthdaysString = birthdaysOfTheMonth
+    .map((birthday) => `${birthday.name} (${birthday.day})`)
+    .join(", ");
 
-  return ( 
-    <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-      <div style={{padding: '0 20px 0'}}>
-      <p style={{fontSize: 14}}>Aniversariantes do mês: </p>
-      <Text style={{fontSize: 14}} strong>{birthdaysString}</Text>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      <div style={{ padding: "0 20px 0" }}>
+        <p style={{ fontSize: 14 }}>Aniversariantes do mês: </p>
+        <Text style={{ fontSize: 14 }} strong>{birthdaysString}</Text>
       </div>
-      <Tabs style={{width: "100%", padding: '0 20px 0'}} defaultActiveKey="1" items={admin ? itemsAdmin : items} />
+      <Tabs
+        style={{ width: "100%", padding: "0 20px 0" }}
+        defaultActiveKey="1"
+        items={admin ? itemsAdmin : items}
+      />
     </div>
-  )
-};
+  );
+}
