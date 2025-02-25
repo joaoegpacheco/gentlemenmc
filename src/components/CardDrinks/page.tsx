@@ -4,7 +4,7 @@ import { List, Card, ConfigProvider } from "antd";
 import { formatarDataHora } from "@/utils/formatarDataHora";
 import { formatarMoeda } from "@/utils/formatarMoeda";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import supabase from "@/hooks/use-supabase";
+import { supabase } from "@/hooks/use-supabase";
 
 interface Bebida {
   created_at: string;

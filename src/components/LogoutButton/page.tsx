@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, notification } from "antd";
-import supabase from "@/hooks/use-supabase";
+import { supabase } from "@/hooks/use-supabase";
 
 export const LogoutButton: React.FC = () => {
   const handleLogout = async () => {
