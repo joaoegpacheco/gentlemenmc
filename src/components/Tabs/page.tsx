@@ -5,6 +5,7 @@ import type { TabsProps } from "antd";
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/CardDrinks/page";
 import { CardComandAll } from "@/components/CardDrinksAll/page";
+import { InvoiceForm } from "@/components/InvoiceForm/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
@@ -29,17 +30,18 @@ const { Text } = Typography;
 const items: TabsProps["items"] = [
   { key: "1", label: "Marcar", children: <FormComand /> },
   { key: "2", label: "Ver marcações", children: <CardComand /> },
-  { key: "3", label: "Eventos", children: <CalendarEvents /> },
-  { key: "4", label: "Estatuto", children: <ByLaw /> },
-  { key: "5", label: "Alterar senha", children: <ChangePasswordForm /> },
-  { key: "6", label: <LogoutButton /> },
+  { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
+  { key: "4", label: "Eventos", children: <CalendarEvents /> },
+  { key: "5", label: "Estatuto", children: <ByLaw /> },
+  { key: "6", label: "Alterar senha", children: <ChangePasswordForm /> },
+  { key: "7", label: <LogoutButton /> },
 ];
 
 const itemsAdmin: TabsProps["items"] = [
-  ...items.slice(0, 5),
-  { key: "7", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
-  { key: "8", label: "Dívidas todos", children: <CardComandAll /> },
-  { key: "9", label: <LogoutButton /> },
+  ...items.slice(0, 6),
+  { key: "8", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
+  { key: "9", label: "Dívidas todos", children: <CardComandAll /> },
+  { key: "10", label: <LogoutButton /> },
 ];
 
 export default function TabsComponent() {
