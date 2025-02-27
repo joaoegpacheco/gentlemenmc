@@ -5,6 +5,7 @@ import { Input, Button, Select, Table, message, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { supabase } from "@/hooks/use-supabase";
 import { formatarMoeda } from "@/utils/formatarMoeda";
+import Image from 'next/image';
 
 export const InvoiceForm = () => {
   const [members, setMembers] = useState<
@@ -143,6 +144,22 @@ export const InvoiceForm = () => {
             { title: "Membro", dataIndex: "nome", key: "nome" },
             { title: "Valor", dataIndex: "valor", key: "valor" },
           ]}
+          locale={{
+            emptyText: (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+                <Image
+                  src="/images/gentlemenmc.png"
+                  alt="Logo Gentlemen MC"
+                  width={200}
+                  height={200}
+                  style={{
+                    objectFit: "contain", // Garante que a imagem não distorça
+                  }}
+                />
+                <span style={{ fontSize: 16, color: "#888" }}>Nenhum membro selecionado</span>
+              </div>
+            ),
+          }}
           pagination={false}
           style={{ width: "100%" }}
         />
