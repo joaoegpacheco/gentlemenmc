@@ -3,7 +3,7 @@ import React from "react";
 import { Form, Input, Button, notification } from "antd";
 import { supabase } from "@/hooks/use-supabase";
 import { useRouter } from "next/navigation";
-
+import Image from 'next/image';
 interface LoginFormValues {
   email: string;
   password: string;
@@ -43,26 +43,38 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <Form style={{ width: "100%", padding: 20 }} onFinish={handleSubmit}>
-      <Form.Item
-        label="Email"
-        name="email"
-        rules={[{ required: true, message: "Por favor, insira seu email!" }]}
-      >
-        <Input type="email" />
-      </Form.Item>
-      <Form.Item
-        label="Senha"
-        name="password"
-        rules={[{ required: true, message: "Por favor, insira sua senha!" }]}
-      >
-        <Input.Password />
-      </Form.Item>
-      <Form.Item>
-        <Button style={{ width: "100%" }} type="primary" htmlType="submit">
-          Entrar
-        </Button>
-      </Form.Item>
-    </Form>
+    <section style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, width: "100%" }}>
+      <Image
+        src="/images/gentlemenmc.png"
+        alt="Logo Gentlemen MC"
+        width={200}
+        height={200}
+        style={{
+          objectFit: "contain", // Garante que a imagem não distorça
+        }}
+      />                  
+      <Form style={{ width: "100%", padding: 20 }} onFinish={handleSubmit}>
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[{ required: true, message: "Por favor, insira seu email!" }]}
+        >
+          <Input type="email" />
+        </Form.Item>
+        <Form.Item
+          label="Senha"
+          name="password"
+          rules={[{ required: true, message: "Por favor, insira sua senha!" }]}
+        >
+          <Input.Password />
+        </Form.Item>
+        <Form.Item>
+          <Button style={{ width: "100%" }} type="primary" htmlType="submit">
+            Entrar
+          </Button>
+        </Form.Item>
+      </Form>
+      <span style={{ fontSize: 12, color: "#888" }}>Para acesso ao sistema, entre em contato com o administrador</span>
+    </section>
   );
 };
