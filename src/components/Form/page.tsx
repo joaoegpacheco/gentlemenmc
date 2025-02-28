@@ -20,7 +20,7 @@ type MemberType = {
 
 
 const BEBIDAS_PRECOS: Record<string, number> = {
-  // "Chopp Pilsen": 10,
+  "Chopp Pilsen": 10,
   // "Chopp Mutum": 15,
   // "Carteira de Cigarro": 14,
   "Long Neck Stella Artois": 8,
