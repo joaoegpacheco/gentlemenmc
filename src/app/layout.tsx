@@ -49,9 +49,9 @@ export default function RootLayout({
 
           <link rel="preconnect" href="https://fonts.gstatic.com" />
         </head>
-        <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh", margin: 0 }}>
           <div style={{ flex: 1 }}>{children}</div>
-          <footer style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: 10 }}>
+          <footer style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", paddingBottom: 10 }}>
             <span style={{ fontSize: 12, color: "#888" }}>Copyright © 2025 Gentlemen MC</span> 
           </footer>
         </body>
