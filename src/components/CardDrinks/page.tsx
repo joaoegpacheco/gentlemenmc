@@ -6,7 +6,7 @@ import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 
-interface Bebida {
+interface Drink {
   created_at: string;
   name: string;
   drink: string;
@@ -17,38 +17,38 @@ interface Bebida {
   uuid: string;
 }
 
-export function CardComand() {
-  const [dataUser, setDataUser] = useState<{ id: string } | null>(null);
-  const [totalSoma, setTotalSoma] = useState<number>(0);
-  const [dataB, setDataB] = useState<Bebida[]>([]);
+export function CommandCard() {
+  const [userData, setUserData] = useState<{ id: string } | null>(null);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [drinksData, setDrinksData] = useState<Drink[]>([]);
 
   useEffect(() => {
-    const getData = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      setDataUser(user);
+    const fetchData = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+      setUserData(user);
       if (!user) return;
 
-      const { data: bebidas } = await supabase
+      const { data: drinks } = await supabase
         .from("bebidas")
         .select("created_at, name, drink, paid, quantity, price, user, uuid")
         .eq("uuid", user.id)
         .order("created_at", { ascending: false });
 
-      const totalSoma = bebidas?.reduce((sum, { paid, price }) => (!paid ? sum + parseFloat(price.toString()) : sum), 0) || 0;
-      setDataB(bebidas || []);
-      setTotalSoma(totalSoma);
+      const totalAmount = drinks?.reduce((sum, { paid, price }) => (!paid ? sum + parseFloat(price.toString()) : sum), 0) || 0;
+      setDrinksData(drinks || []);
+      setTotalAmount(totalAmount);
     };
-    getData();
+    fetchData();
   }, []);
 
   return (
     <ConfigProvider renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}>
       <List
-        header={dataUser ? `Total não pago: ${formatCurrency(totalSoma)}` : null}
+        header={userData ? `Total não pago: ${formatCurrency(totalAmount)}` : null}
         size="small"
         bordered
-        dataSource={dataB}
+        dataSource={drinksData}
         grid={{ gutter: 16, xs: 1, sm: 2, md: 4, lg: 4, xl: 4, xxl: 3 }}
         renderItem={(item) => (
           <List.Item key={item.uuid}>
