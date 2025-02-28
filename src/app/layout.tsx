@@ -23,14 +23,14 @@ export default function RootLayout({
         },
         components: {
           Calendar: {
-            colorBgContainer: "#f0f2f5", // Cor de fundo do calendário
-            colorText: "#000000", // Cor do texto
-            colorTextDisabled: "#d9d9d9", // Cor do texto desativado
-            colorPrimary: "#C69749", // Cor de destaque
+            colorBgContainer: "#f0f2f5",
+            colorText: "#000000",
+            colorTextDisabled: "#d9d9d9",
+            colorPrimary: "#C69749",
           },
           Badge: {
-            colorFillContent: "#C69749", // Define o fundo dos eventos
-            colorText: "#ffffff", // Define a cor do texto
+            colorFillContent: "#C69749",
+            colorText: "#ffffff",
           },
         },
       }}
