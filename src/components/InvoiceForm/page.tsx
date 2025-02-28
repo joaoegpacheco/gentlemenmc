@@ -67,7 +67,7 @@ export const InvoiceForm = () => {
 
     if (uploadError) {
       console.error("Erro ao fazer upload:", uploadError.message);
-      message.error("Erro ao fazer upload do arquivo");
+      message.error(`Erro ao fazer upload do arquivo: ${uploadError.message}`);
       setLoading(false);
       return;
     }
@@ -90,6 +90,7 @@ export const InvoiceForm = () => {
     } else {
       message.success("Nota fiscal salva com sucesso");
       setTotalAmount(undefined);
+      setPix(undefined);
       setSelectedMembers([]);
       setFile(null); // Apaga o arquivo após sucesso
     }
