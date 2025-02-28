@@ -17,7 +17,7 @@ interface Drink {
   uuid: string;
 }
 
-export function CommandCard() {
+export function CardComand() {
   const [userData, setUserData] = useState<{ id: string } | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [drinksData, setDrinksData] = useState<Drink[]>([]);
