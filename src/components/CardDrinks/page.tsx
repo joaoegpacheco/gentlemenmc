@@ -1,10 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { List, Card, ConfigProvider } from "antd";
-import { formatarDataHora } from "@/utils/formatarDataHora";
-import { formatarMoeda } from "@/utils/formatarMoeda";
+import { formatDateTime } from "@/utils/formatDateTime";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { supabase } from "@/hooks/use-supabase";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface Bebida {
   created_at: string;
@@ -45,7 +45,7 @@ export function CardComand() {
   return (
     <ConfigProvider renderEmpty={() => <div>Nenhuma bebida marcada em seu nome.</div>}>
       <List
-        header={dataUser ? `Total não pago: ${formatarMoeda(totalSoma)}` : null}
+        header={dataUser ? `Total não pago: ${formatCurrency(totalSoma)}` : null}
         size="small"
         bordered
         dataSource={dataB}
@@ -53,9 +53,9 @@ export function CardComand() {
         renderItem={(item) => (
           <List.Item key={item.uuid}>
             <Card title={item.drink}>
-              <p>Data: {formatarDataHora(item.created_at)}</p>
+              <p>Data: {formatDateTime(item.created_at)}</p>
               <p>Quantidade: {item.quantity}</p>
-              <p>Valor: {formatarMoeda(item.price)}</p>
+              <p>Valor: {formatCurrency(item.price)}</p>
               <p>
                 Pago? {item.paid ? (
                   <CheckOutlined style={{ color: "green" }} />

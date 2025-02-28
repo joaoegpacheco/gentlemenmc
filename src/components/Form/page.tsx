@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import type { FormProps } from "antd";
 import { Button, Form, Select, notification } from "antd";
-import { formatarDataHora } from "@/utils/formatarDataHora.js";
+import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
 
 type FieldType = {
@@ -156,7 +156,7 @@ export function FormComand() {
       </Form.Item>
       <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">Adicionar</Button>
       <Form.Item<FieldType> name="data">
-        Data e hora agora: <strong suppressHydrationWarning>{formatarDataHora(new Date())}</strong>
+        Data e hora agora: <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
       </Form.Item>
     </Form>
   );

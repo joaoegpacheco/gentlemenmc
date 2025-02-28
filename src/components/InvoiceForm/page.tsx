@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Input, Button, Select, Table, message, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { supabase } from "@/hooks/use-supabase";
-import { formatarMoeda } from "@/utils/formatarMoeda";
+import { formatCurrency } from "@/utils/formatCurrency";
 import Image from 'next/image';
 
 export const InvoiceForm = () => {
@@ -137,7 +137,7 @@ export const InvoiceForm = () => {
             return {
               key: id,
               nome: member?.user_name,
-              valor: formatarMoeda((totalAmount || 0) / selectedMembers.length),
+              valor: formatCurrency((totalAmount || 0) / selectedMembers.length),
             };
           })}
           columns={[
