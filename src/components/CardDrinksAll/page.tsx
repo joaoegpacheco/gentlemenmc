@@ -1,49 +1,54 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { List, Card, ConfigProvider } from "antd";
-import { formatarMoeda } from "@/utils/formatarMoeda.js";
 import { supabase } from "@/hooks/use-supabase.js";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 export function CardComandAll() {
-  const [totalSoma, setTotalSoma] = useState(0);
+  const [totalSum, setTotalSum] = useState(0);
   const [dataB, setDataB] = useState([
     {
-      nomeDaPessoa: "",
-      priceSomado: 0,
+      name: "",
+      sumPrice: 0,
     },
   ]);
 
   useEffect(() => {
     const getData = async () => {
 
-      const { data: bebidas } = await supabase
+      const { data: drinks } = await supabase
         .from("bebidas")
         .select("created_at, name, drink, paid, quantity, price, user, uuid")
         // Filters
         .order("created_at", { ascending: false });
 
-      // Function to calculate sum of prices for each unique name
-      const calcularSomaValores = (transacoes: Array<any> | null) => {
-        const resultado: Record<string, { nomeDaPessoa: string; priceSomado: number }> = {};
-        
-        transacoes?.forEach((transacao) => {
-          if (transacao && transacao.paid === null && transacao.price !== null) {
-            if (!resultado[transacao.name]) {
-              resultado[transacao.name] = { nomeDaPessoa: transacao.name, priceSomado: 0 };
+      // Função para calcular a soma dos preços para cada nome único
+      const calculateSumValues = (transactions: Array<any> | null) => {
+        const result: Record<string, { name: string; sumPrice: number }> = {};
+      
+        transactions?.forEach((transaction) => {
+          if (!transaction) return;
+      
+          const price = Number(transaction.price); // Converte para número corretamente
+          const isPaid = transaction.paid === null || transaction.paid === false || transaction.paid === 0; 
+      
+          if (isPaid && !isNaN(price)) {
+            if (!result[transaction.name]) {
+              result[transaction.name] = { name: transaction.name, sumPrice: 0 };
             }
-            resultado[transacao.name].priceSomado += parseFloat(transacao.price.toString());
+            result[transaction.name].sumPrice += price;
           }
         });
-      
-        return Object.values(resultado);
+        // Converte o objeto em array e ordena pela soma de forma decrescente
+        return Object.values(result).sort((a, b) => b.sumPrice - a.sumPrice);
       };
     
-      const totalSoma = calcularSomaValores(bebidas);
+      const totalSumBase = calculateSumValues(drinks);
     
-      setDataB(totalSoma);
-      setTotalSoma(totalSoma.reduce((acc, curr) => acc + (curr.priceSomado || 0), 0));
+      setDataB(totalSumBase);
+      setTotalSum(totalSumBase.reduce((acc, curr) => acc + (curr.sumPrice || 0), 0));
     };
-    getData();
+      getData();
   }, []);
 
   return (
@@ -51,7 +56,7 @@ export function CardComandAll() {
       renderEmpty={() => <div>Nenhuma dívida.</div>}
     >
       <List
-      header={`Total não pago: ${formatarMoeda(totalSoma)}`}
+      header={`Total não pago: ${formatCurrency(totalSum)}`}
         size="small"
         bordered
         dataSource={dataB}
@@ -67,8 +72,8 @@ export function CardComandAll() {
         renderItem={(item) => (
           <>
               <List.Item>
-                <Card title={item?.nomeDaPessoa}>
-                  <p>Valor: {formatarMoeda(item?.priceSomado)}</p>
+                <Card title={item?.name}>
+                  <p>Valor: {formatCurrency(item?.sumPrice)}</p>
                 </Card>
               </List.Item>
           </>
