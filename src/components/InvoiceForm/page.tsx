@@ -13,6 +13,7 @@ export const InvoiceForm = () => {
   >([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [totalAmount, setTotalAmount] = useState<number | undefined>();
+  const [pix, setPix] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
@@ -80,6 +81,7 @@ export const InvoiceForm = () => {
         membros: selectedMembers,
         valor_dividido: dividedAmount,
         arquivo_url: fileUrl,
+        pix
       },
     ]);
 
@@ -116,6 +118,13 @@ export const InvoiceForm = () => {
           </Select.Option>
         ))}
       </Select>
+      <Input
+        type="text"
+        placeholder="PIX para pagamento"
+        value={pix}
+        onChange={(e) => setPix(e.target.value)}
+        style={{ marginBottom: 10, width: "100%" }}
+      />
       <Upload
         beforeUpload={(file) => {
           setFile(file);
