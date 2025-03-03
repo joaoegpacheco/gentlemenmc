@@ -8,14 +8,16 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import Image from 'next/image';
 
 export const InvoiceForm = () => {
-  const [members, setMembers] = useState<
-    { user_id: string; user_name: string }[]
-  >([]);
+  const [members, setMembers] = useState<{ user_id: string; user_name: string }[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [totalAmount, setTotalAmount] = useState<number | undefined>();
   const [pix, setPix] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  
+  // Estado para visitantes
+  const [visitorCount, setVisitorCount] = useState<number>(0);
+  const [visitorNames, setVisitorNames] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -31,42 +33,41 @@ export const InvoiceForm = () => {
     fetchMembers();
   }, []);
 
+  // Atualiza os nomes dos visitantes quando a quantidade muda
+  useEffect(() => {
+    setVisitorNames(Array(visitorCount).fill(""));
+  }, [visitorCount]);
+
   const handleSave = async () => {
     if (!totalAmount || selectedMembers.length === 0 || !file) {
       message.error("Preencha todos os campos corretamente.");
       return;
     }
     setLoading(true);
-    const dividedAmount = totalAmount / selectedMembers.length;
 
-    // Verifica se o usuário está autenticado
-    const user = supabase.auth.getUser();
+    // Número total de participantes (membros + visitantes, se houver)
+    const totalParticipants = selectedMembers.length + (visitorCount > 0 ? visitorCount : 0);
+    const dividedAmount = totalAmount / totalParticipants;
+
+    const user = await supabase.auth.getUser();
     if (!user) {
       message.error("Usuário não autenticado.");
       return;
     }
 
-    // Verifica se o bucket realmente existe
-    const { data: buckets, error: bucketError } =
-    await supabase.storage.listBuckets();
+    const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
     if (bucketError || !buckets.some((b) => b.name === "notas_fiscais")) {
-      message.error(
-        'Bucket "notas_fiscais" não encontrado. Verifique o Supabase.'
-      );
+      message.error('Bucket "notas_fiscais" não encontrado. Verifique o Supabase.');
       setLoading(false);
       return;
     }
 
-    // Substitui espaços e caracteres inválidos no nome do arquivo
     const sanitizedFileName = file.name.replace(/\s+/g, "_");
-
-    // Upload para Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("notas_fiscais")
       .upload(`${sanitizedFileName}`, file);
 
     if (uploadError) {
-      console.error("Erro ao fazer upload:", uploadError.message);
       message.error(`Erro ao fazer upload do arquivo: ${uploadError.message}`);
       setLoading(false);
       return;
@@ -74,16 +75,23 @@ export const InvoiceForm = () => {
 
     const fileUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/notas_fiscais/${uploadData.path}`;
 
+    // Monta os dados para inserir no Supabase
+    const insertData: any = {
+      valor_total: totalAmount,
+      membros: selectedMembers,
+      valor_dividido: dividedAmount,
+      arquivo_url: fileUrl,
+      pix,
+    };
+
+    // Se houver visitantes, adiciona os campos na requisição
+    if (visitorCount > 0) {
+      insertData.quantidade_visitantes = visitorCount;
+      insertData.visitantes = visitorNames;
+    }
+
     // Insere os dados no banco
-    const { error } = await supabase.from("notas_fiscais").insert([
-      {
-        valor_total: totalAmount,
-        membros: selectedMembers,
-        valor_dividido: dividedAmount,
-        arquivo_url: fileUrl,
-        pix
-      },
-    ]);
+    const { error } = await supabase.from("notas_fiscais").insert([insertData]);
 
     if (error) {
       message.error("Erro ao salvar nota fiscal");
@@ -92,7 +100,9 @@ export const InvoiceForm = () => {
       setTotalAmount(undefined);
       setPix(undefined);
       setSelectedMembers([]);
-      setFile(null); // Apaga o arquivo após sucesso
+      setVisitorCount(0);
+      setVisitorNames([]);
+      setFile(null);
     }
     setLoading(false);
   };
@@ -119,6 +129,37 @@ export const InvoiceForm = () => {
           </Select.Option>
         ))}
       </Select>
+
+      {/* Campo para quantidade de visitantes */}
+      <Select
+        placeholder="Adicionar visitantes"
+        style={{ width: "100%", marginBottom: 10 }}
+        value={visitorCount}
+        onChange={setVisitorCount}
+      >
+        {[...Array(11)].map((_, i) => (
+          <Select.Option key={i} value={i}>
+            {i === 0 ? "Se houver visitante, adicione a quantidade" : `${i} visitante${i > 1 ? "s" : ""}`}
+          </Select.Option>
+        ))}
+      </Select>
+
+      {/* Campos de nome para visitantes */}
+      {visitorCount > 0 &&
+        visitorNames.map((_, index) => (
+          <Input
+            key={index}
+            placeholder={`Nome do visitante ${index + 1}`}
+            value={visitorNames[index]}
+            onChange={(e) => {
+              const newNames = [...visitorNames];
+              newNames[index] = e.target.value;
+              setVisitorNames(newNames);
+            }}
+            style={{ marginBottom: 10, width: "100%" }}
+          />
+        ))}
+
       <Input
         type="text"
         placeholder="PIX para pagamento"
@@ -129,7 +170,7 @@ export const InvoiceForm = () => {
       <Upload
         beforeUpload={(file) => {
           setFile(file);
-          return false; // Impede o upload automático
+          return false;
         }}
         fileList={file ? [{ uid: "-1", name: file.name, status: "done" }] : []}
         onRemove={() => setFile(null)}
@@ -140,40 +181,33 @@ export const InvoiceForm = () => {
           Selecionar Nota Fiscal
         </Button>
       </Upload>
-      <div style={{ overflowX: "auto", marginTop: 10 }}>
-        <Table
-          dataSource={selectedMembers.map((id) => {
+
+      <Table
+        dataSource={[
+          ...selectedMembers.map((id) => {
             const member = members.find((m) => m.user_id === id);
             return {
               key: id,
               nome: member?.user_name,
-              valor: formatCurrency((totalAmount || 0) / selectedMembers.length),
+              valor: formatCurrency((totalAmount || 0) / (selectedMembers.length + visitorCount)),
             };
-          })}
-          columns={[
-            { title: "Membro", dataIndex: "nome", key: "nome" },
-            { title: "Valor", dataIndex: "valor", key: "valor" },
-          ]}
-          locale={{
-            emptyText: (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                <Image
-                  src="/images/gentlemenmc.png"
-                  alt="Logo Gentlemen MC"
-                  width={200}
-                  height={200}
-                  style={{
-                    objectFit: "contain", // Garante que a imagem não distorça
-                  }}
-                />
-                <span style={{ fontSize: 16, color: "#888" }}>Nenhum membro selecionado</span>
-              </div>
-            ),
-          }}
-          pagination={false}
-          style={{ width: "100%" }}
-        />
-      </div>
+          }),
+          ...(visitorCount > 0
+            ? visitorNames.map((name, index) => ({
+                key: `visitor-${index}`,
+                nome: name || `Visitante ${index + 1}`,
+                valor: formatCurrency((totalAmount || 0) / (selectedMembers.length + visitorCount)),
+              }))
+            : []),
+        ]}
+        columns={[
+          { title: "Membro/Visitante", dataIndex: "nome", key: "nome" },
+          { title: "Valor", dataIndex: "valor", key: "valor" },
+        ]}
+        pagination={false}
+        style={{ width: "100%", marginTop: 10 }}
+      />
+
       <Button
         type="primary"
         onClick={handleSave}
