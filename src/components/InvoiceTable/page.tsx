@@ -54,7 +54,7 @@ export const InvoiceTable = () => {
 
   const columns = [
     {
-      title: "Data e Hora",
+      title: "Data do Evento",
       dataIndex: "data_evento",
       key: "data_evento",
       width: 250,
@@ -126,7 +126,7 @@ export const InvoiceTable = () => {
               }}
             >
               <p>
-                <strong>Data e Hora:</strong>{" "}
+                <strong>Data do evento:</strong>{" "}
                 {formatDate(invoice.data_evento)}
               </p>
               <p>
