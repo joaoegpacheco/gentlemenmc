@@ -90,6 +90,22 @@ export const InvoiceTable = () => {
       dataIndex: "pix",
       key: "pix",
       width: 150,
+      render: (pix: string) => (
+        <span
+          style={{ cursor: "pointer", color: "#1890ff" }}
+          onClick={() => {
+            if (pix) {
+              navigator.clipboard.writeText(pix).then(() => {
+                message.success("PIX copiado para a área de transferência!");
+              }).catch(() => {
+                message.error("Falha ao copiar o PIX.");
+              });
+            }
+          }}
+        >
+          {pix || "-"}
+        </span>
+      ),
     },
     {
       title: "Imagem da Nota Fiscal",
@@ -147,7 +163,22 @@ export const InvoiceTable = () => {
                 {formatCurrency(invoice.valor_dividido)}
               </p>
               <p>
-                <strong>PIX:</strong> {invoice.pix || "-"}
+                <strong>PIX:</strong>{" "}
+                <span
+                  style={{ cursor: "pointer", color: "#1890ff" }}
+                  onClick={() => {
+                    const pix = invoice.pix;
+                    if (pix) {
+                      navigator.clipboard.writeText(pix).then(() => {
+                        message.success("PIX copiado para a área de transferência!");
+                      }).catch(() => {
+                        message.error("Falha ao copiar o PIX.");
+                      });
+                    }
+                  }}
+                >
+                  {invoice.pix || "-"}
+                </span>
               </p>
               {invoice.arquivo_url && (
                 <Image
@@ -175,7 +206,7 @@ export const InvoiceTable = () => {
         visible={!!selectedImage}
         footer={null}
         onCancel={() => setSelectedImage(null)}
-        width={isMobile ? 350 : 650} // Define um tamanho máximo para a modal
+        width={isMobile ? 350 : 650}
       >
         {selectedImage && (
           <Image
