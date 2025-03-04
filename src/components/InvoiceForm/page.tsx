@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input, Button, Select, Table, message, Upload } from "antd";
+import { Input, Button, Select, Table, message, Upload, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 import Image from 'next/image';
+import dayjs from 'dayjs'; // Para manipulação da data
 
 export const InvoiceForm = () => {
   const [members, setMembers] = useState<{ user_id: string; user_name: string }[]>([]);
@@ -18,6 +19,9 @@ export const InvoiceForm = () => {
   // Estado para visitantes
   const [visitorCount, setVisitorCount] = useState<number>(0);
   const [visitorNames, setVisitorNames] = useState<string[]>([]);
+  
+  // Estado para data do evento
+  const [eventDate, setEventDate] = useState<dayjs.Dayjs | null>(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -39,7 +43,7 @@ export const InvoiceForm = () => {
   }, [visitorCount]);
 
   const handleSave = async () => {
-    if (!totalAmount || selectedMembers.length === 0 || !file) {
+    if (!totalAmount || selectedMembers.length === 0 || !file || !eventDate) {
       message.error("Preencha todos os campos corretamente.");
       return;
     }
@@ -82,6 +86,7 @@ export const InvoiceForm = () => {
       valor_dividido: dividedAmount,
       arquivo_url: fileUrl,
       pix,
+      data_evento: eventDate.format("YYYY-MM-DD"), // Formato de data no banco de dados
     };
 
     // Se houver visitantes, adiciona os campos na requisição
@@ -103,6 +108,7 @@ export const InvoiceForm = () => {
       setVisitorCount(0);
       setVisitorNames([]);
       setFile(null);
+      setEventDate(null); // Limpar a data após o envio
     }
     setLoading(false);
   };
@@ -129,6 +135,14 @@ export const InvoiceForm = () => {
           </Select.Option>
         ))}
       </Select>
+
+      {/* Campo para data do evento */}
+      <DatePicker
+        value={eventDate}
+        onChange={(date) => setEventDate(date)}
+        format="DD/MM/YYYY"
+        style={{ width: "100%", marginBottom: 10 }}
+      />
 
       {/* Campo para quantidade de visitantes */}
       <Select
