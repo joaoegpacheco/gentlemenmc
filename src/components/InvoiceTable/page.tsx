@@ -126,7 +126,7 @@ export const InvoiceTable = () => {
               }}
             >
               <p>
-                <strong>Data do evento:</strong>{" "}
+                <strong>Data do Evento:</strong>{" "}
                 {formatDate(invoice.data_evento)}
               </p>
               <p>

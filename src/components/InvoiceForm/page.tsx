@@ -138,6 +138,7 @@ export const InvoiceForm = () => {
 
       {/* Campo para data do evento */}
       <DatePicker
+        placeholder="Selecione a data do evento"
         value={eventDate}
         onChange={(date) => setEventDate(date)}
         format="DD/MM/YYYY"
