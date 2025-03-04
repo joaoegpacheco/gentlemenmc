@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Table, message, Modal } from "antd";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { formatDate } from "@/utils/formatDate";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import Image from "next/image";
 
@@ -53,9 +54,17 @@ export const InvoiceTable = () => {
 
   const columns = [
     {
+      title: "Data e Hora",
+      dataIndex: "data_evento",
+      key: "data_evento",
+      width: 250,
+      render: (value: string) => formatDate(value),
+    },
+    {
       title: "Nome",
       dataIndex: "membros",
       key: "membros",
+      width: 350,
       render: (membros: string[], record: any) => {
         const memberNames = membros?.map((id) => members[id] || id) || [];
         const visitorNames = record.visitantes || [];
@@ -66,18 +75,21 @@ export const InvoiceTable = () => {
       title: "Valor total da Nota",
       dataIndex: "valor_total",
       key: "valor_total",
+      width: 150,
       render: (value: number) => formatCurrency(value),
     },
     {
       title: "Valor por Pessoa",
       dataIndex: "valor_dividido",
       key: "valor_dividido",
+      width: 150,
       render: (value: number) => formatCurrency(value),
     },
     {
       title: "PIX para Pagamento",
       dataIndex: "pix",
       key: "pix",
+      width: 150,
     },
     {
       title: "Imagem da Nota Fiscal",
@@ -113,6 +125,10 @@ export const InvoiceTable = () => {
                 borderRadius: 5,
               }}
             >
+              <p>
+                <strong>Data e Hora:</strong>{" "}
+                {formatDate(invoice.data_evento)}
+              </p>
               <p>
                 <strong>Nomes:</strong>{" "}
                 {[
