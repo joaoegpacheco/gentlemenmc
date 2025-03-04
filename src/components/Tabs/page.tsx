@@ -6,6 +6,7 @@ import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/CardDrinks/page";
 import { CardComandAll } from "@/components/CardDrinksAll/page";
 import { InvoiceForm } from "@/components/InvoiceForm/page";
+import { InvoiceTable } from "@/components/InvoiceTable/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
@@ -31,17 +32,18 @@ const items: TabsProps["items"] = [
   { key: "1", label: "Marcar", children: <FormComand /> },
   { key: "2", label: "Ver marcações", children: <CardComand /> },
   { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
-  { key: "4", label: "Eventos", children: <CalendarEvents /> },
-  { key: "5", label: "Estatuto", children: <ByLaw /> },
-  { key: "6", label: "Alterar senha", children: <ChangePasswordForm /> },
-  { key: "7", label: <LogoutButton /> },
+  { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
+  { key: "5", label: "Eventos", children: <CalendarEvents /> },
+  { key: "6", label: "Estatuto", children: <ByLaw /> },
+  { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+  { key: "8", label: <LogoutButton /> },
 ];
 
 const itemsAdmin: TabsProps["items"] = [
-  ...items.slice(0, 6),
-  { key: "8", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
-  { key: "9", label: "Dívidas todos", children: <CardComandAll /> },
-  { key: "10", label: <LogoutButton /> },
+  ...items.slice(0, 7),
+  { key: "9", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
+  { key: "10", label: "Dívidas todos", children: <CardComandAll /> },
+  { key: "11", label: <LogoutButton /> },
 ];
 
 export default function TabsComponent() {
