@@ -27,6 +27,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   // "Long Neck Stella Artois - Pure Gold": 12,
   "Long Neck Heineken/Corona": 12,
   "Refrigerante": 6,
+"Refrigerante Garrafinha": 5,
   "Água": 5,
   "Energético": 15,
   "Vinho Intis": 65,
