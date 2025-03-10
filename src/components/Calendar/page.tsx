@@ -13,7 +13,7 @@ const events = [
   { title: "Evento Casa China", date: "2025-02-22" },
   { title: "Evento Oficina Souls & Machines", date: "2025-02-22" },
   { title: "Aniversário Gulitich e Vanderleia", date: "2025-02-23" },
-  { title: "Treinamento Safe Rider - Prático", date: "2025-03-15" },
+  { title: "Treinamento Safe Rider - Prático", date: "2025-03-16" },
   { title: "Encontro Guarapuava/PR", date: "2025-03-29" },
   { title: "Encontro Guarapuava/PR", date: "2025-03-30" },
   { title: "Bate e Volta Costelada do bar do Nando - Apiaí/SP", date: "2025-04-12" },
