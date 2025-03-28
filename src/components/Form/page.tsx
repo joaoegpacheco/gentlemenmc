@@ -24,6 +24,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Chopp Mutum": 15,
   "Espetinho": 10,
   "Combo Espetinho": 20,
+  "Panceta Pedaço": 15,
   "Long Neck Stella Artois": 8,
   // "Long Neck Stella Artois - Pure Gold": 12,
   "Long Neck Heineken/Corona": 12,
