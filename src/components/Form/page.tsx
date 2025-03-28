@@ -20,9 +20,10 @@ type MemberType = {
 
 
 const BEBIDAS_PRECOS: Record<string, number> = {
-  "Chopp Pilsen": 10,
-  // "Chopp Mutum": 15,
-  // "Carteira de Cigarro": 14,
+  "Chopp Pilsen": 12,
+  "Chopp Mutum": 15,
+  "Espetinho": 10,
+  "Combo Espetinho": 20,
   "Long Neck Stella Artois": 8,
   // "Long Neck Stella Artois - Pure Gold": 12,
   "Long Neck Heineken/Corona": 12,
@@ -31,13 +32,14 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Água": 5,
   "Energético": 15,
   "Vinho Intis": 65,
-  "Vinho Finca las Moras": 80,
+  // "Vinho Finca las Moras": 80,
   "Dose Gin": 15,
   "Dose Jagermeister": 15,
   "Dose Whiskey": 20,
   "Dose Vodka": 15,
   // "Dose Cachaça": 10,
   "Dose Campari": 10,
+  "Carteira de Cigarro": 14,
   // "Caipirinha Vodka Limão": 20,
   // "Caipirinha Cachaça Limão": 15,
 };
