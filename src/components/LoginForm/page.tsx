@@ -1,16 +1,37 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Button, notification } from "antd";
 import { supabase } from "@/hooks/use-supabase";
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
+
 interface LoginFormValues {
   email: string;
   password: string;
 }
 
 export const LoginForm: React.FC = () => {
+  const [loading, setLoading] = useState(true); // Adiciona um estado de carregamento
   const router = useRouter();
+
+  // Verifica se o usuário está logado
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        router.push("/protected/comandas"); // Redireciona para a página protegida
+      } else {
+        setLoading(false); // Só exibe o formulário se não houver usuário
+      }
+    };
+
+    checkUser();
+  }, [router]);
+
+  // Não renderiza o formulário enquanto verifica a autenticação
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   const handleSubmit = async ({ email, password }: LoginFormValues) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -33,7 +54,7 @@ export const LoginForm: React.FC = () => {
       document.cookie = `authToken=${authToken}; path=/; max-age=86400; Secure`;
 
       // Redirecionar para a página privada
-      router.push("/comandas");
+      router.push("/protected/comandas");
     } else {
       notification.error({
         message: "Erro ao recuperar token",

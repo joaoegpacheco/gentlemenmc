@@ -2,19 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { Tabs, Typography } from "antd";
 import type { TabsProps } from "antd";
-import { FormComand } from "@/components/Form/page";
-import { CardComand } from "@/components/CardDrinks/page";
-import { CardComandAll } from "@/components/CardDrinksAll/page";
-import { InvoiceForm } from "@/components/InvoiceForm/page";
-import { InvoiceTable } from "@/components/InvoiceTable/page";
-import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
-import { LogoutButton } from "@/components/LogoutButton/page";
-import dayjs from "dayjs";
-import CalendarEvents from "../Calendar/page";
-import ByLaw from "../ByLaw/page";
-import { FormMonthlyFee } from "../FormMonthlyFee/page";
+import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
+import dayjs from "dayjs";
+import { LogoutButton } from "../LogoutButton/page";
 
 interface AdminData {
   id: string;
@@ -29,25 +21,27 @@ interface Birthday {
 const { Text } = Typography;
 
 const items: TabsProps["items"] = [
-  { key: "1", label: "Marcar", children: <FormComand /> },
-  { key: "2", label: "Ver marcações", children: <CardComand /> },
-  { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
-  { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
-  { key: "5", label: "Eventos", children: <CalendarEvents /> },
-  { key: "6", label: "Estatuto", children: <ByLaw /> },
-  { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
-  { key: "8", label: <LogoutButton /> },
+  { key: "/protected/comandas", label: "Marcar" },
+  { key: "/protected/ver-comandas", label: "Ver marcações" },
+  { key: "/protected/rachides", label: "Rachide comidas" },
+  { key: "/protected/ver-rachides", label: "Ver Rachides" },
+  { key: "/protected/eventos", label: "Eventos" },
+  { key: "/protected/estatuto", label: "Estatuto" },
+  { key: "/protected/alterar-senha", label: "Alterar senha" },
+  { key: "/logout", label: <LogoutButton /> },
 ];
 
 const itemsAdmin: TabsProps["items"] = [
   ...items.slice(0, 7),
-  { key: "9", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
-  { key: "10", label: "Dívidas todos", children: <CardComandAll /> },
-  { key: "11", label: <LogoutButton /> },
+  { key: "/protected/atualizar-pago-bebidas", label: "Atualizar Pago Bebidas" },
+  { key: "/protected/dividas-todos", label: "Dívidas todos" },
+  { key: "/logout", label: <LogoutButton /> },
 ];
 
 export default function TabsComponent() {
   const [admin, setAdmin] = useState<boolean | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const checkIfUserIsAdmin = async () => {
@@ -127,8 +121,10 @@ export default function TabsComponent() {
         <Text style={{ fontSize: 14 }} strong>{birthdaysString}</Text>
       </div>
       <Tabs
-        style={{ width: "100%", padding: "0 20px 0" }}
+        style={{ width: "100%", padding: "0 20px" }}
         defaultActiveKey="1"
+        activeKey={pathname}
+        onChange={(key) => router.push(key)}
         items={admin ? itemsAdmin : items}
       />
     </div>
