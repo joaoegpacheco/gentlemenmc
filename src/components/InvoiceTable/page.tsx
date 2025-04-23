@@ -1,21 +1,37 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table, message, Modal } from "antd";
+import { Table, message, Modal, Button, Upload } from "antd";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export const InvoiceTable = () => {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [members, setMembers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isPayModalVisible, setIsPayModalVisible] = useState(false);
+  const [payingInvoice, setPayingInvoice] = useState<any>(null);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
   const { isMobile } = useDeviceSizes();
+  const router = useRouter();
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        router.push("/login");
+      } else {
+        setUser(data.user);
+      }
+    };
+
     const fetchInvoices = async () => {
       const { data, error } = await supabase.from("notas_fiscais").select("*");
       if (error) {
@@ -42,15 +58,62 @@ export const InvoiceTable = () => {
         setMembers(membersMap);
       }
     };
+
+    const fetchPayments = async () => {
+      const { data, error } = await supabase.from("pagamentos").select("*");
+      if (!error && data) setPayments(data);
+    };
+
+    fetchUser();
     fetchInvoices();
     fetchMembers();
+    fetchPayments();
     setLoading(false);
-  }, []);
+  }, [router]);
 
-  const totalAmount = invoices.reduce(
-    (sum, invoice) => sum + (invoice.valor_total || 0),
-    0
-  );
+  const handlePay = async () => {
+    if (!receiptFile || !payingInvoice) return;
+
+    // Fazendo o upload do comprovante
+    const fileName = `${payingInvoice.id}_${user?.id}_${Date.now()}`;
+    const { error: uploadError } = await supabase.storage
+      .from("pagamentos")
+      .upload(fileName, receiptFile);
+
+    if (uploadError) {
+      message.error("Erro ao fazer upload do comprovante.");
+      return;
+    }
+
+    // Obtendo o URL público do comprovante
+    const { data: publicUrlData } = supabase.storage
+      .from("pagamentos")
+      .getPublicUrl(fileName);
+
+    // Registrando o pagamento na tabela
+    const { error: insertError } = await supabase.from("pagamentos").insert([
+      {
+        nota_id: payingInvoice.id,
+        user_id: user?.id,
+        comprovante_url: publicUrlData.publicUrl,
+        data_pagamento: new Date().toISOString(),
+      },
+    ]);
+
+    if (insertError) {
+      message.error("Erro ao registrar pagamento.");
+    } else {
+      message.success("Pagamento registrado com sucesso!");
+      setIsPayModalVisible(false);
+      setReceiptFile(null);
+    }
+  };
+
+  const userPagou = (invoiceId: string, userId: string) => {
+    return payments.some(
+      (p) => p.nota_id === invoiceId && p.user_id === userId
+    );
+  };
 
   const columns = [
     {
@@ -66,9 +129,24 @@ export const InvoiceTable = () => {
       key: "membros",
       width: 350,
       render: (membros: string[], record: any) => {
-        const memberNames = membros?.map((id) => members[id] || id) || [];
+        const memberNames =
+          membros?.map((id) => {
+            const name = members[id] || id;
+            return userPagou(record.id, id) ? (
+              <span key={id} style={{ textDecoration: "line-through" }}>
+                {name}
+              </span>
+            ) : (
+              <span key={id}>{name}</span>
+            );
+          }) || [];
         const visitorNames = record.visitantes || [];
-        return [...memberNames, ...visitorNames].join(", ") || "-";
+        return [...memberNames, ...visitorNames].map((el, i) => (
+          <span key={i}>
+            {el}
+            {i < memberNames.length + visitorNames.length - 1 ? ", " : ""}
+          </span>
+        ));
       },
     },
     {
@@ -95,11 +173,14 @@ export const InvoiceTable = () => {
           style={{ cursor: "pointer", color: "#1890ff" }}
           onClick={() => {
             if (pix) {
-              navigator.clipboard.writeText(pix).then(() => {
-                message.success("PIX copiado para a área de transferência!");
-              }).catch(() => {
-                message.error("Falha ao copiar o PIX.");
-              });
+              navigator.clipboard
+                .writeText(pix)
+                .then(() => {
+                  message.success("PIX copiado para a área de transferência!");
+                })
+                .catch(() => {
+                  message.error("Falha ao copiar o PIX.");
+                });
             }
           }}
         >
@@ -108,7 +189,7 @@ export const InvoiceTable = () => {
       ),
     },
     {
-      title: "Imagem da Nota Fiscal",
+      title: "Nota Fiscal",
       dataIndex: "arquivo_url",
       key: "arquivo_url",
       render: (url: string) =>
@@ -125,10 +206,27 @@ export const InvoiceTable = () => {
           "Sem imagem"
         ),
     },
+    {
+      title: "Ações",
+      key: "acoes",
+      width: 150,
+      render: (_: any, record: any) => (
+        <Button
+          onClick={() => {
+            setPayingInvoice(record);
+            setIsPayModalVisible(true);
+          }}
+        >
+          Pagar
+        </Button>
+      ),
+    },
   ];
 
+  if (!user) return <p>Carregando...</p>;
+
   return (
-    <div style={{ maxWidth: 800, margin: "auto", width: "100%" }}>
+    <div style={{ maxWidth: 1200, margin: "auto", width: "100%" }}>
       {isMobile ? (
         <div>
           {invoices.map((invoice) => (
@@ -169,11 +267,16 @@ export const InvoiceTable = () => {
                   onClick={() => {
                     const pix = invoice.pix;
                     if (pix) {
-                      navigator.clipboard.writeText(pix).then(() => {
-                        message.success("PIX copiado para a área de transferência!");
-                      }).catch(() => {
-                        message.error("Falha ao copiar o PIX.");
-                      });
+                      navigator.clipboard
+                        .writeText(pix)
+                        .then(() => {
+                          message.success(
+                            "PIX copiado para a área de transferência!"
+                          );
+                        })
+                        .catch(() => {
+                          message.error("Falha ao copiar o PIX.");
+                        });
                     }
                   }}
                 >
@@ -190,6 +293,16 @@ export const InvoiceTable = () => {
                   onClick={() => setSelectedImage(invoice.arquivo_url)}
                 />
               )}
+              <p style={{ textAlign: "center" }}>
+                <Button
+                  onClick={() => {
+                    setPayingInvoice(invoice);
+                    setIsPayModalVisible(true);
+                  }}
+                >
+                  Pagar
+                </Button>
+              </p>
             </div>
           ))}
         </div>
@@ -201,9 +314,35 @@ export const InvoiceTable = () => {
           rowKey="id"
         />
       )}
+      <Modal
+        open={isPayModalVisible}
+        onCancel={() => setIsPayModalVisible(false)}
+        footer={null}
+        title="Enviar Comprovante"
+      >
+        <Upload
+          beforeUpload={(file) => {
+            setReceiptFile(file);
+            return false;
+          }}
+          showUploadList={{ showRemoveIcon: true }}
+          maxCount={1}
+        >
+          <Button>Selecionar Comprovante</Button>
+        </Upload>
+
+        {receiptFile && (
+          <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+            <Button type="primary" onClick={handlePay}>
+              Pagar
+            </Button>
+            <Button onClick={() => setIsPayModalVisible(false)}>Fechar</Button>
+          </div>
+        )}
+      </Modal>
 
       <Modal
-        visible={!!selectedImage}
+        open={!!selectedImage}
         footer={null}
         onCancel={() => setSelectedImage(null)}
         width={isMobile ? 350 : 650}
