@@ -9,26 +9,48 @@ import { useDeviceSizes } from "@/utils/mediaQueries";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+interface Invoice {
+  id: string;
+  data_evento: string;
+  membros: string[];
+  visitantes: string[];
+  valor_total: number;
+  valor_dividido: number;
+  pix: string;
+  arquivo_url: string | null;
+}
+
+interface Payment {
+  nota_id: string;
+  user_id: string;
+  comprovante_url: string;
+  data_pagamento: string;
+}
+
 export const InvoiceTable = () => {
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [members, setMembers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isPayModalVisible, setIsPayModalVisible] = useState(false);
-  const [payingInvoice, setPayingInvoice] = useState<any>(null);
+  const [payingInvoice, setPayingInvoice] = useState<Invoice | null>(null);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const { isMobile } = useDeviceSizes();
   const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data?.user) {
-        router.push("/login");
-      } else {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data?.user) {
+          throw new Error("Usuário não autenticado");
+        }
         setUser(data.user);
+      } catch (err) {
+        message.error("Erro ao autenticar. Redirecionando para o login.");
+        router.push("/login");
       }
     };
 
@@ -88,6 +110,11 @@ export const InvoiceTable = () => {
       .from("pagamentos")
       .getPublicUrl(fileName);
 
+    if (!publicUrlData?.publicUrl) {
+      message.error("Erro ao obter URL pública do comprovante.");
+      return;
+    }
+
     const { error: insertError } = await supabase.from("pagamentos").insert([
       {
         nota_id: payingInvoice.id,
@@ -112,9 +139,20 @@ export const InvoiceTable = () => {
   };
 
   const userPagou = (invoiceId: string, userId: string) => {
-    return payments.some(
+    return payments?.some(
       (p) => p.nota_id === invoiceId && p.user_id === userId
     );
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        message.success("Copiado para a área de transferência!");
+      })
+      .catch(() => {
+        message.error("Falha ao copiar.");
+      });
   };
 
   const columns = [
@@ -130,7 +168,7 @@ export const InvoiceTable = () => {
       dataIndex: "membros",
       key: "membros",
       width: 350,
-      render: (membros: string[], record: any) => {
+      render: (membros: string[], record: Invoice) => {
         const memberNames =
           membros?.map((id) => {
             const name = members[id] || id;
@@ -173,18 +211,7 @@ export const InvoiceTable = () => {
       render: (pix: string) => (
         <span
           style={{ cursor: "pointer", color: "#1890ff" }}
-          onClick={() => {
-            if (pix) {
-              navigator.clipboard
-                .writeText(pix)
-                .then(() => {
-                  message.success("PIX copiado para a área de transferência!");
-                })
-                .catch(() => {
-                  message.error("Falha ao copiar o PIX.");
-                });
-            }
-          }}
+          onClick={() => pix && copyToClipboard(pix)}
         >
           {pix || "-"}
         </span>
@@ -212,7 +239,7 @@ export const InvoiceTable = () => {
       title: "Ações",
       key: "acoes",
       width: 150,
-      render: (_: any, record: any) => (
+      render: (_: any, record: Invoice) => (
         <Button
           onClick={() => {
             setPayingInvoice(record);
@@ -242,28 +269,14 @@ export const InvoiceTable = () => {
               }}
             >
               <p>
-                <strong>Data do Evento:</strong>{" "}
-                {formatDate(invoice.data_evento)}
+                <strong>Data do Evento:</strong> {formatDate(invoice.data_evento)}
               </p>
               <p>
                 <strong>Nomes:</strong>{" "}
                 {[
-                  ...(invoice.membros?.map(
-                    (id: string | number) => members[id] || id
-                  ) || []),
+                  ...(invoice.membros?.map((id) => members[id] || id) || []),
                   ...(invoice.visitantes || []),
-                ].join(", ")
-99
-invoice.membros?.map((id: string | number) => {
-  const name = members[id] || id;
-  return userPagou(invoice.id, id) ? (
-    <span key={id} style={{ textDecoration: "line-through" }}>
-      {name}
-    </span>
-  ) : (
-    <span key={id}>{name}</span>
-  );
-});
+                ].join(", ")}
               </p>
               <p>
                 <strong>Valor total da Nota:</strong>{" "}
@@ -277,21 +290,7 @@ invoice.membros?.map((id: string | number) => {
                 <strong>PIX:</strong>{" "}
                 <span
                   style={{ cursor: "pointer", color: "#1890ff" }}
-                  onClick={() => {
-                    const pix = invoice.pix;
-                    if (pix) {
-                      navigator.clipboard
-                        .writeText(pix)
-                        .then(() => {
-                          message.success(
-                            "PIX copiado para a área de transferência!"
-                          );
-                        })
-                        .catch(() => {
-                          message.error("Falha ao copiar o PIX.");
-                        });
-                    }
-                  }}
+                  onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
                 >
                   {invoice.pix || "-"}
                 </span>
