@@ -74,7 +74,6 @@ export const InvoiceTable = () => {
   const handlePay = async () => {
     if (!receiptFile || !payingInvoice) return;
 
-    // Fazendo o upload do comprovante
     const fileName = `${payingInvoice.id}_${user?.id}_${Date.now()}`;
     const { error: uploadError } = await supabase.storage
       .from("pagamentos")
@@ -85,12 +84,10 @@ export const InvoiceTable = () => {
       return;
     }
 
-    // Obtendo o URL público do comprovante
     const { data: publicUrlData } = supabase.storage
       .from("pagamentos")
       .getPublicUrl(fileName);
 
-    // Registrando o pagamento na tabela
     const { error: insertError } = await supabase.from("pagamentos").insert([
       {
         nota_id: payingInvoice.id,
@@ -106,6 +103,11 @@ export const InvoiceTable = () => {
       message.success("Pagamento registrado com sucesso!");
       setIsPayModalVisible(false);
       setReceiptFile(null);
+
+      const { data, error } = await supabase.from("pagamentos").select("*");
+      if (!error && data) {
+        setPayments(data);
+      }
     }
   };
 
@@ -330,32 +332,9 @@ export const InvoiceTable = () => {
         >
           <Button>Selecionar Comprovante</Button>
         </Upload>
-
-        {receiptFile && (
-          <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-            <Button type="primary" onClick={handlePay}>
-              Pagar
-            </Button>
-            <Button onClick={() => setIsPayModalVisible(false)}>Fechar</Button>
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        open={!!selectedImage}
-        footer={null}
-        onCancel={() => setSelectedImage(null)}
-        width={isMobile ? 350 : 650}
-      >
-        {selectedImage && (
-          <Image
-            src={selectedImage}
-            alt="Nota Fiscal"
-            width={isMobile ? 300 : 600}
-            height={isMobile ? 300 : 600}
-            style={{ objectFit: "contain" }}
-          />
-        )}
+        <Button onClick={handlePay} type="primary" style={{ marginTop: 10 }}>
+          Confirmar Pagamento
+        </Button>
       </Modal>
     </div>
   );
