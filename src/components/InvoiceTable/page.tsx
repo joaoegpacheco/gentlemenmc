@@ -254,15 +254,16 @@ export const InvoiceTable = () => {
                   ...(invoice.visitantes || []),
                 ].join(", ")
 99
-invoice.membros?.map((id: string || number) => {
-            const name = members[id] || id;
-            return userPagou(invoice.id, id) ? (
-              <span key={id} style={{ textDecoration: "line-through" }}>
-                {name}
-              </span>
-            ) : (
-              <span key={id}>{name}</span>
-            )};
+invoice.membros?.map((id: string | number) => {
+  const name = members[id] || id;
+  return userPagou(invoice.id, id) ? (
+    <span key={id} style={{ textDecoration: "line-through" }}>
+      {name}
+    </span>
+  ) : (
+    <span key={id}>{name}</span>
+  );
+});
               </p>
               <p>
                 <strong>Valor total da Nota:</strong>{" "}
