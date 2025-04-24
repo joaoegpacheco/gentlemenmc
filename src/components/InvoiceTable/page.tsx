@@ -269,14 +269,35 @@ export const InvoiceTable = () => {
               }}
             >
               <p>
-                <strong>Data do Evento:</strong> {formatDate(invoice.data_evento)}
+                <strong>Data do Evento:</strong>{" "}
+                {formatDate(invoice.data_evento)}
               </p>
               <p>
                 <strong>Nomes:</strong>{" "}
                 {[
-                  ...(invoice.membros?.map((id) => members[id] || id) || []),
-                  ...(invoice.visitantes || []),
-                ].join(", ")}
+                  ...(invoice.membros?.map((id: string) => {
+                    const name: string = members[id] || id;
+                    const isPaid: boolean = userPagou(invoice.id, id);
+                    return (
+                      <span
+                        key={id}
+                        style={{
+                          textDecoration: isPaid ? "line-through" : "none",
+                        }}
+                      >
+                        {name}
+                      </span>
+                    );
+                  }) || []),
+                  ...(invoice.visitantes?.map((visitor: string, i: number) => (
+                    <span key={`v-${i}`}>{visitor}</span>
+                  )) || []),
+                ].reduce<JSX.Element[]>((acc, curr, idx, arr) => {
+                  acc.push(curr);
+                  if (idx < arr.length - 1)
+                    acc.push(<span key={`sep-${idx}`}>, </span>);
+                  return acc;
+                }, [])}
               </p>
               <p>
                 <strong>Valor total da Nota:</strong>{" "}
