@@ -105,7 +105,7 @@ export default function TabsComponent() {
     { name: "Rogério", fullDate: "1971-11-03", day: "03" },
     { name: "Soares", fullDate: "1991-06-19", day: "19" },
     { name: "Valdinei", fullDate: "1977-08-06", day: "06" },
-    { name: "Weriton", fullDate: "1976-04-24", day: "24" },
+    { name: "Weriton", fullDate: "1976-04-14", day: "14" },
     { name: "Zanona", fullDate: "1985-01-02", day: "02" },
     { name: "Zé Carlos", fullDate: "1967-12-08", day: "08" },
     { name: "Zeca", fullDate: "1970-03-05", day: "05" },
