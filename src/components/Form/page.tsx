@@ -42,7 +42,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   // "Dose Vodka": 15,
   // "Dose Cachaça": 10,
   "Dose Campari": 10,
-  // "Carteira de Cigarro": 14,
+  "Carteira de Cigarro": 15,
   // "Caipirinha Vodka Limão": 20,
   // "Caipirinha Cachaça Limão": 15,
 };
