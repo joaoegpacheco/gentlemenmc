@@ -1,5 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { List, Card, ConfigProvider } from "antd";
 import { formatDateTime } from "@/utils/formatDateTime";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
@@ -17,28 +22,33 @@ interface Drink {
   uuid: string;
 }
 
-export function CardComand() {
+export const CardComand = forwardRef((_,ref) => {
   const [userData, setUserData] = useState<{ id: string } | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [drinksData, setDrinksData] = useState<Drink[]>([]);
 
+  const fetchData = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    setUserData(user);
+    if (!user) return;
+
+    const { data: drinks } = await supabase
+      .from("bebidas")
+      .select("created_at, name, drink, paid, quantity, price, user, uuid")
+      .eq("uuid", user.id)
+      .order("created_at", { ascending: false });
+
+    const total = drinks?.reduce((sum, { paid, price }) => (!paid ? sum + parseFloat(price.toString()) : sum), 0) || 0;
+    setDrinksData(drinks || []);
+    setTotalAmount(total);
+  };
+
+  useImperativeHandle(ref, () => ({
+    refreshData: fetchData,
+  }));
+
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
-      setUserData(user);
-      if (!user) return;
-
-      const { data: drinks } = await supabase
-        .from("bebidas")
-        .select("created_at, name, drink, paid, quantity, price, user, uuid")
-        .eq("uuid", user.id)
-        .order("created_at", { ascending: false });
-
-      const totalAmount = drinks?.reduce((sum, { paid, price }) => (!paid ? sum + parseFloat(price.toString()) : sum), 0) || 0;
-      setDrinksData(drinks || []);
-      setTotalAmount(totalAmount);
-    };
     fetchData();
   }, []);
 
@@ -70,4 +80,6 @@ export function CardComand() {
       />
     </ConfigProvider>
   );
-}
+});
+
+CardComand.displayName = "CardComand";

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Typography } from "antd";
 import type { TabsProps } from "antd";
 import { FormComand } from "@/components/Form/page";
@@ -28,26 +28,10 @@ interface Birthday {
 
 const { Text } = Typography;
 
-const items: TabsProps["items"] = [
-  { key: "1", label: "Marcar", children: <FormComand /> },
-  { key: "2", label: "Ver marcações", children: <CardComand /> },
-  { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
-  { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
-  { key: "5", label: "Eventos", children: <CalendarEvents /> },
-  { key: "6", label: "Estatuto", children: <ByLaw /> },
-  { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
-  { key: "8", label: <LogoutButton /> },
-];
-
-const itemsAdmin: TabsProps["items"] = [
-  ...items.slice(0, 7),
-  { key: "9", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
-  { key: "10", label: "Dívidas todos", children: <CardComandAll /> },
-  { key: "11", label: <LogoutButton /> },
-];
-
 export default function TabsComponent() {
   const [admin, setAdmin] = useState<boolean | null>(null);
+  const cardComandRef = useRef<any>(null);
+  const comandAllTableRef = useRef<any>(null);
 
   useEffect(() => {
     const checkIfUserIsAdmin = async () => {
@@ -74,6 +58,37 @@ export default function TabsComponent() {
 
     checkIfUserIsAdmin();
   }, []);
+
+  const handleTabChange = (key: string) => {
+    if (key === "2") cardComandRef.current?.refreshData();
+    if (key === "10") comandAllTableRef.current?.refreshData();
+  };
+
+  const items: TabsProps["items"] = [
+    { key: "1", label: "Marcar", children: <FormComand /> },
+    {
+      key: "2",
+      label: "Ver marcações",
+      children: <CardComand ref={cardComandRef} />,
+    },
+    { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
+    { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
+    { key: "5", label: "Eventos", children: <CalendarEvents /> },
+    { key: "6", label: "Estatuto", children: <ByLaw /> },
+    { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+    { key: "8", label: <LogoutButton /> },
+  ];
+
+  const itemsAdmin: TabsProps["items"] = [
+    ...items.slice(0, 7),
+    { key: "9", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
+    {
+      key: "10",
+      label: "Dívidas todos",
+      children: <CardComandAll ref={comandAllTableRef} />,
+    },
+    { key: "11", label: <LogoutButton /> },
+  ];
 
   const birthdays: Birthday[] = [
     { name: "Alex", fullDate: "1974-08-12", day: "12" },
@@ -113,7 +128,9 @@ export default function TabsComponent() {
   ];
 
   const birthdaysOfTheMonth = birthdays
-    .filter((birthday) => dayjs(birthday.fullDate).month() === new Date().getMonth())
+    .filter(
+      (birthday) => dayjs(birthday.fullDate).month() === new Date().getMonth()
+    )
     .sort((a, b) => Number(a.day) - Number(b.day));
 
   const birthdaysString = birthdaysOfTheMonth
@@ -124,10 +141,13 @@ export default function TabsComponent() {
     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <div style={{ padding: "0 20px 0" }}>
         <p style={{ fontSize: 14 }}>Aniversariantes do mês: </p>
-        <Text style={{ fontSize: 14 }} strong>{birthdaysString}</Text>
+        <Text style={{ fontSize: 14 }} strong>
+          {birthdaysString}
+        </Text>
       </div>
       <Tabs
         style={{ width: "100%", padding: "0 20px 0" }}
+        onChange={handleTabChange}
         defaultActiveKey="1"
         items={admin ? itemsAdmin : items}
       />
