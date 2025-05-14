@@ -102,7 +102,7 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
     // Construir manualmente os parâmetros
     const items = `[{"name":"Bebidas Gentlemen","price":${amountInCents},"quantity":1}]`;
     const redirectUrl = encodeURIComponent(
-      "https://gentlemenmc.vercel.app/payment-confirmation"
+      "https://gentlemenmc.vercel.app/payment-return"
     );
 
     // Montar a URL sem encode nos campos que devem ser legíveis

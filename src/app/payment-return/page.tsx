@@ -1,53 +1,54 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { supabase } from "@/hooks/use-supabase";
+import { supabase } from "@/hooks/use-supabase.js";
 import { notification } from "antd";
 
-export default function PaymentReturn() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+type Props = {
+  searchParams: {
+    order_nsu: string;
+    customer_name: string;
+    customer_email?: string;
+    slug?: string;
+  };
+};
 
-  useEffect(() => {
-    const checkPayment = async () => {
-      const orderNSU = searchParams.get("order_nsu");
-      const userName = searchParams.get("customer_name"); // se tiver incluído no link
-      if (!orderNSU) return;
+export default async function PaymentReturn({ searchParams }: Props) {
+  const { order_nsu, customer_name, slug } = searchParams;
 
-      try {
-        const res = await fetch(
-          `https://api.infinitepay.io/invoices/public/checkout/payment_check/gentlemenmc?external_order_nsu=${orderNSU}`
-        );
-        const result = await res.json();
+  const payload = {
+    handle: "gentlemenmc", // Identificador na InfinitePay
+    external_order_nsu: order_nsu,
+    slug: slug,
+  };
 
-        if (result.success && result.paid) {
-          // Marca como pago no Supabase
-          await supabase
-            .from("bebidas")
-            .update({ paid: true })
-            .eq("name", userName);
+  const response = await fetch("https://api.infinitepay.io/invoices/public/checkout/payment_check/gentlemenmc", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
 
-          notification.success({
+  const result = await response.json();
+
+  if (result.success && result?.paid) {
+    await supabase
+      .from("bebidas")
+      .update({ paid: true })
+      .eq("name", customer_name);;
+
+      notification.success({
             message: "Pagamento confirmado com sucesso!",
           });
-        } else {
+  } else {
           notification.warning({
             message: "Pagamento não foi confirmado ainda.",
           });
         }
-      } catch (error) {
-        console.error("Erro ao verificar pagamento:", error);
-        notification.error({ message: "Erro ao verificar pagamento." });
-      } finally {
-        setLoading(false);
-        router.push("/comandas");
-      }
-    };
 
-    checkPayment();
-  }, [searchParams, router]);
-
-  return <p>{loading ? "Verificando pagamento..." : "Redirecionando..."}</p>;
+  return (
+    <div style={{ padding: "2rem", textAlign: "center" }}>
+      <h1>{result?.paid ? "✅ Pagamento confirmado!" : "⏳ Pagamento ainda não confirmado."}</h1>
+      <p>{customer_name ? `Obrigado, ${customer_name}.` : "Usuário não identificado."}</p>
+    </div>
+  );
 }
