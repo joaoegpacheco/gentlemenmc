@@ -124,6 +124,15 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
     const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(
       mensagem
     )}`;
+
+    await supabase.from("charges").insert({
+      order_nsu: orderNsu,
+      customer_name: name,
+      customer_email: member.user_email,
+      customer_phone: cleanPhone,
+      status: "pending",
+    });
+
     window.open(whatsappUrl, "_blank");
   };
 
