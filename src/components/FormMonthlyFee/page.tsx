@@ -26,7 +26,9 @@ export function FormMonthlyFee() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [keyUser, setKeyUser] = useState<string>("");
-  const [date, setDate] = useState<string>(dayjs().tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ"));
+  const [date, setDate] = useState<string>(
+    dayjs().tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+  );
   const [members, setMembers] = useState<Member[]>([]);
 
   const fetchMembers = useCallback(async () => {
@@ -60,6 +62,11 @@ export function FormMonthlyFee() {
         .update({ paid: true })
         .eq("name", keyUser)
         .lte("created_at", date);
+
+      await supabase
+        .from("charges")
+        .update({ status: "paid", transaction_id: "pago", slug: "pago" })
+        .eq("customer_name", keyUser);
 
       if (error) throw error;
       notification.success({
@@ -105,11 +112,20 @@ export function FormMonthlyFee() {
             borderRadius: token.borderRadiusLG,
           }}
         >
-          <Calendar fullscreen={false} onChange={handlePanelChange} value={dayjs(date)} />
+          <Calendar
+            fullscreen={false}
+            onChange={handlePanelChange}
+            value={dayjs(date)}
+          />
         </div>
       </Form.Item>
 
-      <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">
+      <Button
+        style={{ width: "100%" }}
+        loading={loading}
+        type="primary"
+        htmlType="submit"
+      >
         Atualizar
       </Button>
     </Form>
