@@ -65,7 +65,7 @@ export function FormMonthlyFee() {
 
       await supabase
         .from("charges")
-        .update({ status: "paid", transaction_id: "pago", slug: "pago" })
+        .update({ status: "paid" })
         .eq("customer_name", keyUser);
 
       if (error) throw error;
