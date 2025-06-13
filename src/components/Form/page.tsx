@@ -21,6 +21,7 @@ type MemberType = {
 
 const BEBIDAS_PRECOS: Record<string, number> = {
   "Chopp Pilsen": 12,
+"Chopp Mutum": 20,
   "Long Neck Heineken/Corona": 12,
   "Original Lata": 8,
   "Heineken Lata": 10,
@@ -42,6 +43,11 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   // "Dose Vodka": 15,
   // "Dose Cachaça": 10,
   "Dose Campari": 10,
+"Cachorro-Quente": 12,
+"Carne Louca": 12,
+"Pipoca": 5,
+"Pinhão": 8,
+"Quentão": 10,
   "Carteira de Cigarro": 15,
   // "Caipirinha Vodka Limão": 20,
   // "Caipirinha Cachaça Limão": 15,
