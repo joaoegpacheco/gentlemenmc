@@ -26,7 +26,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Original Lata": 8,
   "Heineken Lata": 10,
   "Empanhinha": 3,
-  // "Panceta Pedaço": 15,
+  "Cnajica": 5,
   // "Pão de alho": 8,
   // "Queijo Coalho": 8,
   // "Long Neck Stella Artois": 8,
