@@ -37,7 +37,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Energético": 15,
   "Vinho Intis": 65,
   // "Vinho Finca las Moras": 80,
-  // "Dose Gin": 15,
+  "Dose Gin": 15,
   "Dose Jagermeister": 15,
   "Dose Whiskey": 20,
   // "Dose Vodka": 15,
