@@ -25,7 +25,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Long Neck Heineken/Corona": 12,
   "Original Lata": 8,
   "Heineken Lata": 10,
-  // "Combo Espetinho": 20,
+  "Empanhinha": 3,
   // "Panceta Pedaço": 15,
   // "Pão de alho": 8,
   // "Queijo Coalho": 8,
