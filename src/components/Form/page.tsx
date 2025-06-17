@@ -20,13 +20,13 @@ type MemberType = {
 
 
 const BEBIDAS_PRECOS: Record<string, number> = {
+  "Cachorro-Quente Quarta dia 18": 20,
   "Chopp Pilsen": 12,
-//"Chopp Mutum": 20,
+  //"Chopp Mutum": 20,
   "Long Neck Heineken/Corona": 12,
+  "Quentão": 10,
   //"Original Lata": 8,
   "Heineken Lata": 10,
-  // "Pão de alho": 8,
-  // "Queijo Coalho": 8,
   // "Long Neck Stella Artois": 8,
   // "Long Neck Stella Artois - Pure Gold": 12,
   "Refrigerante": 6,
@@ -36,16 +36,15 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   //"Vinho Intis": 65,
   // "Vinho Finca las Moras": 80,
   "Dose Gin": 15,
-  "Dose Jagermeister": 15,
-  "Dose Whiskey": 20,
+  "Dose Jagermeister": 20,
+  "Dose Whiskey": 25,
   // "Dose Vodka": 15,
   // "Dose Cachaça": 10,
   "Dose Campari": 15,
-//"Cachorro-Quente": 12,
-//"Carne Louca": 12,
-//"Pipoca": 5,
-//"Pinhão": 8,
-"Quentão": 10,
+  //"Cachorro-Quente": 12,
+  //"Carne Louca": 12,
+  //"Pipoca": 5,
+  //"Pinhão": 8,
   "Carteira de Cigarro": 15,
   // "Caipirinha Vodka Limão": 20,
   // "Caipirinha Cachaça Limão": 15,
@@ -154,7 +153,7 @@ export function FormComand() {
         />
       )}
       </Form.Item>
-      <Form.Item<FieldType> name="bebida" label="Bebidas" rules={[{ required: true, message: "Selecione ao menos um item!" }]}> 
+      <Form.Item<FieldType> name="bebida" label="Item" rules={[{ required: true, message: "Selecione ao menos um item!" }]}> 
         <Select size="large" placeholder="Selecione uma bebida">
           {Object.keys(BEBIDAS_PRECOS).map(bebida => (
             <Select.Option key={bebida} value={bebida}>{bebida}</Select.Option>
