@@ -33,7 +33,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   // "Refrigerante Garrafinha": 4,
   "Água": 5,
   "Energético": 15,
-  //"Vinho Intis": 65,
+  "Vinho Cordero": 45,
   // "Vinho Finca las Moras": 80,
   "Dose Gin": 15,
   "Dose Jagermeister": 20,
