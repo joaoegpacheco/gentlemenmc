@@ -20,7 +20,7 @@ type MemberType = {
 
 
 const BEBIDAS_PRECOS: Record<string, number> = {
-  "Festa Soares dia 21": 20,
+  // "Festa Soares dia 21": 20,
   "Chopp Pilsen": 12,
   //"Chopp Mutum": 20,
   "Long Neck Heineken/Corona": 12,
