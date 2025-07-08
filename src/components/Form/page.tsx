@@ -7,8 +7,8 @@ import { supabase } from "@/hooks/use-supabase.js";
 
 type FieldType = {
   nome?: string;
-  bebida?: string;
-  quantidade?: number;
+  drink?: string;
+  amount?: number;
   uuid?: any;
   data?: string;
 };
@@ -21,7 +21,7 @@ type MemberType = {
 
 const BEBIDAS_PRECOS: Record<string, number> = {
   // "Festa Soares dia 21": 20,
-  "Chopp Pilsen": 12,
+  // "Chopp Pilsen": 12,
   //"Chopp Mutum": 20,
   "Long Neck Heineken/Corona": 12,
   "Quentão": 10,
@@ -32,8 +32,8 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Refrigerante": 6,
   // "Refrigerante Garrafinha": 4,
   "Água": 5,
-  "Energético": 15,
-  "Vinho Cordero": 45,
+  // "Energético": 15,
+  // "Vinho Cordero": 45,
   // "Vinho Finca las Moras": 80,
   "Dose Gin": 15,
   "Dose Jagermeister": 20,
@@ -45,7 +45,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   //"Carne Louca": 12,
   //"Pipoca": 5,
   //"Pinhão": 8,
-  "Carteira de Cigarro": 15,
+  // "Carteira de Cigarro": 15,
   // "Caipirinha Vodka Limão": 20,
   // "Caipirinha Cachaça Limão": 15,
 };
@@ -75,14 +75,14 @@ export function FormComand() {
       }
     
       if (membros) {
-        const membrosMap = membros.reduce((acc, membro) => {
+        const membersMap = membros.reduce((acc, membro) => {
           if (membro.user_id) {
             acc[membro.user_id] = membro;
           }
           return acc;
         }, {} as Record<string, MemberType>);
   
-        setMembers(membrosMap);
+        setMembers(membersMap);
       }
     }
     fetchMembers();
@@ -92,6 +92,13 @@ export function FormComand() {
     setKeyUser(values?.value)
     setNameUser(values?.title)
   };
+
+  function calculateCustomPrice(userName: string, drink: string, standardPrice: number): number {
+    if (userName === "Robson" && drink === "Chopp Pilsen") {
+      return 8;
+    }
+    return standardPrice;
+  }
 
   const handleSubmit: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
@@ -103,15 +110,17 @@ export function FormComand() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const quantidade = values.quantidade || 1;
-      const valorBebida = BEBIDAS_PRECOS[values.bebida || ""] || 0;
+      const amount = values.amount || 1;
+      // const valorBebida = BEBIDAS_PRECOS[values.bebida || ""] || 0;
+
+      let valueDrink = calculateCustomPrice(nameUser, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
 
       await supabase.from("bebidas").insert([
         {
           name: nameUser,
-          drink: values.bebida,
-          quantity: quantidade,
-          price: valorBebida * quantidade,
+          drink: values.drink,
+          quantity: amount,
+          price: valueDrink * amount,
           user: user?.email,
           uuid: keyUser,
         },
@@ -153,14 +162,14 @@ export function FormComand() {
         />
       )}
       </Form.Item>
-      <Form.Item<FieldType> name="bebida" label="Item" rules={[{ required: true, message: "Selecione ao menos um item!" }]}> 
+      <Form.Item<FieldType> name="drink" label="Item" rules={[{ required: true, message: "Selecione ao menos um item!" }]}> 
         <Select size="large" placeholder="Selecione uma bebida">
-          {Object.keys(BEBIDAS_PRECOS).map(bebida => (
-            <Select.Option key={bebida} value={bebida}>{bebida}</Select.Option>
+          {Object.keys(BEBIDAS_PRECOS).map(drink => (
+            <Select.Option key={drink} value={drink}>{drink}</Select.Option>
           ))}
         </Select>
       </Form.Item>
-      <Form.Item<FieldType> name="quantidade" label="Quantidade"> 
+      <Form.Item<FieldType> name="amount" label="Quantidade"> 
         <Select defaultValue={1} size="large">{optionsQuantidade}</Select>
       </Form.Item>
       <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">Adicionar</Button>
