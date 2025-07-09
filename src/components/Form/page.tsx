@@ -45,7 +45,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   //"Carne Louca": 12,
   //"Pipoca": 5,
   //"Pinhão": 8,
-  // "Carteira de Cigarro": 15,
+  "Carteira de Cigarro": 15,
   // "Caipirinha Vodka Limão": 20,
   // "Caipirinha Cachaça Limão": 15,
 };
