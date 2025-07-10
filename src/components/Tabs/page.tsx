@@ -81,7 +81,7 @@ export default function TabsComponent() {
 
   const itemsAdmin: TabsProps["items"] = [
     ...items.slice(0, 7),
-    { key: "9", label: "Atualizar Pago Bebidas", children: <FormMonthlyFee /> },
+    { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
     {
       key: "10",
       label: "Dívidas todos",
