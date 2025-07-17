@@ -27,6 +27,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Quentão": 10,
   //"Original Lata": 8,
   "Heineken Lata": 10,
+"Energético": 15,
   // "Long Neck Stella Artois": 8,
   // "Long Neck Stella Artois - Pure Gold": 12,
   "Refrigerante": 6,
