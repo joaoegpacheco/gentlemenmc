@@ -95,9 +95,9 @@ export function FormComand() {
   };
 
   function calculateCustomPrice(userName: string, drink: string, standardPrice: number): number {
-    if (userName === "Robson" && drink === "Chopp Pilsen") {
-      return 8;
-    }
+    // if (userName === "Robson" && drink === "Chopp Pilsen") {
+    //   return 8;
+    // }
     return standardPrice;
   }
 
