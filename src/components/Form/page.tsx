@@ -42,7 +42,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   // "Dose Vodka": 15,
   // "Dose Cachaça": 10,
   "Dose Campari": 6,
-  "Dose Rum": 6,
+  "Dose Rum": 10,
   //"Carne Louca": 12,
   //"Pipoca": 5,
   //"Pinhão": 8,
