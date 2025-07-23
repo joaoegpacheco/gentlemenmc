@@ -38,7 +38,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   // "Vinho Finca las Moras": 80,
   "Dose Gin": 6,
   "Dose Jagermeister": 18,
-  "Dose Whiskey": 25,
+  "Dose Whiskey": 15,
   // "Dose Vodka": 15,
   // "Dose Cachaça": 10,
   "Dose Campari": 15,
