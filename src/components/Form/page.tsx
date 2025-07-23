@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import type { FormProps } from "antd";
-import { Button, Form, Select, notification, Space } from "antd";
-import { useMediaQuery } from "react-responsive"; // ⬅️ Adicionado
+import { Button, Form, Select, notification } from "antd";
+import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
 
@@ -28,19 +28,10 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Energético": 15,
   "Refrigerante": 6,
   "Água": 5,
-  // "Energético": 15,
-  // "Vinho Cordero": 45,
-  // "Vinho Finca las Moras": 80,
-  "Dose Gin": 6,
-  "Dose Jagermeister": 18,
-  "Dose Whiskey": 15,
-  // "Dose Vodka": 15,
-  // "Dose Cachaça": 10,
-  "Dose Campari": 6,
-  "Dose Rum": 10,
-  //"Carne Louca": 12,
-  //"Pipoca": 5,
-  //"Pinhão": 8,
+  "Dose Gin": 15,
+  "Dose Jagermeister": 20,
+  "Dose Whiskey": 25,
+  "Dose Campari": 15,
   "Carteira de Cigarro": 15,
 };
 
@@ -49,6 +40,7 @@ export function FormComand() {
   const [loading, setLoading] = useState(false);
   const [keyUser, setKeyUser] = useState("");
   const [nameUser, setNameUser] = useState("");
+  const [selectedDrink, setSelectedDrink] = useState("");
   const [members, setMembers] = useState<Record<string, MemberType>>({});
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
@@ -93,7 +85,6 @@ export function FormComand() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const amount = values.amount || 1;
-
       const valueDrink = calculateCustomPrice(nameUser, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
 
       await supabase.from("bebidas").insert([
@@ -109,6 +100,7 @@ export function FormComand() {
 
       notification.success({ message: "Bebida adicionada com sucesso!" });
       form.resetFields();
+      setSelectedDrink("");
     } catch {
       notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida." });
     } finally {
@@ -125,6 +117,7 @@ export function FormComand() {
   return (
     <Form name="comanda" form={form} style={{ width: "100%", paddingTop: 20 }} onFinish={handleSubmit} autoComplete="off">
       
+      {/* NOME (MEMBROS) */}
       <Form.Item<FieldType>
         name="nome"
         label="Nome"
@@ -140,7 +133,7 @@ export function FormComand() {
               ))}
             </Select>
           ) : (
-            <div style={{gap: "25px", display: "flex", flexWrap: "wrap"}} className="flex flex-wrap">
+            <div style={{gap: "25px", display: "flex", flexWrap: "wrap"}} className="flex flex-wrap gap-2">
               {Object.values(members).map((member) => (
                 <Button
                   key={member.user_id}
@@ -161,18 +154,50 @@ export function FormComand() {
         )}
       </Form.Item>
 
-      <Form.Item<FieldType> name="drink" label="Item" rules={[{ required: true, message: "Selecione ao menos um item!" }]}>
-        <Select size="large" placeholder="Selecione uma bebida">
-          {Object.keys(BEBIDAS_PRECOS).map(drink => (
-            <Select.Option key={drink} value={drink}>{drink}</Select.Option>
-          ))}
-        </Select>
+      {/* ITEM (DRINKS) */}
+      <Form.Item<FieldType>
+        name="drink"
+        label="Item"
+        rules={[{ required: true, message: "Selecione ao menos um item!" }]}
+      >
+        {isMobile ? (
+          <Select
+            size="large"
+            placeholder="Selecione uma bebida"
+            onChange={(value) => {
+              setSelectedDrink(value);
+            }}
+          >
+            {Object.keys(BEBIDAS_PRECOS).map(drink => (
+              <Select.Option key={drink} value={drink}>
+                {drink}
+              </Select.Option>
+            ))}
+          </Select>
+        ) : (
+          <div style={{gap: "25px", display: "flex", flexWrap: "wrap"}} className="flex flex-wrap gap-2">
+            {Object.keys(BEBIDAS_PRECOS).map(drink => (
+              <Button
+                key={drink}
+                type={selectedDrink === drink ? "primary" : "default"}
+                onClick={() => {
+                  setSelectedDrink(drink);
+                  form.setFieldValue("drink", drink);
+                }}
+              >
+                {drink}
+              </Button>
+            ))}
+          </div>
+        )}
       </Form.Item>
 
+      {/* QUANTIDADE */}
       <Form.Item<FieldType> name="amount" label="Quantidade">
         <Select defaultValue={1} size="large">{optionsQuantidade}</Select>
       </Form.Item>
 
+      {/* BOTÃO SUBMIT */}
       <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">
         Adicionar
       </Button>
