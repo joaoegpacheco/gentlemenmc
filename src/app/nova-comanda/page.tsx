@@ -5,7 +5,6 @@ import { Button, Table, message, Input } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { registerComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
-import { printComandaHTML } from "@/utils/printComandaHTML";
 
 export default function CreateComandaPage() {
   const [items, setItems] = useState<{ drink: string; quantity: number; price: number }[]>([]);
@@ -34,7 +33,10 @@ export default function CreateComandaPage() {
 
   message.success("Comanda criada com sucesso");
 
-  printComandaHTML({ guestName: guestName || "Sem nome", items });
+  if (typeof window !== "undefined") {
+      const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
+      await printComandaHTML({ guestName: guestName || "Sem nome", items });
+    }
 
   setItems([]);
   setGuestName("");

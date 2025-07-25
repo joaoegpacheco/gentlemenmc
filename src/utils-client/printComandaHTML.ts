@@ -23,6 +23,8 @@ function formatDateTime() {
 }
 
 export function printComandaHTML({ guestName, items }: PrintOptions) {
+  if (typeof window === "undefined") return;
+
   const containerId = "print-container";
   const container = document.createElement("div");
   container.id = containerId;
@@ -54,7 +56,6 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
       #print-area {
         font-family: monospace;
       }
-
       .ticket {
         width: 300px;
         padding: 10px;
@@ -62,13 +63,11 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
         border-bottom: 1px dashed #000;
         page-break-after: always;
       }
-
       .drink {
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 5px;
       }
-
       .info {
         font-size: 14px;
       }
@@ -80,8 +79,6 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
     type: "html",
     scanStyles: false,
     targetStyles: ["*"],
-    onPrintDialogClose: () => {
-      container.remove();
-    },
+    onPrintDialogClose: () => container.remove(),
   });
 }
