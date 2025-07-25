@@ -26,9 +26,19 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
   if (typeof window === "undefined") return;
 
   const containerId = "print-container";
+
+  // Remover container anterior, caso exista (evita duplicação)
+  const existing = document.getElementById(containerId);
+  if (existing) existing.remove();
+
   const container = document.createElement("div");
   container.id = containerId;
-  container.style.display = "none";
+
+  // Ao invés de display none, usar position absolute e fora da tela
+  container.style.position = "absolute";
+  container.style.left = "-9999px";
+  container.style.top = "-9999px";
+
   document.body.appendChild(container);
 
   const dateTime = formatDateTime();
@@ -61,7 +71,6 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
         padding: 10px;
         margin-bottom: 15px;
         border-bottom: 1px dashed #000;
-        page-break-after: always;
       }
       .drink {
         font-size: 18px;
@@ -77,8 +86,7 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
   printJS({
     printable: containerId,
     type: "html",
-    scanStyles: false,
-    targetStyles: ["*"],
+    scanStyles: true,    // Para garantir que os estilos aplicados sejam considerados
     onPrintDialogClose: () => container.remove(),
   });
 }

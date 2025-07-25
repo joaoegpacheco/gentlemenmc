@@ -16,7 +16,7 @@ import { FormMonthlyFee } from "../FormMonthlyFee/page";
 import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
 import CreateComandaPage from "@/app/nova-comanda/page";
-import OpenComandasPage from "@/app/pdv/page";
+import { OpenComandasPage } from "@/app/pdv/page";
 
 interface AdminData {
   id: string;
@@ -94,14 +94,14 @@ export default function TabsComponent() {
       label: "Dívidas todos",
       children: <CardComandAll ref={comandAllTableRef} />,
     },
-    { key: "13", label: "Comandas em Aberto", children: <OpenComandasPage /> },
+    { key: "13", label: "Comandas em Aberto", children: <OpenComandasPage ref={comandOpenTableRef} /> },
     { key: "11", label: <LogoutButton /> },
   ];
 
   const itemsBar: TabsProps["items"] = [
   { key: "1", label: "Marcar", children: <FormComand /> },
   { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
-  { key: "13", label: "Comandas em Aberto", children: <OpenComandasPage /> },
+  { key: "13", label: "Comandas em Aberto", children: <OpenComandasPage ref={comandOpenTableRef} /> },
 ];
 
   const birthdays: Birthday[] = [

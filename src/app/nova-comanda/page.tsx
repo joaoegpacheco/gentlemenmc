@@ -57,6 +57,7 @@ export default function CreateComandaPage() {
         <Input
         addonBefore="Telefone do convidado"
     placeholder="(XX) 9XXXX-XXXX"
+    value={guestPhone}
     maxLength={15}
     onChange={(e) => {
       const raw = e.target.value.replace(/\D/g, "");

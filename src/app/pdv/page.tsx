@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, forwardRef } from "react";
 import { Button, Modal, Table, message, Select, InputNumber } from "antd";
 import { updateComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
 
-export default function OpenComandasPage() {
+interface Props {}
+
+export const OpenComandasPage = forwardRef((_: Props, ref) => {
   const [comandas, setComandas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedComanda, setSelectedComanda] = useState<any | null>(null);
@@ -196,4 +198,6 @@ export default function OpenComandasPage() {
       </Modal>
     </div>
   );
-}
+})
+
+OpenComandasPage.displayName = "OpenComandasPage";
