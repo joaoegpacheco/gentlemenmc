@@ -73,12 +73,12 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
         border-bottom: 1px dashed #000;
       }
       .drink {
-        font-size: 18px;
+        font-size: 36px;
         font-weight: bold;
         margin-bottom: 5px;
       }
       .info {
-        font-size: 14px;
+        font-size: 30px;
       }
     </style>
   `;
