@@ -131,7 +131,7 @@ export default function OpenComandasPage() {
                   >
                     <span>{item.bebida_nome}</span>
                     <span>
-                      {item.quantidade} x R${" "}
+                      {" "}{item.quantidade} x R${" "}
                       {item.preco_unitario.toFixed(2)}
                     </span>
                   </div>
