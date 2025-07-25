@@ -35,6 +35,7 @@ export default function TabsComponent() {
   const [isBarUser, setIsBarUser] = useState<boolean>(false);
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
+  const comandOpenTableRef = useRef<any>(null);
 
   useEffect(() => {
     const checkIfUserIsAdmin = async () => {
@@ -67,6 +68,7 @@ export default function TabsComponent() {
   const handleTabChange = (key: string) => {
     if (key === "2") cardComandRef.current?.refreshData();
     if (key === "10") comandAllTableRef.current?.refreshData();
+    if (key === "13") comandOpenTableRef.current?.refreshData();
   };
 
   const items: TabsProps["items"] = [
