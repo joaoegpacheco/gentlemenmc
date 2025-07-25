@@ -101,6 +101,8 @@ export function FormComand() {
       notification.success({ message: "Bebida adicionada com sucesso!" });
       form.resetFields();
       setSelectedDrink("");
+      setNameUser("");
+      setKeyUser("");
     } catch {
       notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida." });
     } finally {
