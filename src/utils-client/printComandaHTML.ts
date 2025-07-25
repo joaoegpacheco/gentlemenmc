@@ -68,17 +68,17 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
       }
       .ticket {
         width: 300px;
-        padding: 10px;
+        padding: 20px;
         margin-bottom: 15px;
         border-bottom: 1px dashed #000;
       }
       .drink {
-        font-size: 36px;
+        font-size: 56px;
         font-weight: bold;
         margin-bottom: 5px;
       }
       .info {
-        font-size: 30px;
+        font-size: 50px;
       }
     </style>
   `;
