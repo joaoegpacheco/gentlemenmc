@@ -15,6 +15,8 @@ import ByLaw from "../ByLaw/page";
 import { FormMonthlyFee } from "../FormMonthlyFee/page";
 import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
+import CreateComandaPage from "@/app/nova-comanda/page";
+import OpenComandasPage from "@/app/pdv/page";
 
 interface AdminData {
   id: string;
@@ -30,6 +32,7 @@ const { Text } = Typography;
 
 export default function TabsComponent() {
   const [admin, setAdmin] = useState<boolean | null>(null);
+  const [isBarUser, setIsBarUser] = useState<boolean>(false);
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
 
@@ -42,6 +45,8 @@ export default function TabsComponent() {
         window.location.href = "/";
         return;
       }
+
+      setIsBarUser(user.email === "barmc@gentlemenmc.com.br");
 
       try {
         const { data: admins }: PostgrestResponse<AdminData> = await supabase
@@ -87,8 +92,15 @@ export default function TabsComponent() {
       label: "Dívidas todos",
       children: <CardComandAll ref={comandAllTableRef} />,
     },
+    { key: "13", label: "Comandas em Aberto", children: <OpenComandasPage /> },
     { key: "11", label: <LogoutButton /> },
   ];
+
+  const itemsBar: TabsProps["items"] = [
+  { key: "1", label: "Marcar", children: <FormComand /> },
+  { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
+  { key: "13", label: "Comandas em Aberto", children: <OpenComandasPage /> },
+];
 
   const birthdays: Birthday[] = [
     { name: "Alex", fullDate: "1974-08-12", day: "12" },
@@ -150,7 +162,13 @@ export default function TabsComponent() {
         style={{ width: "100%", padding: "0 20px 0" }}
         onChange={handleTabChange}
         defaultActiveKey="1"
-        items={admin ? itemsAdmin : items}
+        items={
+    admin
+      ? itemsAdmin
+      : isBarUser
+      ? itemsBar
+      : items
+  }
       />
     </div>
   );
