@@ -64,21 +64,21 @@ export function printComandaHTML({ guestName, items }: PrintOptions) {
     </div>
     <style>
       #print-area {
-        font-family: monospace;
+        font-family: arial;
       }
       .ticket {
         width: 300px;
-        padding: 20px;
+        padding: 10px;
         margin-bottom: 15px;
         border-bottom: 1px dashed #000;
       }
       .drink {
-        font-size: 56px;
+        font-size: 36px;
         font-weight: bold;
         margin-bottom: 5px;
       }
       .info {
-        font-size: 50px;
+        font-size: 30px;
       }
     </style>
   `;
