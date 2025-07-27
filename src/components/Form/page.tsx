@@ -32,6 +32,8 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Dose Jagermeister": 20,
   "Dose Whiskey": 25,
   "Dose Campari": 15,
+"Vinho Cordero": 80,
+"Vinho Caoba": 43,
   "Carteira de Cigarro": 15,
 };
 
