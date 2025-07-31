@@ -10,5 +10,7 @@ export const DRINKS_PRICES: Record<string, number> = {
   "Dose Whiskey": 20,
   "Dose Campari": 10,
   "Dose Rum": 15,
+"Vinho Cordero": 89,
+"Vinho Caoba": 69,
   "Carteira de Cigarro": 15,
 };
