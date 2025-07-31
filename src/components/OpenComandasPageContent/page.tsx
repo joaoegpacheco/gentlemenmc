@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useEffect, useState, forwardRef } from "react";
-import { Button, Modal, Table, message, Select, InputNumber } from "antd";
+import { Button, Modal, Table, message, Select, InputNumber, Input } from "antd";
 import { updateComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
-import { PostgrestResponse } from "@supabase/supabase-js";
 
 interface Props {}
 
 interface AdminData {
+  email: string;
   id: string;
 }
 
@@ -19,33 +19,57 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const [selectedComanda, setSelectedComanda] = useState<any | null>(null);
   const [newDrink, setNewDrink] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
-  const [admin, setAdmin] = useState<boolean | null>(null);
+  const [payModalVisible, setPayModalVisible] = useState(false);
+  const [adminsList, setAdminsList] = useState<AdminData[]>([]);
+  const [selectedAdmin, setSelectedAdmin] = useState<string | null>(null); // email
+  const [adminPassword, setAdminPassword] = useState("");
+  const [payingComandaId, setPayingComandaId] = useState<number | null>(null);
 
-  useEffect(() => {
-      const checkIfUserIsAdmin = async () => {
-        const { data: userData } = await supabase.auth.getUser();
-        const user = userData?.user;
-  
-        if (!user) {
-          window.location.href = "/";
-          return;
-        }
-    
-        try {
-          const { data: admins }: PostgrestResponse<AdminData> = await supabase
-            .from("admins")
-            .select("id")
-            .eq("id", user.id);
-  
-          setAdmin(!!admins?.length);
-        } catch (error) {
-          console.error("Error fetching admin data:", error);
-          setAdmin(false);
-        }
-      };
-  
-      checkIfUserIsAdmin();
-    }, []);
+  const fetchAdmins = async () => {
+    const { data, error } = await supabase.from("admins").select("id, email");
+    if (error) {
+      message.error("Erro ao buscar administradores");
+    } else {
+      setAdminsList(data);
+    }
+  };
+
+  const handleConfirmPay = async () => {
+    if (!selectedAdmin || !adminPassword) {
+      message.warning("Selecione um admin e digite a senha");
+      return;
+    }
+
+    // Tenta autenticar com o admin selecionado
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: selectedAdmin,
+      password: adminPassword,
+    });
+
+    if (loginError) {
+      message.error("Usuário ou senha incorretos");
+      return;
+    }
+
+    // Após autenticar, atualiza a comanda
+    const { error } = await supabase
+      .from("comandas")
+      .update({ paga: true })
+      .eq("id", payingComandaId);
+
+    if (error) {
+      message.error("Erro ao pagar comanda");
+    } else {
+      message.success("Comanda paga com sucesso");
+      fetchComandas();
+    }
+
+    // Resetar estado
+    setPayModalVisible(false);
+    setSelectedAdmin(null);
+    setAdminPassword("");
+    setPayingComandaId(null);
+  };
 
   const fetchComandas = async () => {
     setLoading(true);
@@ -189,7 +213,14 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                 <Button type="default" onClick={() => setSelectedComanda(record)}>
                   Adicionar bebida
                 </Button>
-                <Button disabled={!admin} danger onClick={() => handleMarkAsPaid(record.id)}>
+                <Button
+                  danger
+                  onClick={() => {
+                    setPayingComandaId(record.id);
+                    fetchAdmins(); // <-- busca os admins
+                    setPayModalVisible(true);
+                  }}
+                >
                   Marcar como paga
                 </Button>
               </div>
@@ -197,7 +228,6 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           },
         ]}
       />
-
       <Modal
         open={!!selectedComanda}
         onCancel={() => setSelectedComanda(null)}
@@ -225,6 +255,38 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             value={quantity}
             onChange={(val) => setQuantity(val || 1)}
             placeholder="Quantidade"
+          />
+        </div>
+      </Modal>
+      <Modal
+        title="Confirmar pagamento da comanda"
+        open={payModalVisible}
+        onCancel={() => {
+          setPayModalVisible(false);
+          setSelectedAdmin(null);
+          setAdminPassword("");
+          setPayingComandaId(null);
+        }}
+        onOk={handleConfirmPay}
+        okText="Confirmar"
+        cancelText="Cancelar"
+      >
+        <div className="flex flex-col gap-4">
+          <Select
+            placeholder="Selecione o administrador"
+            value={selectedAdmin || undefined}
+            onChange={(value) => setSelectedAdmin(value)}
+          >
+            {adminsList.map((admin) => (
+              <Select.Option key={admin.id} value={admin.email}>
+                {admin.email}
+              </Select.Option>
+            ))}
+          </Select>
+          <Input.Password
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            placeholder="Senha do admin"
           />
         </div>
       </Modal>
