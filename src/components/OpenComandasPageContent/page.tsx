@@ -135,20 +135,6 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     fetchComandas();
   };
 
-  const handleMarkAsPaid = async (id: number) => {
-    const { error } = await supabase
-      .from("comandas")
-      .update({ paga: true })
-      .eq("id", id);
-
-    if (error) {
-      message.error("Erro ao pagar comanda");
-    } else {
-      message.success("Comanda paga");
-      fetchComandas();
-    }
-  };
-
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Comandas Abertas</h1>
@@ -162,49 +148,49 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
         columns={[
           { title: "Nome", dataIndex: "nome_convidado" },
           {
-  title: "Telefone",
-  dataIndex: "telefone_convidado",
-  render: (text) => <span>{text}</span>,
-},
+            title: "Telefone",
+            dataIndex: "telefone_convidado",
+            render: (text) => <span>{text}</span>,
+          },
           {
-  title: "Itens",
-  render: (_, record) => {
-    const totalQtd = record.comanda_itens.reduce(
-      (sum: number, i: any) => sum + i.quantidade,
-      0
-    );
-    return (
-      <Button
-        type="link"
-        onClick={() => {
-          Modal.info({
-            title: `Itens da comanda de ${record.nome_convidado}`,
-            width: 400,
-            content: (
-              <div className="flex flex-col gap-2 mt-2">
-                {record.comanda_itens.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between border-b border-gray-300 pb-1"
-                  >
-                    <span>{item.bebida_nome}</span>
-                    <span>
-                      {" "}{item.quantidade} x R${" "}
-                      {item.preco_unitario.toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ),
-            okText: "Fechar",
-          });
-        }}
-      >
-        {totalQtd} bebida(s)
-      </Button>
-    );
-  },
-},
+            title: "Itens",
+            render: (_, record) => {
+              const totalQtd = record.comanda_itens.reduce(
+                (sum: number, i: any) => sum + i.quantidade,
+                0
+              );
+              return (
+                <Button
+                  type="link"
+                  onClick={() => {
+                    Modal.info({
+                      title: `Itens da comanda de ${record.nome_convidado}`,
+                      width: 400,
+                      content: (
+                        <div className="flex flex-col gap-2 mt-2">
+                          {record.comanda_itens.map((item: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="flex justify-between border-b border-gray-300 pb-1"
+                            >
+                              <span>{item.bebida_nome}</span>
+                              <span>
+                                {" "}{item.quantidade} x R${" "}
+                                {item.preco_unitario.toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ),
+                      okText: "Fechar",
+                    });
+                  }}
+                >
+                  {totalQtd} bebida(s)
+                </Button>
+              );
+            },
+          },
           { title: "Total", dataIndex: "total", render: (val) => `R$ ${val.toFixed(2)}` },
           {
             title: "Ações",
@@ -271,7 +257,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
         okText="Confirmar"
         cancelText="Cancelar"
       >
-        <div className="flex flex-col gap-4">
+        <div style={{display: "flex", flexDirection: "column", gap: 15}} className="flex flex-col gap-4">
           <Select
             placeholder="Selecione o administrador"
             value={selectedAdmin || undefined}
