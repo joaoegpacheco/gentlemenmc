@@ -27,11 +27,16 @@ export const LoginForm: React.FC = () => {
     // Pegar o token da sessão
     const session = await supabase.auth.getSession();
     const authToken = session.data.session?.access_token;
+    const userEmail = session.data.session?.user.email;
 
     if (authToken) {
-      // Salvar token nos cookies
-      document.cookie = `authToken=${authToken}; path=/; max-age=86400; Secure`;
-
+      // Se for o usuário especial, usar cookie sem expiração
+      if (userEmail === "barmc@gentlemenmc.com.br") {
+        document.cookie = `authToken=${authToken}; path=/; Secure; SameSite=Lax`;
+      } else {
+        // Para outros usuários, cookie com expiração padrão de 1 dia
+        document.cookie = `authToken=${authToken}; path=/; max-age=86400; Secure; SameSite=Lax`;
+      }
       // Redirecionar para a página privada
       router.push("/comandas");
     } else {
