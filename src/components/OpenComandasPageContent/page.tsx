@@ -5,8 +5,13 @@ import { Button, Modal, Table, message, Select, InputNumber } from "antd";
 import { updateComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
+import { PostgrestResponse } from "@supabase/supabase-js";
 
 interface Props {}
+
+interface AdminData {
+  id: string;
+}
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const [comandas, setComandas] = useState<any[]>([]);
@@ -14,6 +19,33 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const [selectedComanda, setSelectedComanda] = useState<any | null>(null);
   const [newDrink, setNewDrink] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
+  const [admin, setAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+      const checkIfUserIsAdmin = async () => {
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+  
+        if (!user) {
+          window.location.href = "/";
+          return;
+        }
+    
+        try {
+          const { data: admins }: PostgrestResponse<AdminData> = await supabase
+            .from("admins")
+            .select("id")
+            .eq("id", user.id);
+  
+          setAdmin(!!admins?.length);
+        } catch (error) {
+          console.error("Error fetching admin data:", error);
+          setAdmin(false);
+        }
+      };
+  
+      checkIfUserIsAdmin();
+    }, []);
 
   const fetchComandas = async () => {
     setLoading(true);
@@ -157,7 +189,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                 <Button type="default" onClick={() => setSelectedComanda(record)}>
                   Adicionar bebida
                 </Button>
-                <Button danger onClick={() => handleMarkAsPaid(record.id)}>
+                <Button disabled={!admin} danger onClick={() => handleMarkAsPaid(record.id)}>
                   Marcar como paga
                 </Button>
               </div>
