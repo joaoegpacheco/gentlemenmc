@@ -22,6 +22,14 @@ const events = [
   { title: "Serra da Macaca e Rastro da Serpente - Capão Bonito/SP", date: "2025-05-24" },
   { title: "Serra da Macaca e Rastro da Serpente - Capão Bonito/SP", date: "2025-05-25" },
   { title: "2° Festa Junina", date: "2025-06-14" },
+  { title: "Arrancada Tramps", date: "2025-08-01" },
+  { title: "MotorCycle Fest", date: "2025-08-02" },
+  { title: "MotorCycle Fest", date: "2025-08-03" },
+  { title: "Quarta na sede", date: "2025-08-06" },
+  { title: "Aniversário Alex e Muller", date: "2025-08-16" },
+  { title: "Quarta na sede", date: "2025-08-20" },
+  { title: "Quarta na sede com as mulheres", date: "2025-08-27" },
+  { title: "Open House - MotoClubes", date: "2025-08-30" },
 ];
 
 const CalendarEvents = () => {
