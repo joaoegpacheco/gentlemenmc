@@ -26,6 +26,7 @@ const events = [
   { title: "MotorCycle Fest", date: "2025-08-02" },
   { title: "MotorCycle Fest", date: "2025-08-03" },
   { title: "Quarta na sede", date: "2025-08-06" },
+  { title: "Quarta na sede", date: "2025-08-13" },
   { title: "Aniversário Alex e Muller", date: "2025-08-16" },
   { title: "Quarta na sede", date: "2025-08-20" },
   { title: "Quarta na sede com as mulheres", date: "2025-08-27" },
