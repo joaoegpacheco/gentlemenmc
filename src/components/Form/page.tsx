@@ -23,6 +23,7 @@ const BEBIDAS_PRECOS: Record<string, number> = {
   "Chopp Pilsen": 12,
   "Chopp Mutum": 20,
   "Long Neck Heineken/Corona": 12,
+"Long Neck Stella Artois": 8,
   "Energético": 12,
   "Refrigerante": 6,
   "Água": 3,
