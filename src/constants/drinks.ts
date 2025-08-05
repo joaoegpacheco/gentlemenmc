@@ -2,6 +2,7 @@ export const DRINKS_PRICES: Record<string, number> = {
   "Chopp Pilsen": 12,
   "Chopp Mutum": 20,
   "Long Neck Heineken/Corona": 15,
+"Long Neck Stella Artois": 12,
   "Energético": 15,
   "Refrigerante": 6,
   "Água": 5,
