@@ -5,6 +5,7 @@ import { Button, Table, message, Input } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { registerComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
+import { consumirEstoque } from "@/services/estoqueService";
 
 export default function CreateComandaPage() {
   const [items, setItems] = useState<{ drink: string; quantity: number; price: number }[]>([]);
@@ -12,42 +13,46 @@ export default function CreateComandaPage() {
   const [guestPhone, setGuestPhone] = useState<string>("");
 
   const handleCreateComanda = async () => {
-  if (!guestName) {
-    message.error("Informe nome do convidado");
-    return;
-  }
-  if (!guestPhone) {
-    message.error("Informe telefone do convidado");
-    return;
-  }
-  if (items.length === 0) {
-    message.error("Adicione ao menos 1 item");
-    return;
-  }
+    if (!guestName) {
+      message.error("Informe nome do convidado");
+      return;
+    }
+    if (!guestPhone) {
+      message.error("Informe telefone do convidado");
+      return;
+    }
+    if (items.length === 0) {
+      message.error("Adicione ao menos 1 item");
+      return;
+    }
 
-  await registerComanda({
-    guestName: guestName || undefined,
-    guestPhone: guestPhone || undefined,
-    items,
-  });
+    for (const item of items) {
+      await consumirEstoque(item.drink, item.quantity);
+    }
 
-  message.success("Comanda criada com sucesso");
+    await registerComanda({
+      guestName: guestName || undefined,
+      guestPhone: guestPhone || undefined,
+      items,
+    });
 
-  if (typeof window !== "undefined") {
+    message.success("Comanda criada com sucesso");
+
+    if (typeof window !== "undefined") {
       const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
       await printComandaHTML({ guestName: guestName || "Sem nome", items });
     }
 
-  setItems([]);
-  setGuestName("");
-  setGuestPhone("");
-};
+    setItems([]);
+    setGuestName("");
+    setGuestPhone("");
+  };
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
 
   return (
     <div className="p-4 flex column gap-25">
-      <div style={{display: "flex", gap: 20, flexWrap: "wrap"}} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Input
           addonBefore="Nome do convidado"
           placeholder="Falano de tal"
@@ -55,23 +60,23 @@ export default function CreateComandaPage() {
           onChange={(e) => setGuestName(e.target.value)}
         />
         <Input
-        addonBefore="Telefone do convidado"
-    placeholder="(XX) 9XXXX-XXXX"
-    value={guestPhone}
-    maxLength={15}
-    onChange={(e) => {
-      const raw = e.target.value.replace(/\D/g, "");
-      const formatted = raw.replace(
-        /^(\d{2})(\d{5})(\d{4}).*/,
-        "($1) $2-$3"
-      );
-      e.target.value = formatted
-      setGuestPhone(formatted);
-    }}
-  />
+          addonBefore="Telefone do convidado"
+          placeholder="(XX) 9XXXX-XXXX"
+          value={guestPhone}
+          maxLength={15}
+          onChange={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+            const formatted = raw.replace(
+              /^(\d{2})(\d{5})(\d{4}).*/,
+              "($1) $2-$3"
+            );
+            e.target.value = formatted
+            setGuestPhone(formatted);
+          }}
+        />
       </div>
 
-      <div style={{display: 'flex', flexWrap: "wrap", gap: 25, padding: 25}} className=" grid-cols-2 sm:grid-cols-3 md:grid-cols-4 mb-6">
+      <div style={{ display: 'flex', flexWrap: "wrap", gap: 25, padding: 25 }} className=" grid-cols-2 sm:grid-cols-3 md:grid-cols-4 mb-6">
         {Object.entries(DRINKS_PRICES).map(([drink, price]) => (
           <Button
             key={drink}
@@ -125,7 +130,7 @@ export default function CreateComandaPage() {
       />
 
       <div className="flex justify-between items-center">
-        <div style={{margin: 25}} className="text-xl font-bold">Total: R$ {total.toFixed(2)}</div>
+        <div style={{ margin: 25 }} className="text-xl font-bold">Total: R$ {total.toFixed(2)}</div>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateComanda}>
           Criar Comanda
         </Button>
