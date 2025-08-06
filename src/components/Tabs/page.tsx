@@ -17,6 +17,8 @@ import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
 import CreateComandaPage from "@/app/nova-comanda/page";
 import { OpenComandasPageContent } from "@/components/OpenComandasPageContent/page";
+import EstoquePage from "@/app/admin/estoque/page";
+import HistoricoEstoquePage from "@/app/admin/estoque/historico/page";
 
 interface AdminData {
   id: string;
@@ -95,6 +97,8 @@ export default function TabsComponent() {
       children: <CardComandAll ref={comandAllTableRef} />,
     },
     { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+    { key: "14", label: "Estoque", children: <EstoquePage /> },
+    { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
     { key: "11", label: <LogoutButton /> },
   ];
 
@@ -102,6 +106,7 @@ export default function TabsComponent() {
   { key: "1", label: "Marcar", children: <FormComand /> },
   { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
   { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+  { key: "14", label: "Estoque", children: <EstoquePage /> },
 ];
 
   const birthdays: Birthday[] = [
