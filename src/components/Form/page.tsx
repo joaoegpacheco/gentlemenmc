@@ -73,7 +73,14 @@ export function FormComand() {
       const amount = values.amount || 1;
       const valueDrink = calculateCustomPrice(nameUser, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
 
-      await consumirEstoque(values.drink, amount);
+      if (!values.drink) {
+        notification.error({
+          message: "Erro",
+          description: "Você precisa selecionar uma bebida.",
+        });
+        return;
+      }
+      await consumirEstoque(values.drink!, amount);
 
       await supabase.from("bebidas").insert([
         {
