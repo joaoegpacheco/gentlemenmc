@@ -15,3 +15,21 @@ export const DRINKS_PRICES: Record<string, number> = {
 "Vinho Caoba": 69,
   "Carteira de Cigarro": 15,
 };
+
+export const BEBIDAS_PRECOS: Record<string, number> = {
+  "Chopp Pilsen": 12,
+  "Chopp Mutum": 20,
+  "Long Neck Heineken/Corona": 12,
+  "Long Neck Stella Artois": 8,
+  "Energético": 12,
+  "Refrigerante": 6,
+  "Água": 3,
+  "Dose Gin": 5,
+  "Dose Jagermeister": 15,
+  "Dose Whiskey": 15,
+  "Dose Campari": 5,
+  "Dose Rum": 10,
+  "Vinho Cordero": 80,
+  "Vinho Caoba": 43,
+  "Carteira de Cigarro": 15,
+};

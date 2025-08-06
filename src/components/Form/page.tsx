@@ -5,6 +5,8 @@ import { Button, Form, Select, notification } from "antd";
 import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
+import { consumirEstoque } from "@/services/estoqueService";
+import { BEBIDAS_PRECOS } from "@/constants/drinks";
 
 type FieldType = {
   nome?: string;
@@ -17,24 +19,6 @@ type FieldType = {
 type MemberType = {
   user_id: string;
   user_name: string;
-};
-
-const BEBIDAS_PRECOS: Record<string, number> = {
-  "Chopp Pilsen": 12,
-  "Chopp Mutum": 20,
-  "Long Neck Heineken/Corona": 12,
-"Long Neck Stella Artois": 8,
-  "Energético": 12,
-  "Refrigerante": 6,
-  "Água": 3,
-  "Dose Gin": 5,
-  "Dose Jagermeister": 15,
-  "Dose Whiskey": 15,
-  "Dose Campari": 5,
-"Dose Rum": 10,
-"Vinho Cordero": 80,
-"Vinho Caoba": 43,
-  "Carteira de Cigarro": 15,
 };
 
 export function FormComand() {
@@ -89,6 +73,8 @@ export function FormComand() {
       const amount = values.amount || 1;
       const valueDrink = calculateCustomPrice(nameUser, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
 
+      await consumirEstoque(values.drink, amount);
+
       await supabase.from("bebidas").insert([
         {
           name: nameUser,
@@ -120,7 +106,7 @@ export function FormComand() {
 
   return (
     <Form name="comanda" form={form} style={{ width: "100%", paddingTop: 20 }} onFinish={handleSubmit} autoComplete="off">
-      
+
       {/* NOME (MEMBROS) */}
       <Form.Item<FieldType>
         name="nome"
@@ -137,7 +123,7 @@ export function FormComand() {
               ))}
             </Select>
           ) : (
-            <div style={{gap: "25px", display: "flex", flexWrap: "wrap"}} className="flex flex-wrap gap-2">
+            <div style={{ gap: "25px", display: "flex", flexWrap: "wrap" }} className="flex flex-wrap gap-2">
               {Object.values(members).map((member) => (
                 <Button
                   key={member.user_id}
@@ -179,7 +165,7 @@ export function FormComand() {
             ))}
           </Select>
         ) : (
-          <div style={{gap: "25px", display: "flex", flexWrap: "wrap"}} className="flex flex-wrap gap-2">
+          <div style={{ gap: "25px", display: "flex", flexWrap: "wrap" }} className="flex flex-wrap gap-2">
             {Object.keys(BEBIDAS_PRECOS).map(drink => (
               <Button
                 key={drink}
@@ -189,7 +175,10 @@ export function FormComand() {
                   form.setFieldValue("drink", drink);
                 }}
               >
-                {drink}
+                {`${drink} ${new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(BEBIDAS_PRECOS[drink])}`}
               </Button>
             ))}
           </div>
