@@ -19,6 +19,7 @@ import CreateComandaPage from "@/app/nova-comanda/page";
 import { OpenComandasPageContent } from "@/components/OpenComandasPageContent/page";
 import EstoquePage from "@/app/admin/estoque/page";
 import HistoricoEstoquePage from "@/app/admin/estoque/historico/page";
+import { CreditManager } from "../CreditManager/page";
 
 interface AdminData {
   id: string;
@@ -99,6 +100,7 @@ export default function TabsComponent() {
     { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
     { key: "14", label: "Estoque", children: <EstoquePage /> },
     { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
+    { key: "16", label: "Créditos", children: <CreditManager /> },
     { key: "11", label: <LogoutButton /> },
   ];
 
