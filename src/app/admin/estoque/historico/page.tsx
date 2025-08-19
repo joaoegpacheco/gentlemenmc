@@ -191,8 +191,8 @@ export default function HistoricoEstoquePage() {
           {
             title: "Tipo",
             dataIndex: "type",
-            render: (type) =>
-              type === "entrada" ? (
+            render: (_: any, record: { type: string; quantity: number }) =>
+              record.type === "entrada" && record.quantity > 0 ? (
                 <Tag color="green">Entrada</Tag>
               ) : (
                 <Tag color="red">Saída</Tag>
