@@ -81,8 +81,8 @@ export default function TabsComponent() {
       label: "Ver marcações",
       children: <CardComand ref={cardComandRef} />,
     },
-    { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
-    { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
+    // { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
+    // { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
     { key: "5", label: "Eventos", children: <CalendarEvents /> },
     { key: "6", label: "Estatuto", children: <ByLaw /> },
     { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
@@ -106,6 +106,11 @@ export default function TabsComponent() {
 
   const itemsBar: TabsProps["items"] = [
   { key: "1", label: "Marcar", children: <FormComand /> },
+  {
+    key: "2",
+    label: "Ver marcações",
+    children: <CardComand ref={cardComandRef} />,
+  },
   { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
   { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
   { key: "14", label: "Estoque", children: <EstoquePage /> },
