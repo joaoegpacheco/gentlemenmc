@@ -29,8 +29,11 @@ const events = [
   { title: "Quarta na sede", date: "2025-08-13" },
   { title: "Aniversário Alex e Muller", date: "2025-08-16" },
   { title: "Quarta na sede", date: "2025-08-20" },
-  { title: "Quarta na sede com as mulheres", date: "2025-08-27" },
+  { title: "Quarta na sede", date: "2025-08-27" },
   { title: "Open House - MotoClubes", date: "2025-08-30" },
+  { title: "Tradicional desfile 7 de Setembro", date: "2025-09-07" },
+  { title: "Rolê de feriado", date: "2025-09-08" },
+  { title: "Gentlemen Blue", date: "2025-11-22" },
 ];
 
 const CalendarEvents = () => {
