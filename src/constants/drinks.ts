@@ -15,7 +15,7 @@ export const DRINKS_PRICES: Record<string, number> = {
   "Dose Rum": 15,
   "Vinho Cordero": 89,
   "Vinho Caoba": 69,
-  "Carteira de Cigarro": 15,
+  "Carteira de Cigarro Cohiba": 30,
 };
 
 export const BEBIDAS_PRECOS: Record<string, number> = {
@@ -35,5 +35,5 @@ export const BEBIDAS_PRECOS: Record<string, number> = {
   "Dose Rum": 10,
   "Vinho Cordero": 80,
   "Vinho Caoba": 43,
-  "Carteira de Cigarro": 15,
+  "Carteira de Cigarro Cohiba": 20,
 };
