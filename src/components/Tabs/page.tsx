@@ -5,8 +5,8 @@ import type { TabsProps } from "antd";
 import { FormComand } from "@/components/Form/page";
 import { CardComand } from "@/components/CardDrinks/page";
 import { CardComandAll } from "@/components/CardDrinksAll/page";
-import { InvoiceForm } from "@/components/InvoiceForm/page";
-import { InvoiceTable } from "@/components/InvoiceTable/page";
+// import { InvoiceForm } from "@/components/InvoiceForm/page";
+// import { InvoiceTable } from "@/components/InvoiceTable/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
@@ -35,6 +35,7 @@ const { Text } = Typography;
 
 export default function TabsComponent() {
   const [admin, setAdmin] = useState<boolean | null>(null);
+  const [manager, setManager] = useState<boolean | null>(null);
   const [isBarUser, setIsBarUser] = useState<boolean>(false);
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
@@ -51,6 +52,10 @@ export default function TabsComponent() {
       }
 
       setIsBarUser(user.email === "barmc@gentlemenmc.com.br");
+
+      if (user.email === "robson@gentlemenmc.com.br") {
+        setManager(true);
+      }
 
       try {
         const { data: admins }: PostgrestResponse<AdminData> = await supabase
@@ -90,7 +95,7 @@ export default function TabsComponent() {
   ];
 
   const itemsAdmin: TabsProps["items"] = [
-    ...items.slice(0, 7),
+    ...items.slice(0, 4),
     { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
     {
       key: "10",
@@ -101,6 +106,15 @@ export default function TabsComponent() {
     { key: "14", label: "Estoque", children: <EstoquePage /> },
     { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
     { key: "16", label: "Créditos", children: <CreditManager /> },
+    { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+    { key: "11", label: <LogoutButton /> },
+  ];
+
+  const itemsManager: TabsProps["items"] = [
+    ...items.slice(0, 4),
+    { key: "14", label: "Estoque", children: <EstoquePage /> },
+    { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
+    { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
     { key: "11", label: <LogoutButton /> },
   ];
 
@@ -123,22 +137,22 @@ export default function TabsComponent() {
     { name: "Bacellar", fullDate: "1962-09-05", day: "05" },
     { name: "Baeza", fullDate: "1977-01-09", day: "09" },
     { name: "Beto", fullDate: "1962-09-07", day: "07" },
+    { name: "Beni", fullDate: "1969-02-04", day: "04" },
     { name: "Claudio", fullDate: "1971-10-08", day: "08" },
     { name: "Camargo", fullDate: "1971-06-11", day: "11" },
     { name: "Fernando", fullDate: "1967-11-05", day: "05" },
-    //{ name: "Giuliano", fullDate: "1989-03-28", day: "28" },
+    { name: "Fagner", fullDate: "1980-10-27", day: "27" },
     { name: "Gulitich", fullDate: "1973-02-19", day: "19" },
+    { name: "Guiotto", fullDate: "1984-01-22", day: "22" },
     { name: "Índio", fullDate: "1970-06-25", day: "25" },
     { name: "Jefão", fullDate: "1981-02-04", day: "04" },
     { name: "Jeferson", fullDate: "1974-10-05", day: "05" },
-    //{ name: "João Marius", fullDate: "1972-08-02", day: "02" },
+    { name: "Julinho", fullDate: "1980-09-30", day: "30" },
     { name: "Léo", fullDate: "1981-09-27", day: "27" },
-    //{ name: "Luiz", fullDate: "1981-09-27", day: "27" },
     { name: "Madalosso", fullDate: "1988-02-20", day: "20" },
-    //{ name: "Maicon", fullDate: "1983-02-16", day: "16" },
     { name: "Mega", fullDate: "1979-07-31", day: "31" },
     { name: "Mortari", fullDate: "1970-01-18", day: "18" },
-    { name: "Muller", fullDate: "1979-08-15", day: "15" },
+    { name: "Dani", fullDate: "1979-08-15", day: "15" },
     { name: "Pacheco", fullDate: "1990-03-04", day: "04" },
     { name: "Rafael", fullDate: "1975-08-09", day: "09" },
     { name: "Rick", fullDate: "1972-01-06", day: "06" },
@@ -148,6 +162,7 @@ export default function TabsComponent() {
     { name: "Soares", fullDate: "1991-06-19", day: "19" },
     { name: "Valdinei", fullDate: "1977-08-06", day: "06" },
     { name: "Weriton", fullDate: "1976-04-14", day: "14" },
+    { name: "Will", fullDate: "1989-11-04", day: "04" },
     { name: "Zanona", fullDate: "1985-01-02", day: "02" },
     { name: "Zé Carlos", fullDate: "1967-12-08", day: "08" },
     { name: "Zeca", fullDate: "1970-03-05", day: "05" },
@@ -181,6 +196,8 @@ export default function TabsComponent() {
       ? itemsAdmin
       : isBarUser
       ? itemsBar
+      : manager
+      ? itemsManager
       : items
   }
       />
