@@ -177,7 +177,13 @@ export const CardComand = forwardRef((_, ref) => {
         grid={{ gutter: 16, xs: 1, sm: 2, md: 4, lg: 4, xl: 4, xxl: 3 }}
         renderItem={(item) => (
           <List.Item key={item.created_at + item.drink}>
-            <Card title={isBarMC ? item.drink + ' - ' + item.name : item.drink}>
+            <Card title={isBarMC ? (
+              <>
+                {item.drink}
+                <br />
+                {item.name}
+              </>
+            ) : item.drink}>
               <p>Data: {formatDateTime(item.created_at)}</p>
               <p>Quantidade: {item.quantity}</p>
               <p>Valor: {formatCurrency(item.price)}</p>
