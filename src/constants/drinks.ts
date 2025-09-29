@@ -1,13 +1,12 @@
 export const DRINKS_PRICES: Record<string, number> = {
   "Chopp Pilsen": 12,
   "Chopp Mutum": 20,
-  "Chopp Ovelha": 16,
   "Long Neck Heineken": 15,
   "Long Neck Stella Artois": 12,
   "Energético": 15,
   "Refrigerante": 6,
   "Água": 5,
-"Café": 5,
+  "Café": 5,
   "Dose Gin": 10,
   "Dose Jagermeister": 20,
   "Dose Whiskey": 20,
@@ -15,19 +14,18 @@ export const DRINKS_PRICES: Record<string, number> = {
   "Dose Rum": 15,
   "Vinho Cordero": 89,
   "Vinho Caoba": 69,
-  "Carteira de Cigarro": 15,
+  "Carteira de Cigarro Cohiba": 30,
 };
 
 export const BEBIDAS_PRECOS: Record<string, number> = {
   "Chopp Pilsen": 10,
   "Chopp Mutum": 18,
-  "Chopp Ovelha": 14,
   "Long Neck Heineken": 12,
   "Long Neck Stella Artois": 8,
   "Energético": 12,
   "Refrigerante": 6,
   "Água": 3,
-"Café": 3,
+  "Café": 3,
   "Dose Gin": 5,
   "Dose Jagermeister": 15,
   "Dose Whiskey": 15,
@@ -35,5 +33,5 @@ export const BEBIDAS_PRECOS: Record<string, number> = {
   "Dose Rum": 10,
   "Vinho Cordero": 80,
   "Vinho Caoba": 43,
-  "Carteira de Cigarro": 15,
+  "Carteira de Cigarro Cohiba": 20,
 };
