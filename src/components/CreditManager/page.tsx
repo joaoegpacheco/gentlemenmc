@@ -25,16 +25,34 @@ export function CreditManager() {
       return;
     }
 
-    const { error } = await supabase.rpc("add_credits", {
-      p_user_id: selectedUser,
-      p_amount: amount,
-    });
+    const { data, error } = await supabase
+      .from("credits")
+      .insert([
+        {
+          user_id: selectedUser,
+          balance: amount,
+        },
+      ]);
 
     if (error) {
-      notification.error({ message: "Erro ao adicionar crédito" });
+      notification.error({ 
+        message: "Erro ao adicionar crédito", 
+        description: error.message 
+      });
     } else {
-      notification.success({ message: "Crédito adicionado com sucesso!" });
+      const { data: allCredits } = await supabase
+        .from("credits")
+        .select("balance")
+        .eq("user_id", selectedUser);
+      
+      const balance = allCredits?.reduce((sum, c) => sum + (c.balance || 0), 0) || 0;
+      
+      notification.success({ 
+        message: `Crédito adicionado com sucesso!`,
+        description: `Novo saldo: ${balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+      });
       setAmount(0);
+      setSelectedUser("");
     }
   };
 
@@ -49,11 +67,15 @@ export function CreditManager() {
       />
       <div style={{ display: "flex", gap: 12 }}>
         <InputNumber
-          placeholder="Valor"
+          placeholder="Valor (R$)"
           value={amount}
-          onChange={(val) => setAmount(val || 0)}
+          onChange={(val) => setAmount(Number(val) || 0)}
           min={0}
+          step={0.01}
+          precision={2}
           style={{ width: "100%" }}
+          formatter={(value) => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+          parser={(value) => Number(value?.replace(/R\$\s?|(\.*)/g, '')) || 0}
         />
         <Button type="primary" onClick={handleAddCredit}>
           Adicionar Crédito

@@ -53,9 +53,14 @@ export function FormComand() {
   }, []);
 
   const fetchUserCredit = async (user_id: string) => {
-    const { data, error } = await supabase.rpc("get_credit_balance", { p_user_id: user_id });
-    if (!error && data != null) {
-      setUserCredit(data as number);
+    const { data, error } = await supabase
+      .from("credits")
+      .select("balance")
+      .eq("user_id", user_id);
+    
+    if (!error && data) {
+      const balance = data.reduce((sum, c) => sum + (c.balance || 0), 0);
+      setUserCredit(balance);
     } else {
       setUserCredit(0);
     }
@@ -87,19 +92,38 @@ export function FormComand() {
 
       await consumirEstoque(values.drink!, amount);
 
-      // Se o usuário tem crédito, chama a RPC, senão, insere com paid = null
+      // Se o usuário tem crédito, debita do crédito e marca como pago
       if (userCredit >= valueDrink * amount) {
-        const { error } = await supabase.rpc("consume_with_credit", {
-          p_user_id: keyUser,
-          p_user_name: nameUser,
-          p_drink: values.drink,
-          p_price: valueDrink,
-          p_quantity: amount,
-          p_user_email: user?.email,
-        });
+        const totalPrice = valueDrink * amount;
+        
+        // Insere a bebida marcada como paga
+        const { error: drinkError } = await supabase.from("bebidas").insert([
+          {
+            name: nameUser,
+            drink: values.drink,
+            quantity: amount,
+            price: totalPrice,
+            user: user?.email,
+            uuid: keyUser,
+            paid: true,
+          },
+        ]);
 
-        if (error) {
-          notification.error({ message: "Erro ao cadastrar bebida", description: error.message });
+        if (drinkError) {
+          notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
+          return;
+        }
+
+        // Debita do crédito inserindo valor negativo
+        const { error: creditError } = await supabase.from("credits").insert([
+          {
+            user_id: keyUser,
+            balance: -totalPrice,
+          },
+        ]);
+
+        if (creditError) {
+          notification.error({ message: "Erro ao debitar crédito", description: creditError.message });
           return;
         }
       } else {
