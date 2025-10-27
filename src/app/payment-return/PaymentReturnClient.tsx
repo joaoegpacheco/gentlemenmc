@@ -2,73 +2,61 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/hooks/use-supabase";
+import { Result, Button, Spin } from "antd";
+import Image from 'next/image';
+import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined } from "@ant-design/icons";
+import Link from "next/link";
 
 type Props = {
   searchParams: {
-    transaction_id: string;
-    order_nsu: string;
-    slug: string;
+    order_id?: string;
+    nsu?: string;
+    aut?: string;
+    card_brand?: string;
+    handle?: string;
+    merchant_document?: string;
+    warning?: string;
   };
 };
 
 export default function PaymentReturnClient({ searchParams }: Props) {
-  const [status, setStatus] = useState<"loading" | "success" | "failed">(
-    "loading"
-  );
+  const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
   const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
     const confirmPayment = async () => {
-      const { transaction_id, order_nsu, slug } = searchParams;
+      const { order_id, nsu, warning } = searchParams;
 
       try {
-        // 1. Consultar API InfinitePay
-        const res = await fetch(
-          `https://api.infinitepay.io/invoices/public/checkout/payment_check/gentlemenmc`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transaction_nsu: transaction_id,
-              external_order_nsu: order_nsu,
-              slug,
-            }),
-          }
-        );
+        // Verifica se o pagamento falhou
+        if (warning || !nsu || !order_id) throw new Error(warning || "Dados inválidos");
 
-        const result = await res.json();
+        // Atualiza cobrança
+        const { error: updateError } = await supabase
+          .from("charges")
+          .update({ status: "paid", transaction_id: nsu })
+          .eq("order_nsu", order_id);
+        if (updateError) throw updateError;
 
-        if (result.success && result.paid) {
-          // 2. Atualiza status da cobrança no Supabase
-          await supabase
-            .from("charges")
-            .update({ status: "paid", transaction_id, slug })
-            .eq("order_nsu", order_nsu);
+        // Busca nome do cliente
+        const { data, error: selectError } = await supabase
+          .from("charges")
+          .select("customer_name")
+          .eq("order_nsu", order_id)
+          .single();
+        if (selectError || !data) throw selectError;
 
-          // 3. Busca o nome do cliente
-          const { data, error } = await supabase
-            .from("charges")
-            .select("customer_name")
-            .eq("order_nsu", order_nsu)
-            .single();
+        // Marca bebidas como pagas
+        const { error: bebidasError } = await supabase
+          .from("bebidas")
+          .update({ paid: true })
+          .eq("name", data.customer_name);
+        if (bebidasError) throw bebidasError;
 
-          // 4. Atualiza as bebidas como pagas
-          await supabase
-            .from("bebidas")
-            .update({ paid: true })
-            .eq("name", data?.customer_name);
-
-          if (!error && data) {
-            setName(data.customer_name);
-            setStatus("success");
-          } else {
-            throw new Error("Nome não encontrado");
-          }
-        } else {
-          throw new Error("Pagamento não confirmado");
-        }
-      } catch (error) {
-        console.error(error);
+        setName(data.customer_name);
+        setStatus("success");
+      } catch (err) {
+        console.error("Erro ao confirmar pagamento:", err);
         setStatus("failed");
       }
     };
@@ -76,7 +64,58 @@ export default function PaymentReturnClient({ searchParams }: Props) {
     confirmPayment();
   }, [searchParams]);
 
-  if (status === "loading") return <p>Verificando pagamento...</p>;
-  if (status === "failed") return <p>Erro ao confirmar o pagamento.</p>;
-  return <h1>Obrigado, {name}! Pagamento confirmado com sucesso. ✅</h1>;
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-center">
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+        <p className="mt-4 text-lg">Verificando pagamento...</p>
+      </div>
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-center px-4">
+        <Image
+          src="/images/gentlemenmc.png"
+          alt="Página não encontrada"
+          width={200}
+          height={200}
+          style={{
+            objectFit: "contain", // Garante que a imagem não distorça
+          }}
+        />
+        <Result
+          status="error"
+          title="Erro ao confirmar o pagamento"
+          subTitle="Não foi possível confirmar sua transação. Verifique com o operador ou tente novamente."
+          icon={<CloseCircleOutlined style={{ color: "#ff4d4f" }} />}
+          extra={[
+            <Link href="/" key="home">
+              <Button type="primary">Voltar ao início</Button>
+            </Link>,
+          ]}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen text-center px-4">
+      <Result
+        status="success"
+        title={`Obrigado, ${name || "cliente"}!`}
+        subTitle="Seu pagamento foi confirmado com sucesso."
+        icon={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
+        extra={[
+          <Link href="/" key="home">
+            <Button type="primary">Voltar ao início</Button>
+          </Link>,
+        ]}
+      />
+      <footer className="mt-8 text-sm text-gray-500">
+        <p>GentlemenMC © {new Date().getFullYear()}</p>
+      </footer>
+    </div>
+  );
 }
