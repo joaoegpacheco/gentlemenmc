@@ -138,7 +138,7 @@ export const CardComand = forwardRef((_, ref) => {
     } else if (selectedUUID) {
       fetchDrinks(selectedUUID);
     }
-  }, [selectedUUID, isBarMC]);
+  }, [selectedUUID, isBarMC, fetchDrinks]);
 
   return (
     <ConfigProvider
