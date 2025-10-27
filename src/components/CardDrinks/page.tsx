@@ -62,7 +62,8 @@ export const CardComand = forwardRef((_, ref) => {
     const { data: admins } = await supabase
       .from("admins")
       .select("id")
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .eq("role", "admin");
 
     const adminStatus = !!(admins && admins.length > 0);
     setIsAdmin(adminStatus);

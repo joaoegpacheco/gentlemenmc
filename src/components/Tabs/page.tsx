@@ -52,16 +52,14 @@ export default function TabsComponent() {
       }
 
       setIsBarUser(user.email === "barmc@gentlemenmc.com.br");
-
-      if (user.email === "robson@gentlemenmc.com.br") {
-        setManager(true);
-      }
+      setManager(user.email === "robson@gentlemenmc.com.br");
 
       try {
         const { data: admins }: PostgrestResponse<AdminData> = await supabase
           .from("admins")
           .select("id")
-          .eq("id", user.id);
+          .eq("id", user.id)
+          .eq("role", "admin");
 
         setAdmin(!!admins?.length);
       } catch (error) {
@@ -128,6 +126,7 @@ export default function TabsComponent() {
   { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
   { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
   { key: "14", label: "Estoque", children: <EstoquePage /> },
+  { key: "6", label: "Estatuto", children: <ByLaw /> },
 ];
 
   const birthdays: Birthday[] = [
