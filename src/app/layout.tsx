@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ConfigProvider } from "antd";
 import "./globals.css";
 import AuthListener from "@/components/AuthListener";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -56,6 +57,7 @@ export default function RootLayout({
           <footer style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", paddingBottom: 10 }}>
             <span style={{ fontSize: 12, color: "#888" }}>Copyright © 2025 Gentlemen MC</span> 
           </footer>
+          <SpeedInsights />
         </body>
       </html>
     </ConfigProvider>
