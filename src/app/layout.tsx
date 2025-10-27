@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ConfigProvider } from "antd";
-import "./globals.css";
 import AuthListener from "@/components/AuthListener";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -51,11 +51,11 @@ export default function RootLayout({
 
           <link rel="preconnect" href="https://fonts.gstatic.com" />
         </head>
-        <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh", margin: 0 }}>
+        <body className={`${inter.className} min-h-screen flex flex-col`}>
           <AuthListener />
-          <div style={{ flex: 1 }}>{children}</div>
-          <footer style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", paddingBottom: 10 }}>
-            <span style={{ fontSize: 12, color: "#888" }}>Copyright © 2025 Gentlemen MC</span> 
+          <main className="flex-1 p-6">{children}</main>
+          <footer className="flex items-center justify-center w-full pb-2">
+            <span className="text-xs text-gray-500">Copyright © 2025 Gentlemen MC</span> 
           </footer>
           <SpeedInsights />
         </body>

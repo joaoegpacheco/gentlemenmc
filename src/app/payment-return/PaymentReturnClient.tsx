@@ -75,23 +75,22 @@ export default function PaymentReturnClient({ searchParams }: Props) {
 
   if (status === "failed") {
     return (
-      <div className="flex flex-col items-center justify-center h-screen text-center px-4">
+      <div className="flex flex-col items-center justify-center h-screen text-center px-4 space-y-6">
         <Image
           src="/images/gentlemenmc.png"
-          alt="Página não encontrada"
+          alt="Logo GentlemenMC"
           width={200}
-          height={200}
-          style={{
-            objectFit: "contain", // Garante que a imagem não distorça
-          }}
+          height={250}
+          className="object-contain"
+          priority
         />
         <Result
           status="error"
-          title="Erro ao confirmar o pagamento"
-          subTitle="Não foi possível confirmar sua transação. Verifique com o operador ou tente novamente."
+          title="Erro ao confirmar seu pagamento"
+          subTitle="Não foi possível confirmar sua transação. Fale diretamente com o diretor financeiro."
           icon={<CloseCircleOutlined style={{ color: "#ff4d4f" }} />}
           extra={[
-            <Link href="/" key="home">
+            <Link href="/comandas" key="home">
               <Button type="primary">Voltar ao início</Button>
             </Link>,
           ]}
@@ -101,21 +100,26 @@ export default function PaymentReturnClient({ searchParams }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-center px-4">
+    <div className="flex flex-col items-center justify-center h-screen text-center px-4 space-y-6">
+      <Image
+        src="/images/gentlemenmc.png"
+        alt="Logo GentlemenMC"
+        width={200}
+        height={200}
+        className="object-contain"
+        priority
+      />
       <Result
         status="success"
-        title={`Obrigado, ${name || "cliente"}!`}
+        title={`Obrigado, ${name || "irmão"}!`}
         subTitle="Seu pagamento foi confirmado com sucesso."
         icon={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
         extra={[
-          <Link href="/" key="home">
+          <Link href="/comandas" key="home">
             <Button type="primary">Voltar ao início</Button>
           </Link>,
         ]}
       />
-      <footer className="mt-8 text-sm text-gray-500">
-        <p>GentlemenMC © {new Date().getFullYear()}</p>
-      </footer>
     </div>
   );
 }
