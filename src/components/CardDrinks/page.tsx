@@ -4,6 +4,7 @@ import React, {
   useState,
   forwardRef,
   useImperativeHandle,
+  useCallback,
 } from "react";
 import { List, Card, ConfigProvider, Select } from "antd";
 import { formatDateTime } from "@/utils/formatDateTime";
@@ -80,49 +81,52 @@ export const CardComand = forwardRef((_, ref) => {
     setSelectedUUID(user.id);
   };
 
-  const fetchDrinks = async (uuid: string | null) => {
-    let query = supabase
-      .from("bebidas")
-      .select("created_at, name, drink, paid, quantity, price, user, uuid")
-      .order("created_at", { ascending: false });
+  const fetchDrinks = useCallback(
+    async (uuid: string | null = null) => {
+      let query = supabase
+        .from("bebidas")
+        .select("created_at, name, drink, paid, quantity, price, user, uuid")
+        .order("created_at", { ascending: false });
 
-    if (isBarMC) {
-      // Data no fuso de São Paulo (America/Sao_Paulo)
-      const formatter = new Intl.DateTimeFormat("sv-SE", {
-        timeZone: "America/Sao_Paulo",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-      const parts = formatter.formatToParts(new Date());
-      const year = parts.find(p => p.type === "year")?.value;
-      const month = parts.find(p => p.type === "month")?.value;
-      const day = parts.find(p => p.type === "day")?.value;
-      const isoToday = `${year}-${month}-${day}`;
+      if (isBarMC) {
+        // Data no fuso de São Paulo (America/Sao_Paulo)
+        const formatter = new Intl.DateTimeFormat("sv-SE", {
+          timeZone: "America/Sao_Paulo",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+        const parts = formatter.formatToParts(new Date());
+        const year = parts.find(p => p.type === "year")?.value;
+        const month = parts.find(p => p.type === "month")?.value;
+        const day = parts.find(p => p.type === "day")?.value;
+        const isoToday = `${year}-${month}-${day}`;
 
-      const startOfDaySP = new Date(`${isoToday}T00:00:00-03:00`);
-      const endOfDaySP = new Date(`${isoToday}T23:59:59-03:00`);
+        const startOfDaySP = new Date(`${isoToday}T00:00:00-03:00`);
+        const endOfDaySP = new Date(`${isoToday}T23:59:59-03:00`);
 
-      query = query
-        .gte("created_at", startOfDaySP.toISOString())
-        .lte("created_at", endOfDaySP.toISOString());
-    } else if (uuid) {
-      // Admin normal ou usuário comum → filtra pelo UUID
-      query = query.eq("uuid", uuid);
-    }
+        query = query
+          .gte("created_at", startOfDaySP.toISOString())
+          .lte("created_at", endOfDaySP.toISOString());
+      } else if (uuid) {
+        // Admin normal ou usuário comum → filtra pelo UUID
+        query = query.eq("uuid", uuid);
+      }
 
-    const { data: drinks } = await query;
+      const { data: drinks } = await query.select();
 
-    const total =
-      drinks?.reduce(
-        (sum, { paid, price }) =>
-          !paid ? sum + parseFloat(price.toString()) : sum,
-        0
-      ) || 0;
+      const total =
+        drinks?.reduce(
+          (sum: number, { paid, price }: { paid: boolean; price: number }) =>
+            !paid ? sum + parseFloat(price.toString()) : sum,
+          0
+        ) || 0;
 
-    setDrinksData(drinks || []);
-    setTotalAmount(total);
-  };
+      setDrinksData(drinks || []);
+      setTotalAmount(total);
+    },
+    [isBarMC]
+  );
 
   useImperativeHandle(ref, () => ({
     refreshData: () => fetchDrinks(selectedUUID),
