@@ -1,7 +1,5 @@
 export const DRINKS_PRICES: Record<string, number> = {
-  // "Chopp Pilsen": 12,
-  "Chopp Pilsen PROMO": 11,
-  "Chopp Vinho": 14,
+  "Chopp Pilsen": 12,
   "Chopp Mutum": 20,
   "Long Neck Heineken": 15,
   "Long Neck Stella Artois": 12,
@@ -23,9 +21,7 @@ export const DRINKS_PRICES: Record<string, number> = {
 };
 
 export const BEBIDAS_PRECOS: Record<string, number> = {
-  // "Chopp Pilsen": 10,
-  "Chopp Pilsen PROMO": 9,
-  "Chopp Vinho": 12,
+  "Chopp Pilsen": 10,
   "Chopp Mutum": 18,
   "Long Neck Heineken": 12,
   "Long Neck Stella Artois": 8,
