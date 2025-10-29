@@ -51,7 +51,7 @@ export default function CreateComandaPage() {
   const total = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
 
   return (
-    <div className="p-4 flex column gap-25">
+    <div className="p-4 flex flex-col gap-25">
       <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Input
           addonBefore="Nome do convidado"
