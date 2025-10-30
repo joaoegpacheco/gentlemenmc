@@ -9,6 +9,14 @@ import Link from "next/link";
 
 type Props = {
   searchParams: {
+    // Novo retorno (InfinitePay / PIX)
+    capture_method?: string;
+    transaction_id?: string;
+    transaction_nsu?: string;
+    order_nsu?: string;
+    slug?: string;
+    receipt_url?: string;
+    // Legado (mantido por compatibilidade)
     order_id?: string;
     nsu?: string;
     aut?: string;
@@ -25,24 +33,35 @@ export default function PaymentReturnClient({ searchParams }: Props) {
 
   useEffect(() => {
     const confirmPayment = async () => {
-      const { order_id, nsu, warning } = searchParams;
+      const {
+        transaction_id,
+        transaction_nsu,
+        order_nsu,
+        order_id,
+        nsu,
+        warning,
+      } = searchParams;
 
       try {
+        // Normaliza parâmetros entre novo e legado
+        const normalizedOrderNsu = order_nsu || order_id || null;
+        const normalizedTransactionId = transaction_nsu || transaction_id || nsu || null;
+
         // Verifica se o pagamento falhou
-        if (warning || !nsu || !order_id) throw new Error(warning || "Dados inválidos");
+        if (warning || !normalizedOrderNsu || !normalizedTransactionId) throw new Error(warning || "Dados inválidos");
 
         // Atualiza cobrança
         const { error: updateError } = await supabase
           .from("charges")
-          .update({ status: "paid", transaction_id: nsu })
-          .eq("order_nsu", order_id);
+          .update({ status: "paid", transaction_id: normalizedTransactionId })
+          .eq("order_nsu", normalizedOrderNsu);
         if (updateError) throw updateError;
 
         // Busca nome do cliente
         const { data, error: selectError } = await supabase
           .from("charges")
           .select("customer_name")
-          .eq("order_nsu", order_id)
+          .eq("order_nsu", normalizedOrderNsu)
           .single();
         if (selectError || !data) throw selectError;
 
@@ -118,6 +137,11 @@ export default function PaymentReturnClient({ searchParams }: Props) {
           <Link href="/comandas" key="home">
             <Button type="primary">Voltar ao início</Button>
           </Link>,
+          searchParams?.receipt_url ? (
+            <a href={searchParams.receipt_url} key="receipt" target="_blank" rel="noreferrer">
+              <Button>Ver recibo</Button>
+            </a>
+          ) : null,
         ]}
       />
     </div>
