@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, forwardRef } from "react";
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { Button, Modal, Table, message, Select, InputNumber, Input } from "antd";
 import { updateComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
@@ -90,6 +90,12 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   useEffect(() => {
     fetchComandas();
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    refreshData: () => {
+      fetchComandas();
+    },
+  }));
 
   const handleAddDrink = async () => {
     if (!selectedComanda || !newDrink) return;
