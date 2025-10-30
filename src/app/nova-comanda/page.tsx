@@ -17,10 +17,7 @@ export default function CreateComandaPage() {
       message.error("Informe nome do convidado");
       return;
     }
-    if (!guestPhone) {
-      message.error("Informe telefone do convidado");
-      return;
-    }
+    
     if (items.length === 0) {
       message.error("Adicione ao menos 1 item");
       return;
