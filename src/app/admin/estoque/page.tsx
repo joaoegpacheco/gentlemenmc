@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { Button, Input, InputNumber, Table, message, Typography, Tag, Select, Modal, Form } from "antd";
+import { Button, Input, InputNumber, Table, message, Typography, Tag, Select } from "antd";
 import { addOrUpdateEstoque, getEstoque } from "@/services/estoqueService";
 import { BEBIDAS_PRECOS } from "@/constants/drinks";
 
@@ -19,11 +19,6 @@ export default function EstoquePage() {
   const [quantity, setQuantity] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-
-  // Estado para edição
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<EstoqueType | null>(null);
-  const [editQuantity, setEditQuantity] = useState<number>(0);
 
   async function fetchStock() {
     try {
@@ -53,40 +48,6 @@ export default function EstoquePage() {
       await fetchStock();
     } catch {
       message.error("Erro ao atualizar estoque");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEdit = (item: EstoqueType) => {
-    setEditingItem(item);
-    setEditQuantity(item.quantity);
-    setIsModalOpen(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingItem) return;
-
-    if (editQuantity < 0) {
-      message.error("Quantidade não pode ser negativa");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // diferença entre valor novo e o atual
-      const diff = editQuantity - editingItem.quantity;
-
-      if (diff !== 0) {
-        await addOrUpdateEstoque(editingItem.drink, diff);
-      }
-
-      message.success("Quantidade atualizada!");
-      setIsModalOpen(false);
-      setEditingItem(null);
-      await fetchStock();
-    } catch {
-      message.error("Erro ao salvar edição");
     } finally {
       setLoading(false);
     }
@@ -164,38 +125,8 @@ export default function EstoquePage() {
                 <Tag color="green">{value}</Tag>
               ),
           },
-          {
-            title: "Ações",
-            render: (_, record: EstoqueType) => (
-              <Button type="link" onClick={() => handleEdit(record)}>
-                Editar
-              </Button>
-            ),
-          },
         ]}
       />
-
-      {/* Modal de Edição */}
-      <Modal
-        title={`Editar estoque - ${editingItem?.drink}`}
-        open={isModalOpen}
-        onOk={handleSaveEdit}
-        onCancel={() => setIsModalOpen(false)}
-        confirmLoading={loading}
-        okText="Salvar"
-        cancelText="Cancelar"
-      >
-        <Form layout="vertical">
-          <Form.Item label="Quantidade">
-            <InputNumber
-              min={0}
-              value={editQuantity}
-              onChange={(v) => setEditQuantity(Number(v))}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   );
 }
