@@ -14,7 +14,7 @@ type EstoqueType = {
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
-  const [estoque, setEstoque] = useState<EstoqueType[]>([]);
+  const [stock, setStock] = useState<EstoqueType[]>([]);
   const [drink, setDrink] = useState("");
   const [quantity, setQuantity] = useState<number>(1);
   const [loading, setLoading] = useState(false);
@@ -25,17 +25,17 @@ export default function EstoquePage() {
   const [editingItem, setEditingItem] = useState<EstoqueType | null>(null);
   const [editQuantity, setEditQuantity] = useState<number>(0);
 
-  async function fetchEstoque() {
+  async function fetchStock() {
     try {
       const data = await getEstoque();
-      setEstoque(data);
+      setStock(data);
     } catch {
       message.error("Erro ao buscar estoque");
     }
   }
 
   useEffect(() => {
-    fetchEstoque();
+    fetchStock();
   }, []);
 
   const handleAdd = async () => {
@@ -50,7 +50,7 @@ export default function EstoquePage() {
       message.success("Estoque atualizado!");
       setDrink("");
       setQuantity(1);
-      await fetchEstoque();
+      await fetchStock();
     } catch {
       message.error("Erro ao atualizar estoque");
     } finally {
@@ -84,7 +84,7 @@ export default function EstoquePage() {
       message.success("Quantidade atualizada!");
       setIsModalOpen(false);
       setEditingItem(null);
-      await fetchEstoque();
+      await fetchStock();
     } catch {
       message.error("Erro ao salvar edição");
     } finally {
@@ -92,15 +92,15 @@ export default function EstoquePage() {
     }
   };
 
-  const filteredEstoque = useMemo(() => {
-    return estoque
+  const filteredStock = useMemo(() => {
+    return stock
       .filter((item) =>
         item.drink.toLowerCase().includes(search.toLowerCase())
       )
       .sort((a, b) => a.drink.localeCompare(b.drink));
-  }, [estoque, search]);
+  }, [stock, search]);
 
-  const bebidasOptions = Object.keys(BEBIDAS_PRECOS).map((name) => ({
+  const drinksOptions = Object.keys(BEBIDAS_PRECOS).map((name) => ({
     label: name,
     value: name,
   }));
@@ -117,7 +117,7 @@ export default function EstoquePage() {
             placeholder="Selecione uma bebida"
             value={drink || undefined}
             onChange={setDrink}
-            options={bebidasOptions}
+            options={drinksOptions}
           />
           <InputNumber
             min={1}
@@ -145,7 +145,7 @@ export default function EstoquePage() {
 
       {/* Tabela de estoque */}
       <Table
-        dataSource={filteredEstoque.map((item) => ({ ...item, key: item.id }))}
+        dataSource={filteredStock.map((item) => ({ ...item, key: item.id }))}
         pagination={{ pageSize: 10 }}
         columns={[
           {
