@@ -66,15 +66,15 @@ export default function HistoricoEstoquePage() {
     });
   }, [logs, startDate, endDate, drinkFilter]);
 
-  const saldoFinalPorBebida = useMemo(() => {
-    const saldo: Record<string, number> = {};
+  const finalBalanceByDrink = useMemo(() => {
+    const balance: Record<string, number> = {};
     filteredLogs.forEach((log) => {
-      const atual = saldo[log.drink] || 0;
-      const quantidade = Number(log.quantity);
+      const current = balance[log.drink] || 0;
+      const quantity = Number(log.quantity);
 
-      saldo[log.drink] = atual + quantidade;
+      balance[log.drink] = current + quantity;
     });
-    return saldo;
+    return balance;
   }, [filteredLogs]);
 
   const gerarPDF = () => {
@@ -214,9 +214,9 @@ export default function HistoricoEstoquePage() {
 
       <Typography.Title level={4}>📦 Saldo final por bebida:</Typography.Title>
       <ul className="list-disc ml-6">
-        {Object.entries(saldoFinalPorBebida).map(([bebida, saldo]) => (
-          <li key={bebida}>
-            <strong>{bebida}:</strong> {saldo} unidade{saldo !== 1 ? "s" : ""}
+        {Object.entries(finalBalanceByDrink).map(([drink, balance]) => (
+          <li key={drink}>
+            <strong>{drink}:</strong> {balance} unidade{balance !== 1 ? "s" : ""}
           </li>
         ))}
       </ul>
