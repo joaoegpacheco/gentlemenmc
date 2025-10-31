@@ -25,20 +25,20 @@ export function FormMonthlyFee() {
   const { token } = theme.useToken();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [keyUser, setKeyUser] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
   const [date, setDate] = useState<string>(
     dayjs().tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ")
   );
   const [members, setMembers] = useState<Member[]>([]);
 
   const fetchMembers = useCallback(async () => {
-    const { data: membros, error } = await supabase
+    const { data: membersData, error } = await supabase
       .from("membros")
       .select("user_id, user_name")
       .order("user_name", { ascending: true });
 
-    if (!error && membros) {
-      setMembers(membros);
+    if (!error && membersData) {
+      setMembers(membersData);
     }
   }, []);
 
@@ -47,7 +47,7 @@ export function FormMonthlyFee() {
   }, [fetchMembers]);
 
   const handleUserChange = (value: string) => {
-    setKeyUser(value);
+    setUserId(value);
   };
 
   const handlePanelChange = (value: Dayjs) => {
@@ -60,17 +60,17 @@ export function FormMonthlyFee() {
       const { error } = await supabase
         .from("bebidas")
         .update({ paid: true })
-        .eq("name", keyUser)
+        .eq("name", userId)
         .lte("created_at", date);
 
       await supabase
         .from("charges")
         .update({ status: "paid" })
-        .eq("customer_name", keyUser);
+        .eq("customer_name", userId);
 
       if (error) throw error;
       notification.success({
-        message: `A conta do ${keyUser} foi paga com sucesso!`,
+        message: `A conta do ${userId} foi paga com sucesso!`,
       });
     } catch (error: any) {
       notification.error({
