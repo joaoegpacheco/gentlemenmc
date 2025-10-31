@@ -2,9 +2,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Tabs, Typography } from "antd";
 import type { TabsProps } from "antd";
-import { FormComand } from "@/components/Form/page";
-import { CardComand } from "@/components/CardDrinks/page";
-import { CardComandAll } from "@/components/CardDrinksAll/page";
+import { FormCommand } from "@/components/Form/page";
+import { CardCommand } from "@/components/CardDrinks/page";
+import { CardCommandAll } from "@/components/CardDrinksAll/page";
 // import { InvoiceForm } from "@/components/InvoiceForm/page";
 // import { InvoiceTable } from "@/components/InvoiceTable/page";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
@@ -78,11 +78,11 @@ export default function TabsComponent() {
   };
 
   const items: TabsProps["items"] = [
-    { key: "1", label: "Marcar", children: <FormComand /> },
+    { key: "1", label: "Marcar", children: <FormCommand /> },
     {
       key: "2",
       label: "Ver marcações",
-      children: <CardComand ref={cardComandRef} />,
+      children: <CardCommand ref={cardComandRef} />,
     },
     // { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
     // { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
@@ -98,7 +98,7 @@ export default function TabsComponent() {
     {
       key: "10",
       label: "Dívidas todos",
-      children: <CardComandAll ref={comandAllTableRef} />,
+      children: <CardCommandAll ref={comandAllTableRef} />,
     },
     { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
     { key: "14", label: "Estoque", children: <EstoquePage /> },
@@ -117,11 +117,11 @@ export default function TabsComponent() {
   ];
 
   const itemsBar: TabsProps["items"] = [
-  { key: "1", label: "Marcar", children: <FormComand /> },
+  { key: "1", label: "Marcar", children: <FormCommand /> },
   {
     key: "2",
     label: "Ver marcações",
-    children: <CardComand ref={cardComandRef} />,
+    children: <CardCommand ref={cardComandRef} />,
   },
   { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
   { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
