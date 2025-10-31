@@ -5,15 +5,15 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { List, Card, ConfigProvider, Button, message } from "antd";
+import { List, Card, ConfigProvider, Button, message as AntdMessage } from "antd";
 import { supabase } from "@/hooks/use-supabase.js";
 import { formatCurrency } from "@/utils/formatCurrency";
 
 interface Props {}
 
-export const CardComandAll = forwardRef((_: Props, ref) => {
+export const CardCommandAll = forwardRef((_: Props, ref) => {
   const [totalSum, setTotalSum] = useState(0);
-  const [dataB, setDataB] = useState<Array<{ name: string; sumPrice: number }>>(
+  const [debtData, setDebtData] = useState<Array<{ name: string; sumPrice: number }>>(
     []
   );
   const [members, setMembers] = useState<
@@ -28,11 +28,11 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
       .select("created_at, name, drink, paid, quantity, price, user, uuid")
       .order("created_at", { ascending: false });
 
-    const { data: membros } = await supabase
+    const { data: membersData } = await supabase
       .from("membros")
       .select("user_name, phone, user_email");
 
-    setMembers(membros || []);
+    setMembers(membersData || []);
 
     const calculateSumValues = (transactions: Array<any> | null) => {
       const result: Record<string, { name: string; sumPrice: number }> = {};
@@ -62,7 +62,7 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
 
     const totalSumBase = calculateSumValues(drinks);
 
-    setDataB(totalSumBase);
+    setDebtData(totalSumBase);
     setTotalSum(
       totalSumBase.reduce((acc, curr) => acc + (curr.sumPrice || 0), 0)
     );
@@ -91,7 +91,7 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
   const handleCharge = async (name: string, amount: number) => {
     const member = members.find((m) => m.user_name === name);
     if (!member) {
-      message.error("Telefone do membro não encontrado.");
+      AntdMessage.error("Telefone do membro não encontrado.");
       return;
     }
 
@@ -117,12 +117,12 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
     // Encurtar o link
     const shortenedPaymentUrl = await shortenUrl(paymentUrl);
 
-    const mensagem = `Olá ${name}, segue o link para pagamento das *Bebidas Gentlemen* no valor de *${formatCurrency(
+    const message = `Olá ${name}, segue o link para pagamento das *Bebidas Gentlemen* no valor de *${formatCurrency(
       amount
     )}*:\n\n${shortenedPaymentUrl}\n\nPode pagar via PIX ou cartão.`;
 
     const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(
-      mensagem
+      message
     )}`;
 
     await supabase.from("charges").insert({
@@ -142,7 +142,7 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
         header={`Total não pago: ${formatCurrency(totalSum)}`}
         size="small"
         bordered
-        dataSource={dataB}
+        dataSource={debtData}
         grid={{
           gutter: 16,
           xs: 1,
@@ -175,4 +175,4 @@ export const CardComandAll = forwardRef((_: Props, ref) => {
   );
 });
 
-CardComandAll.displayName = "CardComandAll";
+CardCommandAll.displayName = "CardCommandAll";
