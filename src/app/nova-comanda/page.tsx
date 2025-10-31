@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button, Table, message, Input } from "antd";
+import { Button, Table, message, Input, Checkbox } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { registerComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
 import { consumirEstoque } from "@/services/estoqueService";
+import { supabase } from "@/hooks/use-supabase.js";
 
 export default function CreateComandaPage() {
   const [items, setItems] = useState<{ drink: string; quantity: number; price: number }[]>([]);
   const [guestName, setGuestName] = useState<string>("");
   const [guestPhone, setGuestPhone] = useState<string>("");
+  const [isDirectSale, setIsDirectSale] = useState<boolean>(false);
 
   const handleCreateComanda = async () => {
     if (!guestName) {
@@ -23,26 +25,49 @@ export default function CreateComandaPage() {
       return;
     }
 
-    for (const item of items) {
-      await consumirEstoque(item.drink, item.quantity);
+    try {
+      // Consome estoque
+      for (const item of items) {
+        await consumirEstoque(item.drink, item.quantity);
+      }
+
+      // Cria a comanda
+      const comanda = await registerComanda({
+        guestName: guestName || undefined,
+        guestPhone: guestPhone || undefined,
+        items,
+      });
+
+      // Se for venda direta, marca a comanda como paga
+      if (isDirectSale) {
+        const { error: updateError } = await supabase
+          .from("comandas")
+          .update({ paga: true })
+          .eq("id", comanda.id);
+
+        if (updateError) {
+          message.error(`Erro ao marcar comanda como paga: ${updateError.message}`);
+          return;
+        }
+
+        message.success("Venda direta realizada com sucesso");
+      } else {
+        message.success("Comanda criada com sucesso");
+
+        if (typeof window !== "undefined") {
+          const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
+          await printComandaHTML({ guestName: guestName || "Sem nome", items });
+        }
+      }
+
+      // Limpa formulário
+      setItems([]);
+      setGuestName("");
+      setGuestPhone("");
+      setIsDirectSale(false);
+    } catch (error: any) {
+      message.error(`Erro: ${error.message || "Erro ao processar"}`);
     }
-
-    await registerComanda({
-      guestName: guestName || undefined,
-      guestPhone: guestPhone || undefined,
-      items,
-    });
-
-    message.success("Comanda criada com sucesso");
-
-    if (typeof window !== "undefined") {
-      const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
-      await printComandaHTML({ guestName: guestName || "Sem nome", items });
-    }
-
-    setItems([]);
-    setGuestName("");
-    setGuestPhone("");
   };
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
@@ -71,6 +96,15 @@ export default function CreateComandaPage() {
             setGuestPhone(formatted);
           }}
         />
+      </div>
+
+      <div className="mb-4">
+        <Checkbox
+          checked={isDirectSale}
+          onChange={(e) => setIsDirectSale(e.target.checked)}
+        >
+          Venda direta (pagamento automático)
+        </Checkbox>
       </div>
 
       <div style={{ display: 'flex', flexWrap: "wrap", gap: 25, padding: 25 }} className=" grid-cols-2 sm:grid-cols-3 md:grid-cols-4 mb-6">
@@ -129,7 +163,7 @@ export default function CreateComandaPage() {
       <div className="flex justify-between items-center">
         <div style={{ margin: 25 }} className="text-xl font-bold">Total: R$ {total.toFixed(2)}</div>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateComanda}>
-          Criar Comanda
+          {isDirectSale ? "Criar Venda Direta" : "Criar Comanda"}
         </Button>
       </div>
     </div>
