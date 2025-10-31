@@ -9,11 +9,11 @@ import { consumirEstoque } from "@/services/estoqueService";
 import { BEBIDAS_PRECOS } from "@/constants/drinks";
 
 type FieldType = {
-  nome?: string;
+  name?: string;
   drink?: string;
   amount?: number;
   uuid?: any;
-  data?: string;
+  date?: string;
 };
 
 type MemberType = {
@@ -21,11 +21,11 @@ type MemberType = {
   user_name: string;
 };
 
-export function FormComand() {
+export function FormCommand() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [keyUser, setKeyUser] = useState("");
-  const [nameUser, setNameUser] = useState("");
+  const [userId, setUserId] = useState("");
+  const [userName, setUserName] = useState("");
   const [selectedDrink, setSelectedDrink] = useState("");
   const [members, setMembers] = useState<Record<string, MemberType>>({});
   const [userCredit, setUserCredit] = useState<number>(0);
@@ -34,15 +34,15 @@ export function FormComand() {
 
   useEffect(() => {
     async function fetchMembers() {
-      const { data: membros, error } = await supabase
+      const { data: membersData, error } = await supabase
         .from("membros")
         .select("user_id, user_name")
         .order("user_name", { ascending: true });
 
       if (error) return console.error("Erro ao buscar membros:", error);
 
-      const membersMap = (membros || []).reduce((acc, membro) => {
-        if (membro.user_id) acc[membro.user_id] = membro;
+      const membersMap = (membersData || []).reduce((acc, member) => {
+        if (member.user_id) acc[member.user_id] = member;
         return acc;
       }, {} as Record<string, MemberType>);
 
@@ -67,8 +67,8 @@ export function FormComand() {
   };
 
   const handleChange = (_: any, values: any) => {
-    setKeyUser(values?.value);
-    setNameUser(values?.title);
+    setUserId(values?.value);
+    setUserName(values?.title);
     if (values?.value) fetchUserCredit(values.value);
   };
 
@@ -83,9 +83,9 @@ export function FormComand() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const amount = values.amount || 1;
-      const valueDrink = calculateCustomPrice(nameUser, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
+      const valueDrink = calculateCustomPrice(userName, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
 
-      if (!values.drink || !keyUser || !nameUser) {
+      if (!values.drink || !userId || !userName) {
         notification.error({ message: "Selecione usuário e bebida válidos." });
         return;
       }
@@ -100,12 +100,12 @@ export function FormComand() {
           // Crédito suficiente - marca como paga e debita todo o valor
           const { error: drinkError } = await supabase.from("bebidas").insert([
             {
-              name: nameUser,
+              name: userName,
               drink: values.drink,
               quantity: amount,
               price: totalPrice,
               user: user?.email,
-              uuid: keyUser,
+              uuid: userId,
               paid: true,
             },
           ]);
@@ -118,7 +118,7 @@ export function FormComand() {
           // Debita do crédito inserindo valor negativo
           const { error: creditError } = await supabase.from("credits").insert([
             {
-              user_id: keyUser,
+              user_id: userId,
               balance: -totalPrice,
             },
           ]);
@@ -134,12 +134,12 @@ export function FormComand() {
           // Insere a bebida com o valor restante (após abater crédito) e marca como não paga
           const { error: drinkError } = await supabase.from("bebidas").insert([
             {
-              name: nameUser,
+              name: userName,
               drink: values.drink,
               quantity: amount,
               price: remainingPrice, // Apenas o valor que falta pagar
               user: user?.email,
-              uuid: keyUser,
+              uuid: userId,
               paid: null,
             },
           ]);
@@ -152,7 +152,7 @@ export function FormComand() {
           // Debita todo o crédito disponível
           const { error: creditError } = await supabase.from("credits").insert([
             {
-              user_id: keyUser,
+              user_id: userId,
               balance: -userCredit, // Debita todo o crédito disponível
             },
           ]);
@@ -166,12 +166,12 @@ export function FormComand() {
         // Sem crédito - insere normalmente como não paga
         const { error: drinkError } = await supabase.from("bebidas").insert([
           {
-            name: nameUser,
+            name: userName,
             drink: values.drink,
             quantity: amount,
             price: totalPrice,
             user: user?.email,
-            uuid: keyUser,
+            uuid: userId,
             paid: null,
           },
         ]);
@@ -185,8 +185,8 @@ export function FormComand() {
       notification.success({ message: "Bebida adicionada com sucesso!" });
       form.resetFields();
       setSelectedDrink("");
-      setNameUser("");
-      setKeyUser("");
+      setUserName("");
+      setUserId("");
       setUserCredit(0);
     } catch (err) {
       notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida. Verifique se há estoque!" });
@@ -195,15 +195,15 @@ export function FormComand() {
     }
   };
 
-  const optionsQuantidade = useMemo(
+  const quantityOptions = useMemo(
     () => Array.from({ length: 20 }, (_, i) => <Select.Option key={i + 1} value={i + 1}>{i + 1}</Select.Option>),
     []
   );
 
   return (
-    <Form name="comanda" form={form} style={{ width: "100%", paddingTop: 20 }} onFinish={handleSubmit} autoComplete="off">
+    <Form name="command" form={form} style={{ width: "100%", paddingTop: 20 }} onFinish={handleSubmit} autoComplete="off">
       <Form.Item<FieldType>
-        name="nome"
+        name="name"
         label="Nome"
         rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
       >
@@ -221,11 +221,11 @@ export function FormComand() {
               {Object.values(members).map((member) => (
                 <Button
                   key={member.user_id}
-                  type={keyUser === member.user_id ? "primary" : "default"}
+                  type={userId === member.user_id ? "primary" : "default"}
                   onClick={() => {
-                    setKeyUser(member.user_id);
-                    setNameUser(member.user_name);
-                    form.setFieldValue("nome", member.user_name);
+                    setUserId(member.user_id);
+                    setUserName(member.user_name);
+                    form.setFieldValue("name", member.user_name);
                     fetchUserCredit(member.user_id);
                   }}
                 >
@@ -267,19 +267,19 @@ export function FormComand() {
         )}
       </Form.Item>
       <Form.Item<FieldType> name="amount" label="Quantidade">
-        <Select defaultValue={1} size="large">{optionsQuantidade}</Select>
+        <Select defaultValue={1} size="large">{quantityOptions}</Select>
       </Form.Item>
       <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">
         Adicionar
       </Button>
 
-      {keyUser && (
+      {userId && (
         <div style={{ marginTop: 12 }}>
           Crédito atual: <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
         </div>
       )}
 
-      <Form.Item<FieldType> name="data">
+      <Form.Item<FieldType> name="date">
         Data e hora agora: <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
       </Form.Item>
     </Form>
