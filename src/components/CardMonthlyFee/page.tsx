@@ -5,7 +5,7 @@ import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { supabase } from "@/hooks/use-supabase.js";
 
 export function CardMonthlyFee() {
-  const [dataB, setDataB] = useState([
+  const [monthlyFeeData, setMonthlyFeeData] = useState([
     {
       id: "",
       month: "",
@@ -18,27 +18,27 @@ export function CardMonthlyFee() {
     const getData = async () => {
 
       
-    let { data: mansalidades } = await supabase
+    let { data: monthlyFees } = await supabase
     .from('mansalidades')
     .select('*')
     .order('id', { ascending: false })
 
 
-    let { data: membros } = await supabase
+    let { data: members } = await supabase
     .from('membros')
     .select('*')
 
     // Combinar os dados
-    const listWithNames = mansalidades?.map(mansalidade => {
-        const membro = membros?.find(membro => membro.user_id === mansalidade.uuid);
+    const listWithNames = monthlyFees?.map(monthlyFee => {
+        const member = members?.find(m => m.user_id === monthlyFee.uuid);
         return {
-            ...mansalidade,
-            user_name: membro ? membro.user_name : 'Nome não encontrado'
+            ...monthlyFee,
+            user_name: member ? member.user_name : 'Nome não encontrado'
         };
     });
 
       //@ts-ignore
-      setDataB(listWithNames);
+      setMonthlyFeeData(listWithNames);
     };
     getData();
     
@@ -51,7 +51,7 @@ export function CardMonthlyFee() {
       <List
         size="small"
         bordered
-        dataSource={dataB}
+        dataSource={monthlyFeeData}
         grid={{
           gutter: 16,
           xs: 1,
