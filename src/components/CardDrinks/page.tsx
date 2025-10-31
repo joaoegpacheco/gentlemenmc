@@ -32,7 +32,7 @@ interface AdminData {
   id: string;
 }
 
-export const CardComand = forwardRef((_, ref) => {
+export const CardCommand = forwardRef((_, ref) => {
   const [userData, setUserData] = useState<{ id: string; email?: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBarMC, setIsBarMC] = useState(false);
@@ -70,12 +70,12 @@ export const CardComand = forwardRef((_, ref) => {
     setIsAdmin(adminStatus);
 
     if (adminStatus) {
-      const { data: membros } = await supabase
+      const { data: membersData } = await supabase
         .from("membros")
         .select("user_id, user_name")
         .order("user_name", { ascending: true });
 
-      setMembers(membros || []);
+      setMembers(membersData || []);
     }
 
     setSelectedUUID(user.id);
@@ -211,4 +211,4 @@ export const CardComand = forwardRef((_, ref) => {
   );
 });
 
-CardComand.displayName = "CardComand";
+CardCommand.displayName = "CardCommand";
