@@ -32,7 +32,7 @@ export default function CreateComandaPage() {
       }
 
       // Cria a comanda
-      const comanda = await registerComanda({
+      const order = await registerComanda({
         guestName: guestName || undefined,
         guestPhone: guestPhone || undefined,
         items,
@@ -43,7 +43,7 @@ export default function CreateComandaPage() {
         const { error: updateError } = await supabase
           .from("comandas")
           .update({ paga: true })
-          .eq("id", comanda.id);
+          .eq("id", order.id);
 
         if (updateError) {
           message.error(`Erro ao marcar comanda como paga: ${updateError.message}`);
