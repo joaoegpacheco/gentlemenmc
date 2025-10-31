@@ -92,11 +92,78 @@ export function FormComand() {
 
       await consumirEstoque(values.drink!, amount);
 
-      // Se o usuário tem crédito, debita do crédito e marca como pago
-      if (userCredit >= valueDrink * amount) {
-        const totalPrice = valueDrink * amount;
-        
-        // Insere a bebida marcada como paga
+      const totalPrice = valueDrink * amount;
+      
+      // Se o usuário tem crédito, usar para abater
+      if (userCredit > 0) {
+        if (userCredit >= totalPrice) {
+          // Crédito suficiente - marca como paga e debita todo o valor
+          const { error: drinkError } = await supabase.from("bebidas").insert([
+            {
+              name: nameUser,
+              drink: values.drink,
+              quantity: amount,
+              price: totalPrice,
+              user: user?.email,
+              uuid: keyUser,
+              paid: true,
+            },
+          ]);
+
+          if (drinkError) {
+            notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
+            return;
+          }
+
+          // Debita do crédito inserindo valor negativo
+          const { error: creditError } = await supabase.from("credits").insert([
+            {
+              user_id: keyUser,
+              balance: -totalPrice,
+            },
+          ]);
+
+          if (creditError) {
+            notification.error({ message: "Erro ao debitar crédito", description: creditError.message });
+            return;
+          }
+        } else {
+          // Crédito insuficiente - abate parcialmente
+          const remainingPrice = totalPrice - userCredit;
+          
+          // Insere a bebida com o valor restante (após abater crédito) e marca como não paga
+          const { error: drinkError } = await supabase.from("bebidas").insert([
+            {
+              name: nameUser,
+              drink: values.drink,
+              quantity: amount,
+              price: remainingPrice, // Apenas o valor que falta pagar
+              user: user?.email,
+              uuid: keyUser,
+              paid: null,
+            },
+          ]);
+
+          if (drinkError) {
+            notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
+            return;
+          }
+
+          // Debita todo o crédito disponível
+          const { error: creditError } = await supabase.from("credits").insert([
+            {
+              user_id: keyUser,
+              balance: -userCredit, // Debita todo o crédito disponível
+            },
+          ]);
+
+          if (creditError) {
+            notification.error({ message: "Erro ao debitar crédito", description: creditError.message });
+            return;
+          }
+        }
+      } else {
+        // Sem crédito - insere normalmente como não paga
         const { error: drinkError } = await supabase.from("bebidas").insert([
           {
             name: nameUser,
@@ -105,7 +172,7 @@ export function FormComand() {
             price: totalPrice,
             user: user?.email,
             uuid: keyUser,
-            paid: true,
+            paid: null,
           },
         ]);
 
@@ -113,31 +180,6 @@ export function FormComand() {
           notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
           return;
         }
-
-        // Debita do crédito inserindo valor negativo
-        const { error: creditError } = await supabase.from("credits").insert([
-          {
-            user_id: keyUser,
-            balance: -totalPrice,
-          },
-        ]);
-
-        if (creditError) {
-          notification.error({ message: "Erro ao debitar crédito", description: creditError.message });
-          return;
-        }
-      } else {
-        await supabase.from("bebidas").insert([
-          {
-            name: nameUser,
-            drink: values.drink,
-            quantity: amount,
-            price: valueDrink * amount,
-            user: user?.email,
-            uuid: keyUser,
-            paid: null,
-          },
-        ]);
       }
 
       notification.success({ message: "Bebida adicionada com sucesso!" });
