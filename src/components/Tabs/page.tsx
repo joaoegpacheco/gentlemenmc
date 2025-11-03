@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormCommand } from "@/components/Form/page";
 import { CardCommand } from "@/components/CardDrinks/page";
@@ -31,10 +32,16 @@ interface Birthday {
 }
 
 export default function TabsComponent() {
-  const [admin, setAdmin] = useState<boolean | null>(null);
-  const [manager, setManager] = useState<boolean | null>(null);
-  const [isBarUser, setIsBarUser] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState("1");
+  const admin$ = useObservable<boolean | null>(null);
+  const manager$ = useObservable<boolean | null>(null);
+  const isBarUser$ = useObservable<boolean>(false);
+  const activeTab$ = useObservable("1");
+  
+  const admin = useValue(admin$);
+  const manager = useValue(manager$);
+  const isBarUser = useValue(isBarUser$);
+  const activeTab = useValue(activeTab$);
+  
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
   const comandOpenTableRef = useRef<any>(null);
@@ -49,8 +56,8 @@ export default function TabsComponent() {
         return;
       }
 
-      setIsBarUser(user.email === "barmc@gentlemenmc.com.br");
-      setManager(user.email === "robson@gentlemenmc.com.br");
+      isBarUser$.set(user.email === "barmc@gentlemenmc.com.br");
+      manager$.set(user.email === "robson@gentlemenmc.com.br");
 
       try {
         const { data: admins }: PostgrestResponse<AdminData> = await supabase
@@ -59,10 +66,10 @@ export default function TabsComponent() {
           .eq("id", user.id)
           .eq("role", "admin");
 
-        setAdmin(!!admins?.length);
+        admin$.set(!!admins?.length);
       } catch (error) {
         console.error("Error fetching admin data:", error);
-        setAdmin(false);
+        admin$.set(false);
       }
     };
 
@@ -70,7 +77,7 @@ export default function TabsComponent() {
   }, []);
 
   const handleTabChange = (key: string) => {
-    setActiveTab(key);
+    activeTab$.set(key);
     if (key === "2") cardComandRef.current?.refreshData();
     if (key === "10") comandAllTableRef.current?.refreshData();
     if (key === "13") comandOpenTableRef.current?.refreshData();
