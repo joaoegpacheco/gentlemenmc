@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
+import { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,23 +35,38 @@ interface AdminData {
 }
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
-  const [comandas, setComandas] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedComanda, setSelectedComanda] = useState<any | null>(null);
-  const [newDrink, setNewDrink] = useState<string>("");
-  const [quantity, setQuantity] = useState<number>(1);
-  const [payModalVisible, setPayModalVisible] = useState(false);
-  const [adminsList, setAdminsList] = useState<AdminData[]>([]);
-  const [selectedAdmin, setSelectedAdmin] = useState<string | null>(null); // email
-  const [adminPassword, setAdminPassword] = useState("");
-  const [payingComandaId, setPayingComandaId] = useState<number | null>(null);
+  const comandas$ = useObservable<any[]>([]);
+  const loading$ = useObservable(false);
+  const selectedComanda$ = useObservable<any | null>(null);
+  const newDrink$ = useObservable<string>("");
+  const quantity$ = useObservable<number>(1);
+  const payModalVisible$ = useObservable(false);
+  const adminsList$ = useObservable<AdminData[]>([]);
+  const selectedAdmin$ = useObservable<string | null>(null); // email
+  const adminPassword$ = useObservable("");
+  const payingComandaId$ = useObservable<number | null>(null);
+  const itemsModalOpen$ = useObservable(false);
+  const selectedItemsRecord$ = useObservable<any>(null);
+
+  const comandas = useValue(comandas$);
+  const loading = useValue(loading$);
+  const selectedComanda = useValue(selectedComanda$);
+  const newDrink = useValue(newDrink$);
+  const quantity = useValue(quantity$);
+  const payModalVisible = useValue(payModalVisible$);
+  const adminsList = useValue(adminsList$);
+  const selectedAdmin = useValue(selectedAdmin$);
+  const adminPassword = useValue(adminPassword$);
+  const payingComandaId = useValue(payingComandaId$);
+  const itemsModalOpen = useValue(itemsModalOpen$);
+  const selectedItemsRecord = useValue(selectedItemsRecord$);
 
   const fetchAdmins = async () => {
     const { data, error } = await supabase.from("admins").select("id, email");
     if (error) {
       message.error("Erro ao buscar administradores");
     } else {
-      setAdminsList(data);
+      adminsList$.set(data);
     }
   };
 
@@ -85,14 +101,14 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     }
 
     // Resetar estado
-    setPayModalVisible(false);
-    setSelectedAdmin(null);
-    setAdminPassword("");
-    setPayingComandaId(null);
+    payModalVisible$.set(false);
+    selectedAdmin$.set(null);
+    adminPassword$.set("");
+    payingComandaId$.set(null);
   };
 
   const fetchComandas = async () => {
-    setLoading(true);
+    loading$.set(true);
     const { data, error } = await supabase
       .from("comandas")
       .select("*, comanda_itens!comanda_itens_comanda_id_fkey(*)")
@@ -102,9 +118,9 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     if (error) {
       message.error("Erro ao buscar comandas");
     } else {
-      setComandas(data);
+      comandas$.set(data);
     }
-    setLoading(false);
+    loading$.set(false);
   };
 
   useEffect(() => {
@@ -155,14 +171,11 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     });
 
     message.success("Bebida adicionada");
-    setSelectedComanda(null);
-    setNewDrink("");
-    setQuantity(1);
+    selectedComanda$.set(null);
+    newDrink$.set("");
+    quantity$.set(1);
     fetchComandas();
   };
-
-  const [itemsModalOpen, setItemsModalOpen] = useState(false);
-  const [selectedItemsRecord, setSelectedItemsRecord] = useState<any>(null);
 
   const comandasWithTotals = comandas.map((c) => ({
     ...c,
@@ -209,8 +222,8 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                         <Button
                           variant="link"
                           onClick={() => {
-                            setSelectedItemsRecord(record);
-                            setItemsModalOpen(true);
+                            selectedItemsRecord$.set(record);
+                            itemsModalOpen$.set(true);
                           }}
                         >
                           {totalQtd} bebida(s)
@@ -219,15 +232,15 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                       <TableCell>R$ {record.total.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="outline" onClick={() => setSelectedComanda(record)}>
+                          <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
                             Adicionar bebida
                           </Button>
                           <Button
                             variant="destructive"
                             onClick={() => {
-                              setPayingComandaId(record.id);
+                              payingComandaId$.set(record.id);
                               fetchAdmins();
-                              setPayModalVisible(true);
+                              payModalVisible$.set(true);
                             }}
                           >
                             Marcar como paga
@@ -242,7 +255,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           </Table>
         </div>
       )}
-      <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && setSelectedComanda(null)}>
+      <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && selectedComanda$.set(null)}>
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle>Adicionar bebida à comanda de {selectedComanda?.nome_convidado}</DialogTitle>
@@ -253,7 +266,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                 <Button
                   key={drink}
                   variant={newDrink === drink ? "default" : "outline"}
-                  onClick={() => setNewDrink(drink)}
+                  onClick={() => newDrink$.set(drink)}
                   className="min-w-[120px] h-16 whitespace-pre-wrap flex flex-col"
                 >
                   {drink}
@@ -264,12 +277,12 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             <InputNumber
               min={1}
               value={quantity}
-              onChange={(val) => setQuantity(val ?? 1)}
+              onChange={(val) => quantity$.set(val ?? 1)}
               placeholder="Quantidade"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedComanda(null)}>
+            <Button variant="outline" onClick={() => selectedComanda$.set(null)}>
               Cancelar
             </Button>
             <Button onClick={handleAddDrink}>
@@ -279,7 +292,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={itemsModalOpen} onOpenChange={setItemsModalOpen}>
+      <Dialog open={itemsModalOpen} onOpenChange={itemsModalOpen$.set}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Itens da comanda de {selectedItemsRecord?.nome_convidado}</DialogTitle>
@@ -298,17 +311,17 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             ))}
           </div>
           <DialogFooter>
-            <Button onClick={() => setItemsModalOpen(false)}>Fechar</Button>
+            <Button onClick={() => itemsModalOpen$.set(false)}>Fechar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={payModalVisible} onOpenChange={(open) => {
         if (!open) {
-          setPayModalVisible(false);
-          setSelectedAdmin(null);
-          setAdminPassword("");
-          setPayingComandaId(null);
+          payModalVisible$.set(false);
+          selectedAdmin$.set(null);
+          adminPassword$.set("");
+          payingComandaId$.set(null);
         }
       }}>
         <DialogContent>
@@ -316,7 +329,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             <DialogTitle>Confirmar pagamento da comanda</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
-            <Select value={selectedAdmin || ""} onValueChange={(value) => setSelectedAdmin(value)}>
+            <Select value={selectedAdmin || ""} onValueChange={(value) => selectedAdmin$.set(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o administrador" />
               </SelectTrigger>
@@ -331,16 +344,16 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             <Input
               type="password"
               value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
+              onChange={(e) => adminPassword$.set(e.target.value)}
               placeholder="Senha do admin"
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => {
-              setPayModalVisible(false);
-              setSelectedAdmin(null);
-              setAdminPassword("");
-              setPayingComandaId(null);
+              payModalVisible$.set(false);
+              selectedAdmin$.set(null);
+              adminPassword$.set("");
+              payingComandaId$.set(null);
             }}>
               Cancelar
             </Button>
