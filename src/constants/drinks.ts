@@ -29,7 +29,8 @@ export const drinksByCategory = {
   },
   bebidasNaoAlcoolicas: {
     guests: {
-      "Água": 5,
+      "Água sem gás": 5,
+      "Água com gás": 5,
       "Água Tônica Zero": 6,
       "Café": 5,
       "Coca-Cola": 6,
@@ -40,7 +41,8 @@ export const drinksByCategory = {
       "Suco de Laranja": 5,
     },
     members: {
-      "Água": 3,
+      "Água sem gás": 5,
+      "Água com gás": 5,
       "Água Tônica Zero": 6,
       "Café": 3,
       "Coca-Cola": 6,
