@@ -18,7 +18,7 @@ import { notification } from "@/lib/notification";
 import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
-import { consumirEstoque } from "@/services/estoqueService";
+import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
 import { BEBIDAS_PRECOS } from "@/constants/drinks";
 
 const formCommandSchema = z.object({
@@ -47,12 +47,14 @@ export function FormCommand() {
   const selectedDrink$ = useObservable("");
   const members$ = useObservable<Record<string, MemberType>>({});
   const userCredit$ = useObservable<number>(0);
+  const drinkStock$ = useObservable<Record<string, number>>({});
 
   const userId = useValue(userId$);
   const userName = useValue(userName$);
   const selectedDrink = useValue(selectedDrink$);
   const members = useValue(members$);
   const userCredit = useValue(userCredit$);
+  const drinkStock = useValue(drinkStock$);
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
@@ -73,7 +75,17 @@ export function FormCommand() {
       members$.set(membersMap);
     }
 
+    async function fetchAllStock() {
+      const stockMap: Record<string, number> = {};
+      for (const drink of Object.keys(BEBIDAS_PRECOS)) {
+        const quantity = await getEstoqueByDrink(drink);
+        stockMap[drink] = quantity;
+      }
+      drinkStock$.set(stockMap);
+    }
+
     fetchMembers();
+    fetchAllStock();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -204,6 +216,12 @@ export function FormCommand() {
       userName$.set("");
       userId$.set("");
       userCredit$.set(0);
+      
+      // Atualiza o estoque após consumo
+      if (values.drink) {
+        const newStock = await getEstoqueByDrink(values.drink);
+        drinkStock$.set({ ...drinkStock, [values.drink]: newStock });
+      }
     } catch (err) {
       notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida. Verifique se há estoque!" });
     }
@@ -292,28 +310,47 @@ export function FormCommand() {
                     <SelectValue placeholder="Selecione uma bebida" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.keys(BEBIDAS_PRECOS).map(drink => (
-                      <SelectItem key={drink} value={drink}>
-                        {drink}
-                      </SelectItem>
-                    ))}
+                    {Object.keys(BEBIDAS_PRECOS).map(drink => {
+                      const stock = drinkStock[drink] || 0;
+                      const hasStock = stock > 0;
+                      return (
+                        <SelectItem 
+                          key={drink} 
+                          value={drink}
+                          disabled={!hasStock}
+                          className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
+                        >
+                          {drink} {hasStock ? `(Estoque: ${stock})` : '(Sem estoque)'}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               ) : (
                 <div className="flex flex-wrap gap-6">
-                  {Object.keys(BEBIDAS_PRECOS).map(drink => (
-                    <Button
-                      key={drink}
-                      type="button"
-                      variant={selectedDrink === drink ? "default" : "outline"}
-                      onClick={() => {
-                        selectedDrink$.set(drink);
-                        field.onChange(drink);
-                      }}
-                    >
-                      {`${drink} ${BEBIDAS_PRECOS[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
-                    </Button>
-                  ))}
+                  {Object.keys(BEBIDAS_PRECOS).map(drink => {
+                    const stock = drinkStock[drink] || 0;
+                    const hasStock = stock > 0;
+                    return (
+                      <div key={drink} className="flex flex-col items-center gap-1">
+                        <Button
+                          type="button"
+                          variant={selectedDrink === drink ? "default" : "outline"}
+                          disabled={!hasStock}
+                          onClick={() => {
+                            selectedDrink$.set(drink);
+                            field.onChange(drink);
+                          }}
+                          className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
+                        >
+                          {`${drink} ${BEBIDAS_PRECOS[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                        </Button>
+                        <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
+                          Estoque: {stock}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               <FormMessage />
@@ -349,13 +386,38 @@ export function FormCommand() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={
+            form.formState.isSubmitting || 
+            !selectedDrink || 
+            !userId || 
+            (selectedDrink !== "" && (drinkStock[selectedDrink] || 0) < (form.watch("amount") || 1))
+          }
+        >
           {form.formState.isSubmitting ? "Adicionando..." : "Adicionar"}
         </Button>
 
         {userId && (
           <div className="mt-3">
             Crédito atual: <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+          </div>
+        )}
+
+        {selectedDrink && (
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+              Estoque disponível de <strong>{selectedDrink}</strong>: 
+              <span className={`ml-2 text-lg font-bold ${(drinkStock[selectedDrink] || 0) > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                {drinkStock[selectedDrink] || 0}
+              </span>
+            </div>
+            {form.watch("amount") > (drinkStock[selectedDrink] || 0) && (
+              <div className="mt-2 text-sm text-red-600 dark:text-red-400 font-medium">
+                ⚠️ Quantidade solicitada ({form.watch("amount")}) excede o estoque disponível!
+              </div>
+            )}
           </div>
         )}
 

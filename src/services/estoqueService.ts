@@ -44,6 +44,20 @@ export async function addOrUpdateEstoque(drink: string, quantity: number) {
     .insert([{ drink, quantity }]);
 }
 
+export async function getEstoqueByDrink(drink: string) {
+  const { data, error } = await supabase
+    .from("estoque")
+    .select("quantity")
+    .eq("drink", drink)
+    .single();
+
+  if (error || !data) {
+    return 0;
+  }
+
+  return data.quantity || 0;
+}
+
 export async function consumirEstoque(drink: string, quantity: number) {
   if (!drink || quantity === undefined) {
     throw new Error("Bebida ou quantidade inválida");
