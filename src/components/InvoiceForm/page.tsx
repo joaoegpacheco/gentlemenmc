@@ -73,6 +73,7 @@ export const InvoiceForm = () => {
       }
     };
     fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -135,7 +136,7 @@ export const InvoiceForm = () => {
     } else {
       message.success("Nota fiscal salva com sucesso");
       form.reset();
-      setVisitorCount(0);
+      visitorCount$.set(0);
     }
   };
 
