@@ -4,6 +4,7 @@ import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import allLocales from "@fullcalendar/core/locales-all";
+import { useTheme } from "next-themes";
 
 const events = [
   { title: "Primeiro Encontro Gentlemen 2025", date: "2025-01-15" },
@@ -33,11 +34,16 @@ const events = [
   { title: "Open House - MotoClubes", date: "2025-08-30" },
   { title: "Tradicional desfile 7 de Setembro", date: "2025-09-07" },
   { title: "Rolê de feriado", date: "2025-09-08" },
-  { title: "Gentlemen Blue", date: "2025-11-22" },
+  { title: "Gentlemen Blue - Sede Gentlemen MC", date: "2025-11-20" },
+  { title: "Gentlemen Blue - Sede Gentlemen", date: "2025-11-21" },
+  { title: "Gentlemen Blue - Hard Rock Curitiba", date: "2025-11-22" },
+  { title: "Votação Presidente Gentlemen MC | 26/27", date: "2025-11-29" },
 ];
 
 const CalendarEvents = () => {
   const calendarRef = useRef(null);
+  const calendarInstanceRef = useRef<Calendar | null>(null);
+  const { theme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!calendarRef.current) return;
@@ -75,7 +81,22 @@ const CalendarEvents = () => {
     });
 
     calendar.render();
+    calendarInstanceRef.current = calendar;
+
+    return () => {
+      calendar.destroy();
+    };
   }, []);
+
+  // Re-renderiza o calendário quando o tema muda
+  useEffect(() => {
+    if (calendarInstanceRef.current && resolvedTheme) {
+      // Pequeno delay para garantir que o DOM foi atualizado com as classes dark
+      setTimeout(() => {
+        calendarInstanceRef.current?.render();
+      }, 100);
+    }
+  }, [resolvedTheme]);
 
   return <div ref={calendarRef}></div>;
 };
