@@ -229,7 +229,7 @@ export function FormCommand() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full pt-5 space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full pt-5 space-y-4 min-h-screen" style={{ zoom: "90%" }}>
         <FormField
           control={form.control}
           name="name"
