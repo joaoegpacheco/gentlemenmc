@@ -1,27 +1,61 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input, Button, Select, Table, message, Upload, DatePicker } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { InputNumber } from "@/components/ui/input-number";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectMultiple } from "@/components/ui/select-multiple";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { message } from "@/lib/message";
+import { Upload as UploadIcon } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
-import Image from 'next/image';
-import dayjs from 'dayjs'; // Para manipulação da data
+import { ptBR } from "date-fns/locale";
+
+const invoiceSchema = z.object({
+  totalAmount: z.number().min(0.01, "Valor total deve ser maior que zero"),
+  selectedMembers: z.array(z.string()).min(1, "Selecione ao menos um membro"),
+  eventDate: z.date().refine(date => !!date, { message: "Selecione a data do evento" }),
+  visitorCount: z.number().min(0).default(0),
+  visitorNames: z.array(z.string()).optional(),
+  pix: z.string().optional(),
+  file: z.instanceof(File).optional(),
+});
 
 export const InvoiceForm = () => {
+  const form = useForm<z.infer<typeof invoiceSchema>>({
+    resolver: zodResolver(invoiceSchema) as any,
+    defaultValues: {
+      selectedMembers: [],
+      visitorCount: 0,
+      visitorNames: [],
+    },
+  });
+
   const [members, setMembers] = useState<{ user_id: string; user_name: string }[]>([]);
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [totalAmount, setTotalAmount] = useState<number | undefined>();
-  const [pix, setPix] = useState<string | undefined>();
-  const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  
-  // Estado para visitantes
   const [visitorCount, setVisitorCount] = useState<number>(0);
-  const [visitorNames, setVisitorNames] = useState<string[]>([]);
-  
-  // Estado para data do evento
-  const [eventDate, setEventDate] = useState<dayjs.Dayjs | null>(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -37,21 +71,19 @@ export const InvoiceForm = () => {
     fetchMembers();
   }, []);
 
-  // Atualiza os nomes dos visitantes quando a quantidade muda
   useEffect(() => {
-    setVisitorNames(Array(visitorCount).fill(""));
-  }, [visitorCount]);
+    const visitorNames = Array(visitorCount).fill("");
+    form.setValue("visitorNames", visitorNames);
+  }, [visitorCount, form]);
 
-  const handleSave = async () => {
-    if (!totalAmount || selectedMembers.length === 0 || !file || !eventDate) {
-      message.error("Preencha todos os campos corretamente.");
+  const handleSave = async (values: z.infer<typeof invoiceSchema>) => {
+    if (!values.file) {
+      message.error("Selecione um arquivo de nota fiscal.");
       return;
     }
-    setLoading(true);
 
-    // Número total de participantes (membros + visitantes, se houver)
-    const totalParticipants = selectedMembers.length + (visitorCount > 0 ? visitorCount : 0);
-    const dividedAmount = totalAmount / totalParticipants;
+    const totalParticipants = values.selectedMembers.length + (values.visitorCount > 0 ? values.visitorCount : 0);
+    const dividedAmount = values.totalAmount / totalParticipants;
 
     const user = await supabase.auth.getUser();
     if (!user) {
@@ -62,37 +94,33 @@ export const InvoiceForm = () => {
     const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
     if (bucketError || !buckets.some((b) => b.name === "notas_fiscais")) {
       message.error('Bucket "notas_fiscais" não encontrado. Verifique o Supabase.');
-      setLoading(false);
       return;
     }
 
-    const sanitizedFileName = file.name.replace(/\s+/g, "_");
+    const sanitizedFileName = values.file.name.replace(/\s+/g, "_");
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("notas_fiscais")
-      .upload(`${sanitizedFileName}`, file);
+      .upload(`${sanitizedFileName}`, values.file);
 
     if (uploadError) {
       message.error(`Erro ao fazer upload do arquivo: ${uploadError.message}`);
-      setLoading(false);
       return;
     }
 
     const fileUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/notas_fiscais/${uploadData.path}`;
 
-    // Monta os dados para inserir no Supabase
     const insertData: any = {
-      valor_total: totalAmount,
-      membros: selectedMembers,
+      valor_total: values.totalAmount,
+      membros: values.selectedMembers,
       valor_dividido: dividedAmount,
       arquivo_url: fileUrl,
-      pix,
-      data_evento: eventDate.format("YYYY-MM-DD"), // Formato de data no banco de dados
+      pix: values.pix,
+      data_evento: format(values.eventDate, "yyyy-MM-dd"),
     };
 
-    // Se houver visitantes, adiciona os campos na requisição
-    if (visitorCount > 0) {
-      insertData.quantidade_visitantes = visitorCount;
-      insertData.visitantes = visitorNames;
+    if (values.visitorCount > 0) {
+      insertData.quantidade_visitantes = values.visitorCount;
+      insertData.visitantes = values.visitorNames || [];
     }
 
     // Insere os dados no banco
@@ -102,135 +130,232 @@ export const InvoiceForm = () => {
       message.error("Erro ao salvar nota fiscal");
     } else {
       message.success("Nota fiscal salva com sucesso");
-      setTotalAmount(undefined);
-      setPix(undefined);
-      setSelectedMembers([]);
+      form.reset();
       setVisitorCount(0);
-      setVisitorNames([]);
-      setFile(null);
-      setEventDate(null); // Limpar a data após o envio
     }
-    setLoading(false);
   };
 
+  const selectedMembers = form.watch("selectedMembers");
+  const totalAmount = form.watch("totalAmount");
+  const visitorNames = form.watch("visitorNames") || [];
+
+  const totalParticipants = (selectedMembers?.length || 0) + (visitorCount > 0 ? visitorCount : 0);
+  const dividedAmount = totalAmount && totalParticipants > 0 ? totalAmount / totalParticipants : 0;
+
   return (
-    <div style={{ maxWidth: 600, margin: "auto", width: "100%" }}>
-      <Input
-        type="number"
-        placeholder="Valor total"
-        value={totalAmount}
-        onChange={(e) => setTotalAmount(parseFloat(e.target.value))}
-        style={{ marginBottom: 10, width: "100%" }}
-      />
-      <Select
-        mode="multiple"
-        placeholder="Selecione os membros"
-        style={{ width: "100%", marginBottom: 10 }}
-        value={selectedMembers}
-        onChange={setSelectedMembers}
-      >
-        {members.map((member) => (
-          <Select.Option key={member.user_id} value={member.user_id}>
-            {member.user_name}
-          </Select.Option>
-        ))}
-      </Select>
-
-      {/* Campo para data do evento */}
-      <DatePicker
-        placeholder="Selecione a data do evento"
-        value={eventDate}
-        onChange={(date) => setEventDate(date)}
-        format="DD/MM/YYYY"
-        style={{ width: "100%", marginBottom: 10 }}
-      />
-
-      {/* Campo para quantidade de visitantes */}
-      <Select
-        placeholder="Adicionar visitantes"
-        style={{ width: "100%", marginBottom: 10 }}
-        value={visitorCount}
-        onChange={setVisitorCount}
-      >
-        {[...Array(11)].map((_, i) => (
-          <Select.Option key={i} value={i}>
-            {i === 0 ? "Se houver visitante, adicione a quantidade" : `${i} visitante${i > 1 ? "s" : ""}`}
-          </Select.Option>
-        ))}
-      </Select>
-
-      {/* Campos de nome para visitantes */}
-      {visitorCount > 0 &&
-        visitorNames.map((_, index) => (
-          <Input
-            key={index}
-            placeholder={`Nome do visitante ${index + 1}`}
-            value={visitorNames[index]}
-            onChange={(e) => {
-              const newNames = [...visitorNames];
-              newNames[index] = e.target.value;
-              setVisitorNames(newNames);
-            }}
-            style={{ marginBottom: 10, width: "100%" }}
+    <div className="max-w-2xl mx-auto w-full p-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="totalAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valor total</FormLabel>
+                <FormControl>
+                  <InputNumber
+                    placeholder="Valor total"
+                    value={field.value}
+                    onChange={(val) => field.onChange(val ?? 0)}
+                    min={0}
+                    step={0.01}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        ))}
 
-      <Input
-        type="text"
-        placeholder="PIX para pagamento"
-        value={pix}
-        onChange={(e) => setPix(e.target.value)}
-        style={{ marginBottom: 10, width: "100%" }}
-      />
-      <Upload
-        beforeUpload={(file) => {
-          setFile(file);
-          return false;
-        }}
-        fileList={file ? [{ uid: "-1", name: file.name, status: "done" }] : []}
-        onRemove={() => setFile(null)}
-        showUploadList={{ showRemoveIcon: true }}
-        style={{ width: "100%" }}
-      >
-        <Button icon={<UploadOutlined />} style={{ width: "100%" }}>
-          Selecionar Nota Fiscal
-        </Button>
-      </Upload>
+          <FormField
+            control={form.control}
+            name="selectedMembers"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Membros</FormLabel>
+                <FormControl>
+                  <SelectMultiple
+                    options={members.map(m => ({ value: m.user_id, label: m.user_name }))}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder="Selecione os membros"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <Table
-        dataSource={[
-          ...selectedMembers.map((id) => {
-            const member = members.find((m) => m.user_id === id);
-            return {
-              key: id,
-              nome: member?.user_name,
-              valor: formatCurrency((totalAmount || 0) / (selectedMembers.length + visitorCount)),
-            };
-          }),
-          ...(visitorCount > 0
-            ? visitorNames.map((name, index) => ({
-                key: `visitor-${index}`,
-                nome: name || `Visitante ${index + 1}`,
-                valor: formatCurrency((totalAmount || 0) / (selectedMembers.length + visitorCount)),
-              }))
-            : []),
-        ]}
-        columns={[
-          { title: "Membro/Visitante", dataIndex: "nome", key: "nome" },
-          { title: "Valor", dataIndex: "valor", key: "valor" },
-        ]}
-        pagination={false}
-        style={{ width: "100%", marginTop: 10 }}
-      />
+          <FormField
+            control={form.control}
+            name="eventDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Data do evento</FormLabel>
+                <FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full">
+                        {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <Button
-        type="primary"
-        onClick={handleSave}
-        loading={loading}
-        style={{ marginTop: 10, width: "100%" }}
-      >
-        Salvar Nota Fiscal
-      </Button>
+          <FormField
+            control={form.control}
+            name="visitorCount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Visitantes</FormLabel>
+                <FormControl>
+                  <Select
+                    value={visitorCount.toString()}
+                    onValueChange={(val) => {
+                      const count = parseInt(val);
+                      setVisitorCount(count);
+                      field.onChange(count);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Quantidade de visitantes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(11)].map((_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i === 0 ? "Nenhum visitante" : `${i} visitante${i > 1 ? "s" : ""}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {visitorCount > 0 && visitorNames.map((_, index) => (
+            <FormField
+              key={index}
+              control={form.control}
+              name={`visitorNames.${index}` as any}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do visitante {index + 1}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={`Nome do visitante ${index + 1}`}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
+
+          <FormField
+            control={form.control}
+            name="pix"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>PIX para pagamento</FormLabel>
+                <FormControl>
+                  <Input placeholder="PIX para pagamento" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="file"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nota Fiscal</FormLabel>
+                <FormControl>
+                  <div>
+                    <input
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          field.onChange(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById("file-upload")?.click()}
+                      className="w-full"
+                    >
+                      <UploadIcon className="mr-2 h-4 w-4" />
+                      {field.value ? field.value.name : "Selecionar Nota Fiscal"}
+                    </Button>
+                    {field.value && (
+                      <p className="text-sm text-muted-foreground mt-2">{field.value.name}</p>
+                    )}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {(selectedMembers?.length > 0 || visitorCount > 0) && totalAmount && (
+            <div className="border rounded-lg mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Membro/Visitante</TableHead>
+                    <TableHead>Valor</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {selectedMembers.map((id) => {
+                    const member = members.find((m) => m.user_id === id);
+                    return (
+                      <TableRow key={id}>
+                        <TableCell>{member?.user_name}</TableCell>
+                        <TableCell>{formatCurrency(dividedAmount)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {visitorCount > 0 && visitorNames.map((name, index) => (
+                    <TableRow key={`visitor-${index}`}>
+                      <TableCell>{name || `Visitante ${index + 1}`}</TableCell>
+                      <TableCell>{formatCurrency(dividedAmount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full mt-4"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? "Salvando..." : "Salvar Nota Fiscal"}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };

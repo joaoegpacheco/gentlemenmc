@@ -1,18 +1,42 @@
 "use client";
 import React from "react";
-import { Form, Input, Button, notification } from "antd";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
+
+const loginSchema = z.object({
+  email: z.string().email("Email inválido").min(1, "Por favor, insira seu email!"),
+  password: z.string().min(1, "Por favor, insira sua senha!"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async ({ email, password }: LoginFormValues) => {
+  const handleSubmit = async (values: LoginFormValues) => {
+    const { email, password } = values;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -48,38 +72,48 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <section style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, width: "100%" }}>
+    <section className="flex flex-col items-center justify-center gap-4 w-full">
       <Image
         src="/images/gentlemenmc.png"
         alt="Logo Gentlemen MC"
         width={200}
         height={200}
-        style={{
-          objectFit: "contain", // Garante que a imagem não distorça
-        }}
+        className="object-contain"
       />                  
-      <Form style={{ width: "100%", padding: 20 }} onFinish={handleSubmit}>
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[{ required: true, message: "Por favor, insira seu email!" }]}
-        >
-          <Input type="email" />
-        </Form.Item>
-        <Form.Item
-          label="Senha"
-          name="password"
-          rules={[{ required: true, message: "Por favor, insira sua senha!" }]}
-        >
-          <Input.Password />
-        </Form.Item>
-        <Form.Item>
-          <Button style={{ width: "100%" }} type="primary" htmlType="submit">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full p-5 space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Senha</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full">
             Entrar
           </Button>
-        </Form.Item>
+        </form>
       </Form>
-      <span style={{ fontSize: 12, color: "#888" }}>Para acesso ao sistema, entre em contato com o administrador</span>
+      <span className="text-xs text-gray-500">Para acesso ao sistema, entre em contato com o administrador</span>
     </section>
   );
 };

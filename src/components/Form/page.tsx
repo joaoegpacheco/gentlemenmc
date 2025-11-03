@@ -1,20 +1,30 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
-import type { FormProps } from "antd";
-import { Button, Form, Select, notification } from "antd";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { notification } from "@/lib/notification";
 import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
 import { consumirEstoque } from "@/services/estoqueService";
 import { BEBIDAS_PRECOS } from "@/constants/drinks";
 
-type FieldType = {
-  name?: string;
-  drink?: string;
-  amount?: number;
-  uuid?: any;
-  date?: string;
-};
+const formCommandSchema = z.object({
+  name: z.string().min(1, "Selecione ao menos um nome!"),
+  drink: z.string().min(1, "Selecione ao menos um item!"),
+  amount: z.number().min(1).default(1),
+});
 
 type MemberType = {
   user_id: string;
@@ -22,8 +32,15 @@ type MemberType = {
 };
 
 export function FormCommand() {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const form = useForm<z.infer<typeof formCommandSchema>>({
+    resolver: zodResolver(formCommandSchema) as any,
+    defaultValues: {
+      name: "",
+      drink: "",
+      amount: 1,
+    },
+  });
+
   const [userId, setUserId] = useState("");
   const [userName, setUserName] = useState("");
   const [selectedDrink, setSelectedDrink] = useState("");
@@ -66,29 +83,20 @@ export function FormCommand() {
     }
   };
 
-  const handleChange = (_: any, values: any) => {
-    setUserId(values?.value);
-    setUserName(values?.title);
-    if (values?.value) fetchUserCredit(values.value);
-  };
-
   function calculateCustomPrice(userName: string, drink: string, standardPrice: number): number {
-    // Aqui você pode customizar preços por usuário
     return standardPrice;
   }
 
-  const handleSubmit: FormProps<FieldType>["onFinish"] = async (values) => {
-    setLoading(true);
+  const handleSubmit = async (values: z.infer<typeof formCommandSchema>) => {
+    if (!userId || !userName) {
+      notification.error({ message: "Selecione usuário e bebida válidos." });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const amount = values.amount || 1;
       const valueDrink = calculateCustomPrice(userName, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
-
-      if (!values.drink || !userId || !userName) {
-        notification.error({ message: "Selecione usuário e bebida válidos." });
-        return;
-      }
 
       await consumirEstoque(values.drink!, amount);
 
@@ -183,105 +191,170 @@ export function FormCommand() {
       }
 
       notification.success({ message: "Bebida adicionada com sucesso!" });
-      form.resetFields();
+      form.reset();
       setSelectedDrink("");
       setUserName("");
       setUserId("");
       setUserCredit(0);
     } catch (err) {
       notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida. Verifique se há estoque!" });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const quantityOptions = useMemo(
-    () => Array.from({ length: 20 }, (_, i) => <Select.Option key={i + 1} value={i + 1}>{i + 1}</Select.Option>),
-    []
-  );
-
   return (
-    <Form name="command" form={form} style={{ width: "100%", paddingTop: 20 }} onFinish={handleSubmit} autoComplete="off">
-      <Form.Item<FieldType>
-        name="name"
-        label="Nome"
-        rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
-      >
-        {Object.keys(members).length > 0 ? (
-          isMobile ? (
-            <Select onChange={handleChange} size="large" placeholder="Selecione um membro">
-              {Object.values(members).map((member) => (
-                <Select.Option key={member.user_id} value={member.user_id} title={member.user_name}>
-                  {member.user_name}
-                </Select.Option>
-              ))}
-            </Select>
-          ) : (
-            <div style={{ gap: "25px", display: "flex", flexWrap: "wrap" }}>
-              {Object.values(members).map((member) => (
-                <Button
-                  key={member.user_id}
-                  type={userId === member.user_id ? "primary" : "default"}
-                  onClick={() => {
-                    setUserId(member.user_id);
-                    setUserName(member.user_name);
-                    form.setFieldValue("name", member.user_name);
-                    fetchUserCredit(member.user_id);
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full pt-5 space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome</FormLabel>
+              {Object.keys(members).length > 0 ? (
+                isMobile ? (
+                  <Select
+                    value={userId}
+                    onValueChange={(value) => {
+                      const member = Object.values(members).find(m => m.user_id === value);
+                      if (member) {
+                        setUserId(member.user_id);
+                        setUserName(member.user_name);
+                        field.onChange(member.user_name);
+                        fetchUserCredit(member.user_id);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um membro" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(members).map((member) => (
+                        <SelectItem key={member.user_id} value={member.user_id}>
+                          {member.user_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="flex flex-wrap gap-6">
+                    {Object.values(members).map((member) => (
+                      <Button
+                        key={member.user_id}
+                        type="button"
+                        variant={userId === member.user_id ? "default" : "outline"}
+                        onClick={() => {
+                          setUserId(member.user_id);
+                          setUserName(member.user_name);
+                          field.onChange(member.user_name);
+                          fetchUserCredit(member.user_id);
+                        }}
+                      >
+                        {member.user_name}
+                      </Button>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <Select disabled>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Carregando membros..." />
+                  </SelectTrigger>
+                </Select>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="drink"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Item</FormLabel>
+              {isMobile ? (
+                <Select
+                  value={selectedDrink}
+                  onValueChange={(value) => {
+                    setSelectedDrink(value);
+                    field.onChange(value);
                   }}
                 >
-                  {member.user_name}
-                </Button>
-              ))}
-            </div>
-          )
-        ) : (
-          <Select disabled options={[{ value: 'Carregando membros...', label: 'Carregando membros...' }]} />
-        )}
-      </Form.Item>
-      <Form.Item<FieldType>
-        name="drink"
-        label="Item"
-        rules={[{ required: true, message: "Selecione ao menos um item!" }]}
-      >
-        {isMobile ? (
-          <Select size="large" placeholder="Selecione uma bebida" onChange={(value) => setSelectedDrink(value)}>
-            {Object.keys(BEBIDAS_PRECOS).map(drink => (
-              <Select.Option key={drink} value={drink}>{drink}</Select.Option>
-            ))}
-          </Select>
-        ) : (
-          <div style={{ gap: "25px", display: "flex", flexWrap: "wrap" }}>
-            {Object.keys(BEBIDAS_PRECOS).map(drink => (
-              <Button
-                key={drink}
-                type={selectedDrink === drink ? "primary" : "default"}
-                onClick={() => {
-                  setSelectedDrink(drink);
-                  form.setFieldValue("drink", drink);
-                }}
-              >
-                {`${drink} ${BEBIDAS_PRECOS[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
-              </Button>
-            ))}
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma bebida" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(BEBIDAS_PRECOS).map(drink => (
+                      <SelectItem key={drink} value={drink}>
+                        {drink}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="flex flex-wrap gap-6">
+                  {Object.keys(BEBIDAS_PRECOS).map(drink => (
+                    <Button
+                      key={drink}
+                      type="button"
+                      variant={selectedDrink === drink ? "default" : "outline"}
+                      onClick={() => {
+                        setSelectedDrink(drink);
+                        field.onChange(drink);
+                      }}
+                    >
+                      {`${drink} ${BEBIDAS_PRECOS[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Quantidade</FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value?.toString() || "1"}
+                  onValueChange={(val) => field.onChange(parseInt(val))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Adicionando..." : "Adicionar"}
+        </Button>
+
+        {userId && (
+          <div className="mt-3">
+            Crédito atual: <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
           </div>
         )}
-      </Form.Item>
-      <Form.Item<FieldType> name="amount" label="Quantidade">
-        <Select defaultValue={1} size="large">{quantityOptions}</Select>
-      </Form.Item>
-      <Button style={{ width: "100%" }} loading={loading} type="primary" htmlType="submit">
-        Adicionar
-      </Button>
 
-      {userId && (
-        <div style={{ marginTop: 12 }}>
-          Crédito atual: <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+        <div className="text-sm">
+          Data e hora agora: <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
         </div>
-      )}
-
-      <Form.Item<FieldType> name="date">
-        Data e hora agora: <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
-      </Form.Item>
+      </form>
     </Form>
   );
 }

@@ -1,20 +1,32 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
-import type { FormProps } from "antd";
-import type { Dayjs } from "dayjs";
+import { useEffect, useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { notification } from "@/lib/notification";
+import { supabase } from "@/hooks/use-supabase.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import { Button, Calendar, Form, Select, notification, theme } from "antd";
-import { supabase } from "@/hooks/use-supabase.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-type FieldType = {
-  date?: string;
-  name?: string;
-};
+const monthlyFeeSchema = z.object({
+  name: z.string().min(1, "Selecione ao menos um nome!"),
+  date: z.date().optional(),
+});
 
 type Member = {
   user_id: string;
@@ -22,13 +34,13 @@ type Member = {
 };
 
 export function FormMonthlyFee() {
-  const { token } = theme.useToken();
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string>("");
-  const [date, setDate] = useState<string>(
-    dayjs().tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ")
-  );
+  const form = useForm<z.infer<typeof monthlyFeeSchema>>({
+    resolver: zodResolver(monthlyFeeSchema),
+    defaultValues: {
+      name: "",
+      date: new Date(),
+    },
+  });
   const [members, setMembers] = useState<Member[]>([]);
 
   const fetchMembers = useCallback(async () => {
@@ -46,88 +58,91 @@ export function FormMonthlyFee() {
     fetchMembers();
   }, [fetchMembers]);
 
-  const handleUserChange = (value: string) => {
-    setUserId(value);
-  };
-
-  const handlePanelChange = (value: Dayjs) => {
-    setDate(value.tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ"));
-  };
-
-  const onFinish: FormProps<FieldType>["onFinish"] = async () => {
-    setLoading(true);
+  const onFinish = async (values: z.infer<typeof monthlyFeeSchema>) => {
     try {
+      const dateString = values.date 
+        ? dayjs(values.date).tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+        : dayjs().tz("UTC").format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+      
       const { error } = await supabase
         .from("bebidas")
         .update({ paid: true })
-        .eq("name", userId)
-        .lte("created_at", date);
+        .eq("name", values.name)
+        .lte("created_at", dateString);
 
       await supabase
         .from("charges")
         .update({ status: "paid" })
-        .eq("customer_name", userId);
+        .eq("customer_name", values.name);
 
       if (error) throw error;
       notification.success({
-        message: `A conta do ${userId} foi paga com sucesso!`,
+        message: `A conta do ${values.name} foi paga com sucesso!`,
       });
     } catch (error: any) {
       notification.error({
         message: `Erro ao tentar pagar a conta: ${error.message}`,
       });
       console.error("Error trying to change paid status:", error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <Form
-      name="updatePaid"
-      form={form}
-      style={{ width: "100%", paddingTop: 20 }}
-      onFinish={onFinish}
-      autoComplete="off"
-    >
-      <Form.Item<FieldType>
-        name="name"
-        label="Nome"
-        rules={[{ required: true, message: "Selecione ao menos um nome!" }]}
-      >
-        <Select onChange={handleUserChange} defaultValue="" size="large">
-          {members.map(({ user_id, user_name }) => (
-            <Select.Option key={user_id} value={user_name}>
-              {user_name}
-            </Select.Option>
-          ))}
-        </Select>
-      </Form.Item>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onFinish)} className="w-full pt-5 space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um membro" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {members.map(({ user_id, user_name }) => (
+                      <SelectItem key={user_id} value={user_name}>
+                        {user_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <Form.Item<FieldType> name="date" label="Data Limite">
-        <div
-          style={{
-            width: "100%",
-            border: `1px solid ${token.colorBorderSecondary}`,
-            borderRadius: token.borderRadiusLG,
-          }}
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data Limite</FormLabel>
+              <FormControl>
+                <div className="border rounded-lg p-3">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
         >
-          <Calendar
-            fullscreen={false}
-            onChange={handlePanelChange}
-            value={dayjs(date)}
-          />
-        </div>
-      </Form.Item>
-
-      <Button
-        style={{ width: "100%" }}
-        loading={loading}
-        type="primary"
-        htmlType="submit"
-      >
-        Atualizar
-      </Button>
+          {form.formState.isSubmitting ? "Atualizando..." : "Atualizar"}
+        </Button>
+      </form>
     </Form>
   );
 }
