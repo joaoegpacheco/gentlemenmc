@@ -19,7 +19,7 @@ import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
 import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
-import { BEBIDAS_PRECOS } from "@/constants/drinks";
+import { drinksPricesMembers } from "@/constants/drinks";
 
 const formCommandSchema = z.object({
   name: z.string().min(1, "Selecione ao menos um nome!"),
@@ -77,7 +77,7 @@ export function FormCommand() {
 
     async function fetchAllStock() {
       const stockMap: Record<string, number> = {};
-      for (const drink of Object.keys(BEBIDAS_PRECOS)) {
+      for (const drink of Object.keys(drinksPricesMembers)) {
         const quantity = await getEstoqueByDrink(drink);
         stockMap[drink] = quantity;
       }
@@ -116,7 +116,7 @@ export function FormCommand() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const amount = values.amount || 1;
-      const valueDrink = calculateCustomPrice(userName, values.drink || "", BEBIDAS_PRECOS[values.drink || ""] || 0);
+      const valueDrink = calculateCustomPrice(userName, values.drink || "", drinksPricesMembers[values.drink || ""] || 0);
 
       await consumirEstoque(values.drink!, amount);
 
@@ -310,7 +310,7 @@ export function FormCommand() {
                     <SelectValue placeholder="Selecione uma bebida" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.keys(BEBIDAS_PRECOS).map(drink => {
+                    {Object.keys(drinksPricesMembers).map(drink => {
                       const stock = drinkStock[drink] || 0;
                       const hasStock = stock > 0;
                       return (
@@ -328,7 +328,7 @@ export function FormCommand() {
                 </Select>
               ) : (
                 <div className="flex flex-wrap gap-6">
-                  {Object.keys(BEBIDAS_PRECOS).map(drink => {
+                  {Object.keys(drinksPricesMembers).map(drink => {
                     const stock = drinkStock[drink] || 0;
                     const hasStock = stock > 0;
                     return (
@@ -343,7 +343,7 @@ export function FormCommand() {
                           }}
                           className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
                         >
-                          {`${drink} ${BEBIDAS_PRECOS[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                          {`${drink} ${drinksPricesMembers[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                         </Button>
                         <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
                           Estoque: {stock}

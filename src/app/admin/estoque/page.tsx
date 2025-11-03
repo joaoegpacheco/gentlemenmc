@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/table";
 import { message } from "@/lib/message";
 import { addOrUpdateEstoque, getEstoque } from "@/services/estoqueService";
-import { BEBIDAS_PRECOS } from "@/constants/drinks";
+import { drinksPricesMembers } from "@/constants/drinks";
 
 type EstoqueType = {
   id: string;
@@ -86,7 +86,7 @@ export default function EstoquePage() {
       .sort((a, b) => a.drink.localeCompare(b.drink));
   }, [stock, search]);
 
-  const drinksOptions = Object.keys(BEBIDAS_PRECOS).map((name) => ({
+  const drinksOptions = Object.keys(drinksPricesMembers).map((name) => ({
     label: name,
     value: name,
   }));

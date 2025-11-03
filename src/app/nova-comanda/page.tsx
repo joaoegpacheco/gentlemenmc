@@ -16,7 +16,7 @@ import {
 import { message } from "@/lib/message";
 import { Plus, Trash2 } from "lucide-react";
 import { registerComanda } from "@/services/comandaService";
-import { DRINKS_PRICES } from "@/constants/drinks";
+import { drinksPricesGuests } from "@/constants/drinks";
 import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
 import { supabase } from "@/hooks/use-supabase.js";
 
@@ -36,7 +36,7 @@ export default function CreateComandaPage() {
   useEffect(() => {
     async function fetchAllStock() {
       const stockMap: Record<string, number> = {};
-      for (const drink of Object.keys(DRINKS_PRICES)) {
+      for (const drink of Object.keys(drinksPricesGuests)) {
         const quantity = await getEstoqueByDrink(drink);
         stockMap[drink] = quantity;
       }
@@ -113,7 +113,7 @@ export default function CreateComandaPage() {
 
       // Atualiza todo o estoque após criar a comanda
       const stockMap: Record<string, number> = {};
-      for (const drink of Object.keys(DRINKS_PRICES)) {
+      for (const drink of Object.keys(drinksPricesGuests)) {
         const quantity = await getEstoqueByDrink(drink);
         stockMap[drink] = quantity;
       }
@@ -169,7 +169,7 @@ export default function CreateComandaPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 p-6 mb-6">
-        {Object.entries(DRINKS_PRICES).map(([drink, price]) => {
+        {Object.entries(drinksPricesGuests).map(([drink, price]) => {
           const stock = drinkStock[drink] || 0;
           const hasStock = stock > 0;
           const itemInCart = items.find((i) => i.drink === drink);
