@@ -2,7 +2,7 @@
 
 This is an internal management system built with [Next.js](https://nextjs.org/) v14, featuring a mobile-first responsive design.
 
-🌐 **Live Demo:** [https://gentlemenmc.vercel.app/](https://gentlemenmc.vercel.app/)
+🌐 **Visit our website:** [www.gentlemenmc.com.br](https://www.gentlemenmc.com.br)
 
 ## About
 
@@ -202,4 +202,4 @@ This is a private internal system for the Gentlemen Motorcycle Club.
 
 ---
 
-**Built with ❤️ for the Gentlemen Motorcycle Club**
+**Built with 🎩 for the Gentlemen Motorcycle Club**
