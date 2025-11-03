@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -54,8 +55,11 @@ export const InvoiceForm = () => {
     },
   });
 
-  const [members, setMembers] = useState<{ user_id: string; user_name: string }[]>([]);
-  const [visitorCount, setVisitorCount] = useState<number>(0);
+  const members$ = useObservable<{ user_id: string; user_name: string }[]>([]);
+  const visitorCount$ = useObservable<number>(0);
+
+  const members = useValue(members$);
+  const visitorCount = useValue(visitorCount$);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -65,7 +69,7 @@ export const InvoiceForm = () => {
       if (error) {
         message.error("Erro ao carregar membros");
       } else {
-        setMembers(data);
+        members$.set(data);
       }
     };
     fetchMembers();
@@ -224,7 +228,7 @@ export const InvoiceForm = () => {
                     value={visitorCount.toString()}
                     onValueChange={(val) => {
                       const count = parseInt(val);
-                      setVisitorCount(count);
+                      visitorCount$.set(count);
                       field.onChange(count);
                     }}
                   >

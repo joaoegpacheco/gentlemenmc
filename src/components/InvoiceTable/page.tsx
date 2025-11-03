@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import {
   Table,
   TableBody,
@@ -45,15 +46,25 @@ interface Payment {
 }
 
 export const InvoiceTable = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [members, setMembers] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isPayModalVisible, setIsPayModalVisible] = useState(false);
-  const [payingInvoice, setPayingInvoice] = useState<Invoice | null>(null);
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const invoices$ = useObservable<Invoice[]>([]);
+  const members$ = useObservable<Record<string, string>>({});
+  const loading$ = useObservable(true);
+  const selectedImage$ = useObservable<string | null>(null);
+  const isPayModalVisible$ = useObservable(false);
+  const payingInvoice$ = useObservable<Invoice | null>(null);
+  const receiptFile$ = useObservable<File | null>(null);
+  const payments$ = useObservable<Payment[]>([]);
+  const user$ = useObservable<{ id: string } | null>(null);
+
+  const invoices = useValue(invoices$);
+  const members = useValue(members$);
+  const loading = useValue(loading$);
+  const selectedImage = useValue(selectedImage$);
+  const isPayModalVisible = useValue(isPayModalVisible$);
+  const payingInvoice = useValue(payingInvoice$);
+  const receiptFile = useValue(receiptFile$);
+  const payments = useValue(payments$);
+  const user = useValue(user$);
   const { isMobile } = useDeviceSizes();
   const router = useRouter();
 
@@ -64,7 +75,7 @@ export const InvoiceTable = () => {
         if (error || !data?.user) {
           throw new Error("Usuário não autenticado");
         }
-        setUser(data.user);
+        user$.set(data.user);
       } catch (err) {
         message.error("Erro ao autenticar. Redirecionando para o login.");
         router.push("/login");
@@ -76,7 +87,7 @@ export const InvoiceTable = () => {
       if (error) {
         message.error("Erro ao carregar notas fiscais");
       } else {
-        setInvoices(data);
+        invoices$.set(data);
       }
     };
 
@@ -94,20 +105,20 @@ export const InvoiceTable = () => {
           },
           {}
         );
-        setMembers(membersMap);
+        members$.set(membersMap);
       }
     };
 
     const fetchPayments = async () => {
       const { data, error } = await supabase.from("pagamentos").select("*");
-      if (!error && data) setPayments(data);
+      if (!error && data) payments$.set(data);
     };
 
     fetchUser();
     fetchInvoices();
     fetchMembers();
     fetchPayments();
-    setLoading(false);
+    loading$.set(false);
   }, [router]);
 
   const handlePay = async () => {
@@ -145,12 +156,12 @@ export const InvoiceTable = () => {
       message.error("Erro ao registrar pagamento.");
     } else {
       message.success("Pagamento registrado com sucesso!");
-      setIsPayModalVisible(false);
-      setReceiptFile(null);
+      isPayModalVisible$.set(false);
+      receiptFile$.set(null);
 
       const { data, error } = await supabase.from("pagamentos").select("*");
       if (!error && data) {
-        setPayments(data);
+        payments$.set(data);
       }
     }
   };
@@ -238,14 +249,14 @@ export const InvoiceTable = () => {
                   width={100}
                   height={100}
                   className="object-cover cursor-pointer"
-                  onClick={() => setSelectedImage(invoice.arquivo_url)}
+                  onClick={() => selectedImage$.set(invoice.arquivo_url)}
                 />
               )}
               <div className="text-center">
                 <Button
                   onClick={() => {
-                    setPayingInvoice(invoice);
-                    setIsPayModalVisible(true);
+                    payingInvoice$.set(invoice);
+                    isPayModalVisible$.set(true);
                   }}
                 >
                   Pagar
@@ -314,7 +325,7 @@ export const InvoiceTable = () => {
                         width={100}
                         height={100}
                         className="object-cover cursor-pointer"
-                        onClick={() => setSelectedImage(invoice.arquivo_url)}
+                        onClick={() => selectedImage$.set(invoice.arquivo_url)}
                       />
                     ) : (
                       "Sem imagem"
@@ -337,7 +348,7 @@ export const InvoiceTable = () => {
         </div>
       )}
 
-      <Dialog open={isPayModalVisible} onOpenChange={setIsPayModalVisible}>
+      <Dialog open={isPayModalVisible} onOpenChange={isPayModalVisible$.set}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Enviar Comprovante</DialogTitle>
@@ -349,7 +360,7 @@ export const InvoiceTable = () => {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    setReceiptFile(file);
+                    receiptFile$.set(file);
                   }
                 }}
                 className="hidden"
@@ -368,7 +379,7 @@ export const InvoiceTable = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setReceiptFile(null)}
+                  onClick={() => receiptFile$.set(null)}
                   className="mt-2"
                 >
                   Remover
@@ -377,7 +388,7 @@ export const InvoiceTable = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPayModalVisible(false)}>
+            <Button variant="outline" onClick={() => isPayModalVisible$.set(false)}>
               Cancelar
             </Button>
             <Button onClick={handlePay} disabled={!receiptFile}>
@@ -388,7 +399,7 @@ export const InvoiceTable = () => {
       </Dialog>
 
       {selectedImage && (
-        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <Dialog open={!!selectedImage} onOpenChange={() => selectedImage$.set(null)}>
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>Nota Fiscal</DialogTitle>
