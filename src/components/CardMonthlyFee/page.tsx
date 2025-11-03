@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { List, Card, ConfigProvider, notification } from "antd";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase.js";
 
 export function CardMonthlyFee() {
@@ -45,47 +45,31 @@ export function CardMonthlyFee() {
   }, []);
 
   return (
-    <ConfigProvider
-      renderEmpty={() => <div>Nenhuma Mensalidade paga.</div>}
-    >
-      <List
-        size="small"
-        bordered
-        dataSource={monthlyFeeData}
-        grid={{
-          gutter: 16,
-          xs: 1,
-          sm: 2,
-          md: 4,
-          lg: 4,
-          xl: 4,
-          xxl: 3,
-        }}
-        renderItem={(item) => (
-          <>
-              <List.Item>
-                {/* @ts-ignore */}
-                <Card title={item?.user_name}>
-                  <p>Mês: {item?.month}</p>
-                  <p>
-                    Pago?{" "}
-                    {item?.paid ? (
-                      <CheckOutlined
-                        style={{ color: "green" }}
-                        twoToneColor="green"
-                      />
-                    ) : (
-                      <CloseOutlined
-                        style={{ color: "red" }}
-                        twoToneColor="red"
-                      />
-                    )}
-                  </p>
-                </Card>
-              </List.Item>
-          </>
-        )}
-      />
-    </ConfigProvider>
+    <div>
+      {monthlyFeeData.length === 0 ? (
+        <div className="text-center text-muted-foreground py-8">Nenhuma Mensalidade paga.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {monthlyFeeData.map((item: any) => (
+            <Card key={item.id}>
+              <CardHeader>
+                <CardTitle>{item.user_name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm">Mês: {item.month}</p>
+                <p className="text-sm flex items-center gap-2">
+                  Pago?{" "}
+                  {item.paid ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

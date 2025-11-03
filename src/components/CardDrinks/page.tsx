@@ -1,14 +1,15 @@
 "use client";
-import React, {
+import {
   useEffect,
   useState,
   forwardRef,
   useImperativeHandle,
   useCallback,
 } from "react";
-import { List, Card, ConfigProvider, Select } from "antd";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime } from "@/utils/formatDateTime";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 
@@ -145,69 +146,74 @@ export const CardCommand = forwardRef((_, ref) => {
   }, [selectedUUID, isBarMC, fetchDrinks]);
 
   return (
-    <ConfigProvider
-      renderEmpty={() => <div>Nenhuma bebida marcada.</div>}
-    >
+    <div>
       {!isBarMC && isAdmin && (
-        <div style={{ marginBottom: 16 }}>
-          <Select
-            showSearch
-            placeholder="Filtrar por usuário"
-            optionFilterProp="children"
-            onChange={(value) => setSelectedUUID(value)}
-            style={{ width: 300 }}
-            value={selectedUUID || undefined}
-            filterOption={(input, option) =>
-              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-            }
-            options={members.map((m) => ({
-              value: m.user_id,
-              label: m.user_name,
-            }))}
-          />
+        <div className="mb-4">
+          <Select value={selectedUUID || ""} onValueChange={(value) => setSelectedUUID(value)}>
+            <SelectTrigger className="w-[300px]">
+              <SelectValue placeholder="Filtrar por usuário" />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => (
+                <SelectItem key={m.user_id} value={m.user_id}>
+                  {m.user_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 
-      <List
-        header={
-          userData
-            ? isBarMC
-              ? `Bebidas marcadas na data de hoje (${todayBR})`
-              : `Total não pago: ${formatCurrency(totalAmount)}`
-            : null
-        }
-        size="small"
-        bordered
-        dataSource={drinksData}
-        grid={{ gutter: 16, xs: 1, sm: 2, md: 4, lg: 4, xl: 4, xxl: 3 }}
-        renderItem={(item) => (
-          <List.Item key={item.created_at + item.drink}>
-            <Card title={isBarMC ? (
-              <>
-                {item.drink}
-                <br />
-                {item.name}
-              </>
-            ) : item.drink}>
-              <p>Data: {formatDateTime(item.created_at)}</p>
-              <p>Quantidade: {item.quantity}</p>
-              <p>Valor: {formatCurrency(item.price)}</p>
-              {!isBarMC &&
-                <p>
-                  Pago?{" "}
-                  {item.paid ? (
-                    <CheckOutlined style={{ color: "green" }} />
+      {userData && (
+        <div className="mb-4 text-lg font-semibold">
+          {isBarMC
+            ? `Bebidas marcadas na data de hoje (${todayBR})`
+            : `Total não pago: ${formatCurrency(totalAmount)}`}
+        </div>
+      )}
+
+      {drinksData.length === 0 ? (
+        <div className="text-center text-muted-foreground py-8">Nenhuma bebida marcada.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {drinksData.map((item) => (
+            <Card key={item.created_at + item.drink}>
+              <CardHeader>
+                <CardTitle>
+                  {isBarMC ? (
+                    <>
+                      {item.drink}
+                      <br />
+                      {item.name}
+                    </>
                   ) : (
-                    <CloseOutlined style={{ color: "red" }} />
+                    item.drink
                   )}
-                </p>
-              }
-              {!isBarMC && item.user && <p>Marcado por: {item.user}</p>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm">Data: {formatDateTime(item.created_at)}</p>
+                <p className="text-sm">Quantidade: {item.quantity}</p>
+                <p className="text-sm">Valor: {formatCurrency(item.price)}</p>
+                {!isBarMC && (
+                  <p className="text-sm flex items-center gap-2">
+                    Pago?{" "}
+                    {item.paid ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </p>
+                )}
+                {!isBarMC && item.user && (
+                  <p className="text-sm">Marcado por: {item.user}</p>
+                )}
+              </CardContent>
             </Card>
-          </List.Item>
-        )}
-      />
-    </ConfigProvider>
+          ))}
+        </div>
+      )}
+    </div>
   );
 });
 

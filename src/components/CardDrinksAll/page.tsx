@@ -1,11 +1,13 @@
 "use client";
-import React, {
+import {
   useEffect,
   useState,
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { List, Card, ConfigProvider, Button, message as AntdMessage } from "antd";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase.js";
 import { formatCurrency } from "@/utils/formatCurrency";
 
@@ -91,7 +93,7 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   const handleCharge = async (name: string, amount: number) => {
     const member = members.find((m) => m.user_name === name);
     if (!member) {
-      AntdMessage.error("Telefone do membro não encontrado.");
+      message.error("Telefone do membro não encontrado.");
       return;
     }
 
@@ -117,12 +119,12 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
     // Encurtar o link
     const shortenedPaymentUrl = await shortenUrl(paymentUrl);
 
-    const message = `Olá ${name}, segue o link para pagamento das *Bebidas Gentlemen* no valor de *${formatCurrency(
+    const whatsappMessage = `Olá ${name}, segue o link para pagamento das *Bebidas Gentlemen* no valor de *${formatCurrency(
       amount
     )}*:\n\n${shortenedPaymentUrl}\n\nPode pagar via PIX ou cartão.`;
 
     const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(
-      message
+      whatsappMessage
     )}`;
 
     await supabase.from("charges").insert({
@@ -137,41 +139,35 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   };
 
   return (
-    <ConfigProvider renderEmpty={() => <div>Nenhuma dívida.</div>}>
-      <List
-        header={`Total não pago: ${formatCurrency(totalSum)}`}
-        size="small"
-        bordered
-        dataSource={debtData}
-        grid={{
-          gutter: 16,
-          xs: 1,
-          sm: 2,
-          md: 4,
-          lg: 4,
-          xl: 4,
-          xxl: 3,
-        }}
-        renderItem={(item) => (
-          <List.Item>
-            <Card
-              title={item?.name}
-              actions={[
+    <div>
+      <div className="mb-4 text-lg font-semibold">
+        Total não pago: {formatCurrency(totalSum)}
+      </div>
+      {debtData.length === 0 ? (
+        <div className="text-center text-muted-foreground py-8">Nenhuma dívida.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {debtData.map((item) => (
+            <Card key={item.name}>
+              <CardHeader>
+                <CardTitle>{item.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">Valor: {formatCurrency(item.sumPrice)}</p>
+              </CardContent>
+              <CardFooter>
                 <Button
-                  key="charge"
-                  type="primary"
+                  className="w-full"
                   onClick={() => handleCharge(item.name, item.sumPrice)}
                 >
                   Cobrar via WhatsApp
-                </Button>,
-              ]}
-            >
-              <p>Valor: {formatCurrency(item?.sumPrice)}</p>
+                </Button>
+              </CardFooter>
             </Card>
-          </List.Item>
-        )}
-      />
-    </ConfigProvider>
+          ))}
+        </div>
+      )}
+    </div>
   );
 });
 

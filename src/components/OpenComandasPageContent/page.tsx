@@ -1,7 +1,27 @@
 "use client";
 
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from "react";
-import { Button, Modal, Table, message, Select, InputNumber, Input } from "antd";
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InputNumber } from "@/components/ui/input-number";
+import { Input } from "@/components/ui/input";
+import { message } from "@/lib/message";
+import { Spinner } from "@/components/ui/spinner";
 import { updateComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
@@ -141,147 +161,195 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     fetchComandas();
   };
 
+  const [itemsModalOpen, setItemsModalOpen] = useState(false);
+  const [selectedItemsRecord, setSelectedItemsRecord] = useState<any>(null);
+
+  const comandasWithTotals = comandas.map((c) => ({
+    ...c,
+    total: c.comanda_itens.reduce((sum: number, i: any) => sum + i.quantidade * i.preco_unitario, 0),
+  }));
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Comandas Abertas</h1>
-      <Table
-        dataSource={comandas.map((c) => ({
-          key: c.id,
-          ...c,
-          total: c.comanda_itens.reduce((sum: number, i: any) => sum + i.quantidade * i.preco_unitario, 0),
-        }))}
-        loading={loading}
-        columns={[
-          { title: "Nome", dataIndex: "nome_convidado" },
-          {
-            title: "Telefone",
-            dataIndex: "telefone_convidado",
-            render: (text) => <span>{text}</span>,
-          },
-          {
-            title: "Itens",
-            render: (_, record) => {
-              const totalQtd = record.comanda_itens.reduce(
-                (sum: number, i: any) => sum + i.quantidade,
-                0
-              );
-              return (
-                <Button
-                  type="link"
-                  onClick={() => {
-                    Modal.info({
-                      title: `Itens da comanda de ${record.nome_convidado}`,
-                      width: 400,
-                      content: (
-                        <div className="flex flex-col gap-2 mt-2">
-                          {record.comanda_itens.map((item: any, idx: number) => (
-                            <div
-                              key={idx}
-                              className="flex justify-between border-b border-gray-300 pb-1"
-                            >
-                              <span>{item.bebida_nome}</span>
-                              <span>
-                                {" "}{item.quantidade} x R${" "}
-                                {item.preco_unitario.toFixed(2)}
-                              </span>
-                            </div>
-                          ))}
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Telefone</TableHead>
+                <TableHead>Itens</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {comandasWithTotals.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    Nenhuma comanda aberta
+                  </TableCell>
+                </TableRow>
+              ) : (
+                comandasWithTotals.map((record) => {
+                  const totalQtd = record.comanda_itens.reduce(
+                    (sum: number, i: any) => sum + i.quantidade,
+                    0
+                  );
+                  return (
+                    <TableRow key={record.id}>
+                      <TableCell>{record.nome_convidado}</TableCell>
+                      <TableCell>{record.telefone_convidado}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="link"
+                          onClick={() => {
+                            setSelectedItemsRecord(record);
+                            setItemsModalOpen(true);
+                          }}
+                        >
+                          {totalQtd} bebida(s)
+                        </Button>
+                      </TableCell>
+                      <TableCell>R$ {record.total.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="outline" onClick={() => setSelectedComanda(record)}>
+                            Adicionar bebida
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => {
+                              setPayingComandaId(record.id);
+                              fetchAdmins();
+                              setPayModalVisible(true);
+                            }}
+                          >
+                            Marcar como paga
+                          </Button>
                         </div>
-                      ),
-                      okText: "Fechar",
-                    });
-                  }}
-                >
-                  {totalQtd} bebida(s)
-                </Button>
-              );
-            },
-          },
-          { title: "Total", dataIndex: "total", render: (val) => `R$ ${val.toFixed(2)}` },
-          {
-            title: "Ações",
-            render: (_, record) => (
-              <div style={{gap: 20, display: "flex"}} className="flex gap-2">
-                <Button type="default" onClick={() => setSelectedComanda(record)}>
-                  Adicionar bebida
-                </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+      <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && setSelectedComanda(null)}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle>Adicionar bebida à comanda de {selectedComanda?.nome_convidado}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Object.entries(DRINKS_PRICES).map(([drink, price]) => (
                 <Button
-                  danger
-                  onClick={() => {
-                    setPayingComandaId(record.id);
-                    fetchAdmins(); // <-- busca os admins
-                    setPayModalVisible(true);
-                  }}
+                  key={drink}
+                  variant={newDrink === drink ? "default" : "outline"}
+                  onClick={() => setNewDrink(drink)}
+                  className="min-w-[120px] h-16 whitespace-pre-wrap flex flex-col"
                 >
-                  Marcar como paga
+                  {drink}
+                  <span className="text-xs">R$ {price.toFixed(2)}</span>
                 </Button>
-              </div>
-            ),
-          },
-        ]}
-      />
-      <Modal
-        open={!!selectedComanda}
-        onCancel={() => setSelectedComanda(null)}
-        onOk={handleAddDrink}
-        title={`Adicionar bebida à comanda de ${selectedComanda?.nome_convidado}`}
-        width={1200}
-      >
-        <div className="flex flex-col gap-4">
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 25, marginBottom: 20 }}>
-            {Object.entries(DRINKS_PRICES).map(([drink, price]) => (
-              <Button
-                key={drink}
-                type={newDrink === drink ? "primary" : "default"}
-                onClick={() => setNewDrink(drink)}
-                style={{ minWidth: 120, height: 64, whiteSpace: "pre-wrap" }}
+              ))}
+            </div>
+            <InputNumber
+              min={1}
+              value={quantity}
+              onChange={(val) => setQuantity(val ?? 1)}
+              placeholder="Quantidade"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedComanda(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddDrink}>
+              Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={itemsModalOpen} onOpenChange={setItemsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Itens da comanda de {selectedItemsRecord?.nome_convidado}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 mt-2">
+            {selectedItemsRecord?.comanda_itens.map((item: any, idx: number) => (
+              <div
+                key={idx}
+                className="flex justify-between border-b border-gray-300 pb-1"
               >
-                {drink}
-                <br />
-                <span style={{ fontSize: 12 }}>R$ {price.toFixed(2)}</span>
-              </Button>
+                <span>{item.bebida_nome}</span>
+                <span>
+                  {item.quantidade} x R$ {item.preco_unitario.toFixed(2)}
+                </span>
+              </div>
             ))}
           </div>
-          <InputNumber
-            min={1}
-            value={quantity}
-            onChange={(val) => setQuantity(val || 1)}
-            placeholder="Quantidade"
-          />
-        </div>
-      </Modal>
-      <Modal
-        title="Confirmar pagamento da comanda"
-        open={payModalVisible}
-        onCancel={() => {
+          <DialogFooter>
+            <Button onClick={() => setItemsModalOpen(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={payModalVisible} onOpenChange={(open) => {
+        if (!open) {
           setPayModalVisible(false);
           setSelectedAdmin(null);
           setAdminPassword("");
           setPayingComandaId(null);
-        }}
-        onOk={handleConfirmPay}
-        okText="Confirmar"
-        cancelText="Cancelar"
-      >
-        <div style={{display: "flex", flexDirection: "column", gap: 15}} className="flex flex-col gap-4">
-          <Select
-            placeholder="Selecione o administrador"
-            value={selectedAdmin || undefined}
-            onChange={(value) => setSelectedAdmin(value)}
-          >
-            {adminsList.map((admin) => (
-              <Select.Option key={admin.id} value={admin.email}>
-                {admin.email}
-              </Select.Option>
-            ))}
-          </Select>
-          <Input.Password
-            value={adminPassword}
-            onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder="Senha do admin"
-          />
-        </div>
-      </Modal>
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar pagamento da comanda</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <Select value={selectedAdmin || ""} onValueChange={(value) => setSelectedAdmin(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o administrador" />
+              </SelectTrigger>
+              <SelectContent>
+                {adminsList.map((admin) => (
+                  <SelectItem key={admin.id} value={admin.email}>
+                    {admin.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              type="password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              placeholder="Senha do admin"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setPayModalVisible(false);
+              setSelectedAdmin(null);
+              setAdminPassword("");
+              setPayingComandaId(null);
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmPay}>
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 })

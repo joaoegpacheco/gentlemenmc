@@ -1,7 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table, message, Modal, Button, Upload } from "antd";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { message } from "@/lib/message";
+import { Spinner } from "@/components/ui/spinner";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
@@ -155,122 +172,24 @@ export const InvoiceTable = () => {
       });
   };
 
-  const columns = [
-    {
-      title: "Data do Evento",
-      dataIndex: "data_evento",
-      key: "data_evento",
-      width: 250,
-      render: (value: string) => formatDate(value),
-    },
-    {
-      title: "Nome",
-      dataIndex: "membros",
-      key: "membros",
-      width: 350,
-      render: (membros: string[], record: Invoice) => {
-        const memberNames =
-          membros?.map((id) => {
-            const name = members[id] || id;
-            return userPagou(record.id, id) ? (
-              <span key={id} style={{ textDecoration: "line-through" }}>
-                {name}
-              </span>
-            ) : (
-              <span key={id}>{name}</span>
-            );
-          }) || [];
-        const visitorNames = record.visitantes || [];
-        return [...memberNames, ...visitorNames].map((el, i) => (
-          <span key={i}>
-            {el}
-            {i < memberNames.length + visitorNames.length - 1 ? ", " : ""}
-          </span>
-        ));
-      },
-    },
-    {
-      title: "Valor total da Nota",
-      dataIndex: "valor_total",
-      key: "valor_total",
-      width: 150,
-      render: (value: number) => formatCurrency(value),
-    },
-    {
-      title: "Valor por Pessoa",
-      dataIndex: "valor_dividido",
-      key: "valor_dividido",
-      width: 150,
-      render: (value: number) => formatCurrency(value),
-    },
-    {
-      title: "PIX para Pagamento",
-      dataIndex: "pix",
-      key: "pix",
-      width: 150,
-      render: (pix: string) => (
-        <span
-          style={{ cursor: "pointer", color: "#1890ff" }}
-          onClick={() => pix && copyToClipboard(pix)}
-        >
-          {pix || "-"}
-        </span>
-      ),
-    },
-    {
-      title: "Nota Fiscal",
-      dataIndex: "arquivo_url",
-      key: "arquivo_url",
-      render: (url: string) =>
-        url ? (
-          <Image
-            src={url}
-            alt="Nota Fiscal"
-            width={100}
-            height={100}
-            style={{ objectFit: "cover", cursor: "pointer" }}
-            onClick={() => setSelectedImage(url)}
-          />
-        ) : (
-          "Sem imagem"
-        ),
-    },
-    {
-      title: "Ações",
-      key: "acoes",
-      width: 150,
-      render: (_: any, record: Invoice) => (
-        <Button
-          onClick={() => {
-            setPayingInvoice(record);
-            setIsPayModalVisible(true);
-          }}
-        >
-          Pagar
-        </Button>
-      ),
-    },
-  ];
 
   if (!user) return <p>Carregando...</p>;
 
   return (
-    <div style={{ maxWidth: 1200, margin: "auto", width: "100%" }}>
-      {isMobile ? (
-        <div>
+    <div className="max-w-6xl mx-auto w-full">
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      ) : isMobile ? (
+        <div className="space-y-4">
           {invoices.map((invoice) => (
             <div
               key={invoice.id}
-              style={{
-                border: "1px solid #ddd",
-                padding: 10,
-                marginBottom: 10,
-                borderRadius: 5,
-              }}
+              className="border border-gray-300 p-4 rounded-lg space-y-2"
             >
               <p>
-                <strong>Data do Evento:</strong>{" "}
-                {formatDate(invoice.data_evento)}
+                <strong>Data do Evento:</strong> {formatDate(invoice.data_evento)}
               </p>
               <p>
                 <strong>Nomes:</strong>{" "}
@@ -281,9 +200,7 @@ export const InvoiceTable = () => {
                     return (
                       <span
                         key={id}
-                        style={{
-                          textDecoration: isPaid ? "line-through" : "none",
-                        }}
+                        className={isPaid ? "line-through" : ""}
                       >
                         {name}
                       </span>
@@ -300,17 +217,15 @@ export const InvoiceTable = () => {
                 }, [])}
               </p>
               <p>
-                <strong>Valor total da Nota:</strong>{" "}
-                {formatCurrency(invoice.valor_total)}
+                <strong>Valor total da Nota:</strong> {formatCurrency(invoice.valor_total)}
               </p>
               <p>
-                <strong>Valor por Pessoa:</strong>{" "}
-                {formatCurrency(invoice.valor_dividido)}
+                <strong>Valor por Pessoa:</strong> {formatCurrency(invoice.valor_dividido)}
               </p>
               <p>
                 <strong>PIX:</strong>{" "}
                 <span
-                  style={{ cursor: "pointer", color: "#1890ff" }}
+                  className="cursor-pointer text-blue-600"
                   onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
                 >
                   {invoice.pix || "-"}
@@ -322,11 +237,11 @@ export const InvoiceTable = () => {
                   alt="Nota Fiscal"
                   width={100}
                   height={100}
-                  style={{ objectFit: "cover", cursor: "pointer" }}
+                  className="object-cover cursor-pointer"
                   onClick={() => setSelectedImage(invoice.arquivo_url)}
                 />
               )}
-              <p style={{ textAlign: "center" }}>
+              <div className="text-center">
                 <Button
                   onClick={() => {
                     setPayingInvoice(invoice);
@@ -335,38 +250,159 @@ export const InvoiceTable = () => {
                 >
                   Pagar
                 </Button>
-              </p>
+              </div>
             </div>
           ))}
         </div>
       ) : (
-        <Table
-          dataSource={invoices}
-          columns={columns}
-          loading={loading}
-          rowKey="id"
-        />
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data do Evento</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Valor total da Nota</TableHead>
+                <TableHead>Valor por Pessoa</TableHead>
+                <TableHead>PIX para Pagamento</TableHead>
+                <TableHead>Nota Fiscal</TableHead>
+                <TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell>{formatDate(invoice.data_evento)}</TableCell>
+                  <TableCell>
+                    {[
+                      ...(invoice.membros?.map((id: string) => {
+                        const name: string = members[id] || id;
+                        const isPaid: boolean = userPagou(invoice.id, id);
+                        return (
+                          <span
+                            key={id}
+                            className={isPaid ? "line-through" : ""}
+                          >
+                            {name}
+                          </span>
+                        );
+                      }) || []),
+                      ...(invoice.visitantes?.map((visitor: string, i: number) => (
+                        <span key={`v-${i}`}>{visitor}</span>
+                      )) || []),
+                    ].reduce<JSX.Element[]>((acc, curr, idx, arr) => {
+                      acc.push(curr);
+                      if (idx < arr.length - 1)
+                        acc.push(<span key={`sep-${idx}`}>, </span>);
+                      return acc;
+                    }, [])}
+                  </TableCell>
+                  <TableCell>{formatCurrency(invoice.valor_total)}</TableCell>
+                  <TableCell>{formatCurrency(invoice.valor_dividido)}</TableCell>
+                  <TableCell>
+                    <span
+                      className="cursor-pointer text-blue-600"
+                      onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
+                    >
+                      {invoice.pix || "-"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {invoice.arquivo_url ? (
+                      <Image
+                        src={invoice.arquivo_url}
+                        alt="Nota Fiscal"
+                        width={100}
+                        height={100}
+                        className="object-cover cursor-pointer"
+                        onClick={() => setSelectedImage(invoice.arquivo_url)}
+                      />
+                    ) : (
+                      "Sem imagem"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => {
+                        setPayingInvoice(invoice);
+                        setIsPayModalVisible(true);
+                      }}
+                    >
+                      Pagar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
-      <Modal
-        open={isPayModalVisible}
-        onCancel={() => setIsPayModalVisible(false)}
-        footer={null}
-        title="Enviar Comprovante"
-      >
-        <Upload
-          beforeUpload={(file) => {
-            setReceiptFile(file);
-            return false;
-          }}
-          showUploadList={{ showRemoveIcon: true }}
-          maxCount={1}
-        >
-          <Button>Selecionar Comprovante</Button>
-        </Upload>
-        <Button onClick={handlePay} type="primary" style={{ marginTop: 10 }}>
-          Confirmar Pagamento
-        </Button>
-      </Modal>
+
+      <Dialog open={isPayModalVisible} onOpenChange={setIsPayModalVisible}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enviar Comprovante</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <input
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setReceiptFile(file);
+                  }
+                }}
+                className="hidden"
+                id="receipt-upload"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("receipt-upload")?.click()}
+                className="w-full"
+              >
+                {receiptFile ? receiptFile.name : "Selecionar Comprovante"}
+              </Button>
+              {receiptFile && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReceiptFile(null)}
+                  className="mt-2"
+                >
+                  Remover
+                </Button>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPayModalVisible(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handlePay} disabled={!receiptFile}>
+              Confirmar Pagamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {selectedImage && (
+        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Nota Fiscal</DialogTitle>
+            </DialogHeader>
+            <Image
+              src={selectedImage}
+              alt="Nota Fiscal"
+              width={800}
+              height={800}
+              className="object-contain w-full"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
