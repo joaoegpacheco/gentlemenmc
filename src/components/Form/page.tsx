@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { notification } from "@/lib/notification";
 import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
 import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
-import { drinksPricesMembers } from "@/constants/drinks";
+import { drinksPricesMembers, drinksByCategory } from "@/constants/drinks";
 
 const formCommandSchema = z.object({
   name: z.string().min(1, "Selecione ao menos um nome!"),
@@ -45,6 +46,7 @@ export function FormCommand() {
   const userId$ = useObservable("");
   const userName$ = useObservable("");
   const selectedDrink$ = useObservable("");
+  const selectedCategory$ = useObservable<string>("");
   const members$ = useObservable<Record<string, MemberType>>({});
   const userCredit$ = useObservable<number>(0);
   const drinkStock$ = useObservable<Record<string, number>>({});
@@ -52,11 +54,42 @@ export function FormCommand() {
   const userId = useValue(userId$);
   const userName = useValue(userName$);
   const selectedDrink = useValue(selectedDrink$);
+  const selectedCategory = useValue(selectedCategory$);
   const members = useValue(members$);
   const userCredit = useValue(userCredit$);
   const drinkStock = useValue(drinkStock$);
 
+  // Mapeamento de categorias para nomes amigáveis
+  const categoryLabels: Record<string, string> = {
+    cervejas: "Cervejas",
+    cervejasPremium: "Cervejas Premium",
+    refrigerantes: "Refrigerantes",
+    bebidasNaoAlcoolicas: "Bebidas Não Alcoólicas",
+    energetico: "Energético",
+    doses: "Doses",
+    vinhos: "Vinhos",
+    snacks: "Snacks",
+    cigarros: "Cigarros",
+  };
+
+  // Obter lista de categorias
+  const categories = Object.keys(drinksByCategory);
+
+  // Obter bebidas da categoria selecionada
+  const getDrinksForCategory = (category: string): Record<string, number> => {
+    if (!category || !drinksByCategory[category as keyof typeof drinksByCategory]) return {};
+    return drinksByCategory[category as keyof typeof drinksByCategory].members;
+  };
+
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+
+  // Definir primeira categoria como padrão no desktop
+  useEffect(() => {
+    if (!isMobile && !selectedCategory && categories.length > 0) {
+      selectedCategory$.set(categories[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, categories.length]);
 
   useEffect(() => {
     async function fetchMembers() {
@@ -213,6 +246,7 @@ export function FormCommand() {
       notification.success({ message: "Bebida adicionada com sucesso!" });
       form.reset();
       selectedDrink$.set("");
+      selectedCategory$.set("");
       userName$.set("");
       userId$.set("");
       userCredit$.set(0);
@@ -299,59 +333,110 @@ export function FormCommand() {
             <FormItem>
               <FormLabel>Item</FormLabel>
               {isMobile ? (
-                <Select
-                  value={selectedDrink}
-                  onValueChange={(value) => {
-                    selectedDrink$.set(value);
-                    field.onChange(value);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma bebida" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(drinksPricesMembers).map(drink => {
-                      const stock = drinkStock[drink] || 0;
-                      const hasStock = stock > 0;
-                      return (
-                        <SelectItem 
-                          key={drink} 
-                          value={drink}
-                          disabled={!hasStock}
-                          className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
-                        >
-                          {drink} {hasStock ? `(Estoque: ${stock})` : '(Sem estoque)'}
+                <>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(value) => {
+                      selectedCategory$.set(value);
+                      selectedDrink$.set("");
+                      field.onChange("");
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {categoryLabels[category] || category}
                         </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedCategory && (
+                    <Select
+                      value={selectedDrink}
+                      onValueChange={(value) => {
+                        selectedDrink$.set(value);
+                        field.onChange(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma bebida" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(getDrinksForCategory(selectedCategory)).map(drink => {
+                          const stock = drinkStock[drink] || 0;
+                          const hasStock = stock > 0;
+                          const categoryDrinks = getDrinksForCategory(selectedCategory);
+                          const price = categoryDrinks[drink] || 0;
+                          return (
+                            <SelectItem 
+                              key={drink} 
+                              value={drink}
+                              disabled={!hasStock}
+                              className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
+                            >
+                              {drink} - {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} {hasStock ? `(Estoque: ${stock})` : '(Sem estoque)'}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </>
               ) : (
-                <div className="flex flex-wrap gap-6">
-                  {Object.keys(drinksPricesMembers).map(drink => {
-                    const stock = drinkStock[drink] || 0;
-                    const hasStock = stock > 0;
+                <Tabs 
+                  value={selectedCategory || categories[0] || ""} 
+                  onValueChange={(value) => {
+                    selectedCategory$.set(value);
+                    selectedDrink$.set("");
+                    field.onChange("");
+                  }}
+                  className="w-full"
+                  defaultValue={categories[0] || ""}
+                >
+                  <TabsList className="h-16 items-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-3 lg:grid-cols-5">
+                    {categories.map(category => (
+                      <TabsTrigger key={category} value={category} className="text-xs lg:text-sm">
+                        {categoryLabels[category] || category}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {categories.map(category => {
+                    const categoryDrinks = getDrinksForCategory(category);
                     return (
-                      <div key={drink} className="flex flex-col items-center gap-1">
-                        <Button
-                          type="button"
-                          variant={selectedDrink === drink ? "default" : "outline"}
-                          disabled={!hasStock}
-                          onClick={() => {
-                            selectedDrink$.set(drink);
-                            field.onChange(drink);
-                          }}
-                          className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
-                        >
-                          {`${drink} ${drinksPricesMembers[drink].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
-                        </Button>
-                        <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
-                          Estoque: {stock}
-                        </span>
-                      </div>
+                      <TabsContent key={category} value={category}>
+                        <div className="flex flex-wrap gap-6">
+                          {Object.keys(categoryDrinks).map(drink => {
+                            const stock = drinkStock[drink] || 0;
+                            const hasStock = stock > 0;
+                            const price = categoryDrinks[drink] || 0;
+                            return (
+                              <div key={drink} className="flex flex-col items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant={selectedDrink === drink ? "default" : "outline"}
+                                  disabled={!hasStock}
+                                  onClick={() => {
+                                    selectedDrink$.set(drink);
+                                    field.onChange(drink);
+                                  }}
+                                  className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
+                                >
+                                  {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                                </Button>
+                                <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
+                                  Estoque: {stock}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </TabsContent>
                     );
                   })}
-                </div>
+                </Tabs>
               )}
               <FormMessage />
             </FormItem>
