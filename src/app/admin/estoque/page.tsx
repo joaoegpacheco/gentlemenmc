@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputNumber } from "@/components/ui/input-number";
@@ -27,16 +28,26 @@ type EstoqueType = {
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
-  const [stock, setStock] = useState<EstoqueType[]>([]);
-  const [drink, setDrink] = useState("");
-  const [quantity, setQuantity] = useState<number>(1);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
+  const stock$ = useObservable<EstoqueType[]>([]);
+  const drink$ = useObservable("");
+  const quantity$ = useObservable<number>(1);
+  const loading$ = useObservable(false);
+  const search$ = useObservable("");
+  const sortedColumn$ = useObservable<"drink" | "quantity" | null>(null);
+  const sortDirection$ = useObservable<"asc" | "desc">("asc");
+
+  const stock = useValue(stock$);
+  const drink = useValue(drink$);
+  const quantity = useValue(quantity$);
+  const loading = useValue(loading$);
+  const search = useValue(search$);
+  const sortedColumn = useValue(sortedColumn$);
+  const sortDirection = useValue(sortDirection$);
 
   async function fetchStock() {
     try {
       const data = await getEstoque();
-      setStock(data);
+      stock$.set(data);
     } catch {
       message.error("Erro ao buscar estoque");
     }
@@ -52,17 +63,17 @@ export default function EstoquePage() {
       return;
     }
 
-    setLoading(true);
+    loading$.set(true);
     try {
       await addOrUpdateEstoque(drink.trim(), quantity);
       message.success("Estoque atualizado!");
-      setDrink("");
-      setQuantity(1);
+      drink$.set("");
+      quantity$.set(1);
       await fetchStock();
     } catch {
       message.error("Erro ao atualizar estoque");
     } finally {
-      setLoading(false);
+      loading$.set(false);
     }
   };
 
@@ -79,15 +90,12 @@ export default function EstoquePage() {
     value: name,
   }));
 
-  const [sortedColumn, setSortedColumn] = useState<"drink" | "quantity" | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-
   const handleSort = (column: "drink" | "quantity") => {
     if (sortedColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      sortDirection$.set(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortedColumn(column);
-      setSortDirection("asc");
+      sortedColumn$.set(column);
+      sortDirection$.set("asc");
     }
   };
 
@@ -120,7 +128,7 @@ export default function EstoquePage() {
       <div className="border p-4 rounded-xl shadow-sm mb-6 bg-white">
         <h4 className="text-lg font-semibold mb-4">Adicionar ou atualizar bebida</h4>
         <div className="flex flex-col md:flex-row gap-4">
-          <Select value={drink || ""} onValueChange={setDrink}>
+          <Select value={drink || ""} onValueChange={drink$.set}>
             <SelectTrigger className="w-full md:w-auto min-w-[200px]">
               <SelectValue placeholder="Selecione uma bebida" />
             </SelectTrigger>
@@ -135,7 +143,7 @@ export default function EstoquePage() {
           <InputNumber
             min={1}
             value={quantity}
-            onChange={(v) => setQuantity(v ?? 1)}
+            onChange={(v) => quantity$.set(v ?? 1)}
             className="w-full md:w-32"
             placeholder="Quantidade"
           />
@@ -150,7 +158,7 @@ export default function EstoquePage() {
         <Input
           placeholder="Buscar bebida no estoque"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => search$.set(e.target.value)}
         />
       </div>
 

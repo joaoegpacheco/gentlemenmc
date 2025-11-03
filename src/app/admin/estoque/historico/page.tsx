@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -33,10 +34,15 @@ type LogType = {
 };
 
 export default function HistoricoEstoquePage() {
-  const [logs, setLogs] = useState<LogType[]>([]);
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [drinkFilter, setDrinkFilter] = useState<string>("");
+  const logs$ = useObservable<LogType[]>([]);
+  const startDate$ = useObservable<Date | undefined>(undefined);
+  const endDate$ = useObservable<Date | undefined>(undefined);
+  const drinkFilter$ = useObservable<string>("");
+
+  const logs = useValue(logs$);
+  const startDate = useValue(startDate$);
+  const endDate = useValue(endDate$);
+  const drinkFilter = useValue(drinkFilter$);
 
   async function fetchLogs() {
     const { data, error } = await supabase
@@ -49,7 +55,7 @@ export default function HistoricoEstoquePage() {
       return;
     }
 
-    setLogs(data || []);
+    logs$.set(data || []);
   }
 
   useEffect(() => {
@@ -163,7 +169,7 @@ export default function HistoricoEstoquePage() {
             <Calendar
               mode="single"
               selected={startDate}
-              onSelect={setStartDate}
+              onSelect={startDate$.set}
               initialFocus
             />
           </PopoverContent>
@@ -178,7 +184,7 @@ export default function HistoricoEstoquePage() {
             <Calendar
               mode="single"
               selected={endDate}
-              onSelect={setEndDate}
+              onSelect={endDate$.set}
               initialFocus
             />
           </PopoverContent>
@@ -186,7 +192,7 @@ export default function HistoricoEstoquePage() {
         <Input
           placeholder="Filtrar por bebida"
           value={drinkFilter}
-          onChange={(e) => setDrinkFilter(e.target.value)}
+          onChange={(e) => drinkFilter$.set(e.target.value)}
           className="max-w-xs"
         />
         <Button onClick={gerarPDF}>
