@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
-import { Tabs, Typography } from "antd";
-import type { TabsProps } from "antd";
+import { useEffect, useState, useRef } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormCommand } from "@/components/Form/page";
 import { CardCommand } from "@/components/CardDrinks/page";
 import { CardCommandAll } from "@/components/CardDrinksAll/page";
@@ -31,12 +30,11 @@ interface Birthday {
   day: string;
 }
 
-const { Text } = Typography;
-
 export default function TabsComponent() {
   const [admin, setAdmin] = useState<boolean | null>(null);
   const [manager, setManager] = useState<boolean | null>(null);
   const [isBarUser, setIsBarUser] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState("1");
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
   const comandOpenTableRef = useRef<any>(null);
@@ -72,62 +70,61 @@ export default function TabsComponent() {
   }, []);
 
   const handleTabChange = (key: string) => {
+    setActiveTab(key);
     if (key === "2") cardComandRef.current?.refreshData();
     if (key === "10") comandAllTableRef.current?.refreshData();
     if (key === "13") comandOpenTableRef.current?.refreshData();
   };
 
-  const items: TabsProps["items"] = [
-    { key: "1", label: "Marcar", children: <FormCommand /> },
-    {
-      key: "2",
-      label: "Ver marcações",
-      children: <CardCommand ref={cardComandRef} />,
-    },
-    // { key: "3", label: "Rachide comidas", children: <InvoiceForm /> },
-    // { key: "4", label: "Ver Rachides", children: <InvoiceTable /> },
-    { key: "5", label: "Eventos", children: <CalendarEvents /> },
-    { key: "6", label: "Estatuto", children: <ByLaw /> },
-    { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
-    { key: "8", label: <LogoutButton /> },
-  ];
+  const getCurrentTabs = () => {
+    if (admin) {
+      return [
+        { key: "1", label: "Marcar", children: <FormCommand /> },
+        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: "Eventos", children: <CalendarEvents /> },
+        { key: "6", label: "Estatuto", children: <ByLaw /> },
+        { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
+        { key: "10", label: "Dívidas todos", children: <CardCommandAll ref={comandAllTableRef} /> },
+        { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+        { key: "14", label: "Estoque", children: <EstoquePage /> },
+        { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
+        { key: "16", label: "Créditos", children: <CreditManager /> },
+        { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "11", label: <LogoutButton /> },
+      ];
+    } else if (isBarUser) {
+      return [
+        { key: "1", label: "Marcar", children: <FormCommand /> },
+        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
+        { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
+        { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+        { key: "14", label: "Estoque", children: <EstoquePage /> },
+        { key: "6", label: "Estatuto", children: <ByLaw /> },
+      ];
+    } else if (manager) {
+      return [
+        { key: "1", label: "Marcar", children: <FormCommand /> },
+        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: "Eventos", children: <CalendarEvents /> },
+        { key: "6", label: "Estatuto", children: <ByLaw /> },
+        { key: "14", label: "Estoque", children: <EstoquePage /> },
+        { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
+        { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "11", label: <LogoutButton /> },
+      ];
+    } else {
+      return [
+        { key: "1", label: "Marcar", children: <FormCommand /> },
+        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: "Eventos", children: <CalendarEvents /> },
+        { key: "6", label: "Estatuto", children: <ByLaw /> },
+        { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "8", label: <LogoutButton /> },
+      ];
+    }
+  };
 
-  const itemsAdmin: TabsProps["items"] = [
-    ...items.slice(0, 4),
-    { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
-    {
-      key: "10",
-      label: "Dívidas todos",
-      children: <CardCommandAll ref={comandAllTableRef} />,
-    },
-    { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
-    { key: "14", label: "Estoque", children: <EstoquePage /> },
-    { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
-    { key: "16", label: "Créditos", children: <CreditManager /> },
-    { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
-    { key: "11", label: <LogoutButton /> },
-  ];
-
-  const itemsManager: TabsProps["items"] = [
-    ...items.slice(0, 4),
-    { key: "14", label: "Estoque", children: <EstoquePage /> },
-    { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
-    { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
-    { key: "11", label: <LogoutButton /> },
-  ];
-
-  const itemsBar: TabsProps["items"] = [
-  { key: "1", label: "Marcar", children: <FormCommand /> },
-  {
-    key: "2",
-    label: "Ver marcações",
-    children: <CardCommand ref={cardComandRef} />,
-  },
-  { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
-  { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
-  { key: "14", label: "Estoque", children: <EstoquePage /> },
-  { key: "6", label: "Estatuto", children: <ByLaw /> },
-];
+  const tabs = getCurrentTabs();
 
   const birthdays: Birthday[] = [
     { name: "Alex", fullDate: "1974-08-12", day: "12" },
@@ -179,27 +176,27 @@ export default function TabsComponent() {
     .join(", ");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      <div style={{ padding: "0 20px 0" }}>
-        <p style={{ fontSize: 14 }}>Aniversariantes do mês: </p>
-        <Text style={{ fontSize: 14 }} strong>
+    <div className="flex flex-col w-full">
+      <div className="px-5">
+        <p className="text-sm">Aniversariantes do mês: </p>
+        <span className="text-sm font-semibold">
           {birthdaysString}
-        </Text>
+        </span>
       </div>
-      <Tabs
-        style={{ width: "100%", padding: "0 20px 0" }}
-        onChange={handleTabChange}
-        defaultActiveKey="1"
-        items={
-    admin
-      ? itemsAdmin
-      : isBarUser
-      ? itemsBar
-      : manager
-      ? itemsManager
-      : items
-  }
-      />
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full px-5">
+        <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap flex-shrink-0">
+              {typeof tab.label === "string" ? tab.label : tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {tabs.map((tab) => (
+          <TabsContent key={tab.key} value={tab.key}>
+            {tab.children}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }

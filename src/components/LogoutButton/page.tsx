@@ -1,5 +1,6 @@
 import React from "react";
-import { Button, notification } from "antd";
+import { Button } from "@/components/ui/button";
+import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
 
 export const LogoutButton: React.FC = () => {
@@ -27,7 +28,7 @@ export const LogoutButton: React.FC = () => {
   };
 
   return (
-    <Button type="text" onClick={handleLogout}>
+    <Button variant="ghost" onClick={handleLogout}>
       Sair
     </Button>
   );

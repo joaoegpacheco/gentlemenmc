@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Select, InputNumber, Button, notification } from "antd";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InputNumber } from "@/components/ui/input-number";
+import { Button } from "@/components/ui/button";
+import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
 
 export function CreditManager() {
@@ -178,27 +181,29 @@ export function CreditManager() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <Select
-        style={{ width: "100%" }}
-        placeholder="Selecione um membro"
-        options={members.map((m) => ({ value: m.user_id, label: m.user_name }))}
-        onChange={(value) => setSelectedUser(value)}
-        value={selectedUser || undefined}
-      />
-      <div style={{ display: "flex", gap: 12 }}>
+    <div className="flex flex-col gap-3">
+      <Select value={selectedUser || ""} onValueChange={setSelectedUser}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Selecione um membro" />
+        </SelectTrigger>
+        <SelectContent>
+          {members.map((m) => (
+            <SelectItem key={m.user_id} value={m.user_id}>
+              {m.user_name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <div className="flex gap-3">
         <InputNumber
           placeholder="Valor (R$)"
           value={amount}
-          onChange={(val) => setAmount(Number(val) || 0)}
+          onChange={(val) => setAmount(val ?? 0)}
           min={0}
           step={0.01}
-          precision={2}
-          style={{ width: "100%" }}
-          formatter={(value) => `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-          parser={(value) => Number(value?.replace(/R\$\s?|(\.*)/g, '')) || 0}
+          className="w-full"
         />
-        <Button type="primary" onClick={handleAddCredit}>
+        <Button onClick={handleAddCredit}>
           Adicionar Crédito
         </Button>
       </div>
