@@ -119,15 +119,19 @@ export const InvoiceTable = () => {
     fetchMembers();
     fetchPayments();
     loading$.set(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const handlePay = async () => {
     if (!receiptFile || !payingInvoice) return;
 
     const fileName = `${payingInvoice.id}_${user?.id}_${Date.now()}`;
+    const file = receiptFile$.get() as File;
+    if (!file) return;
+    
     const { error: uploadError } = await supabase.storage
       .from("pagamentos")
-      .upload(fileName, receiptFile);
+      .upload(fileName, file as File);
 
     if (uploadError) {
       message.error("Erro ao fazer upload do comprovante.");
@@ -334,8 +338,8 @@ export const InvoiceTable = () => {
                   <TableCell>
                     <Button
                       onClick={() => {
-                        setPayingInvoice(invoice);
-                        setIsPayModalVisible(true);
+                        payingInvoice$.set(invoice);
+                        isPayModalVisible$.set(true);
                       }}
                     >
                       Pagar
