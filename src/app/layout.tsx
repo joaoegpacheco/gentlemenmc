@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import AuthListener from "@/components/AuthListener";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ModeToggle } from "@/components/mode-toggle";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,13 +35,23 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" />
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
-        <AuthListener />
-        <main className="flex-1 p-6">{children}</main>
-        <footer className="flex items-center justify-center w-full pb-2">
-          <span className="text-xs text-gray-500">Copyright © 2025 Gentlemen MC</span> 
-        </footer>
-        <SpeedInsights />
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthListener />
+          <header className="fixed top-0 right-0 p-4 z-50">
+            <ModeToggle />
+          </header>
+          <main className="flex-1 p-6">{children}</main>
+          <footer className="flex items-center justify-center w-full pb-2">
+            <span className="text-xs text-gray-500">Copyright © 2025 Gentlemen MC</span> 
+          </footer>
+          <SpeedInsights />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
