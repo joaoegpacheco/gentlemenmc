@@ -1,4 +1,4 @@
-export const DRINKS_PRICES: Record<string, number> = {
+export const drinksPricesGuests: Record<string, number> = {
   "Chopp Pilsen": 12,
   "Chopp Mutum": 20,
   "Long Neck Heineken": 15,
@@ -11,6 +11,8 @@ export const DRINKS_PRICES: Record<string, number> = {
   "Mutum Groller": 40,
   "Água": 5,
   "Café": 5,
+  "Goma de Mascar": 3,
+  "Suco de Laranja": 5,
   "Dose Gin": 10,
   "Dose Jagermeister": 20,
   "Dose Whiskey": 20,
@@ -21,7 +23,7 @@ export const DRINKS_PRICES: Record<string, number> = {
   "Carteira de Cigarro Cohiba": 30,
 };
 
-export const BEBIDAS_PRECOS: Record<string, number> = {
+export const drinksPricesMembers: Record<string, number> = {
   "Chopp Pilsen": 10,
   "Chopp Mutum": 18,
   "Long Neck Heineken": 12,
@@ -34,6 +36,8 @@ export const BEBIDAS_PRECOS: Record<string, number> = {
   "Mutum Groller": 40,
   "Água": 3,
   "Café": 3,
+  "Goma de Mascar": 3,
+  "Suco de Laranja": 5,
   "Dose Gin": 5,
   "Dose Jagermeister": 15,
   "Dose Whiskey": 15,
