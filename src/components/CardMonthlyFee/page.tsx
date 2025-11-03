@@ -43,7 +43,7 @@ export function CardMonthlyFee() {
       monthlyFeeData$.set(listWithNames);
     };
     getData();
-    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

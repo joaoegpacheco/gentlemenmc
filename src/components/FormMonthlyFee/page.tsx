@@ -54,6 +54,7 @@ export function FormMonthlyFee() {
     if (!error && membersData) {
       members$.set(membersData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

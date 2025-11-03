@@ -74,6 +74,7 @@ export default function TabsComponent() {
     };
 
     checkIfUserIsAdmin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleTabChange = (key: string) => {

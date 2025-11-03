@@ -76,6 +76,7 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
 
   useEffect(() => {
     getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const shortenUrl = async (url: string): Promise<string> => {

@@ -125,6 +125,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   useEffect(() => {
     fetchComandas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useImperativeHandle(ref, () => ({

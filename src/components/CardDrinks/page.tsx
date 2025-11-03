@@ -135,6 +135,7 @@ export const CardCommand = forwardRef((_, ref) => {
       drinksData$.set(drinks || []);
       totalAmount$.set(total);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isBarMC]
   );
 
@@ -144,6 +145,7 @@ export const CardCommand = forwardRef((_, ref) => {
 
   useEffect(() => {
     fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

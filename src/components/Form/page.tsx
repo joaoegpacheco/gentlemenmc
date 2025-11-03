@@ -74,6 +74,7 @@ export function FormCommand() {
     }
 
     fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUserCredit = async (user_id: string) => {
