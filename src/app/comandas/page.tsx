@@ -30,6 +30,7 @@ export default function Comandas() {
     } else {
       isAuthenticated$.set(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   if (!isAuthenticated) return <p>Carregando...</p>;

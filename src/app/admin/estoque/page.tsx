@@ -55,6 +55,7 @@ export default function EstoquePage() {
 
   useEffect(() => {
     fetchStock();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAdd = async () => {

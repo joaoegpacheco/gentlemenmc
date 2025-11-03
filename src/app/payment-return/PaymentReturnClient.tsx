@@ -87,6 +87,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
     };
 
     confirmPayment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   if (status === "loading") {

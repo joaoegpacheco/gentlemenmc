@@ -60,6 +60,7 @@ export default function HistoricoEstoquePage() {
 
   useEffect(() => {
     fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredLogs = useMemo(() => {
