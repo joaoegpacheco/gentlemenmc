@@ -126,7 +126,7 @@ export default function EstoquePage() {
       <h2 className="text-2xl font-bold mb-6">📦 Controle de Estoque</h2>
 
       {/* Formulário de Adição */}
-      <div className="border p-4 rounded-xl shadow-sm mb-6 bg-white">
+      <div className="border p-4 rounded-xl shadow-sm mb-6 bg-card">
         <h4 className="text-lg font-semibold mb-4">Adicionar ou atualizar bebida</h4>
         <div className="flex flex-col md:flex-row gap-4">
           <Select value={drink || ""} onValueChange={drink$.set}>

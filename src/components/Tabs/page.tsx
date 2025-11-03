@@ -185,7 +185,7 @@ export default function TabsComponent() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="px-5">
+      <div className="px-5 pb-5">
         <p className="text-sm">Aniversariantes do mês: </p>
         <span className="text-sm font-semibold">
           {birthdaysString}
