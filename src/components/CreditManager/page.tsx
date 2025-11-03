@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputNumber } from "@/components/ui/input-number";
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,13 @@ import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
 
 export function CreditManager() {
-  const [members, setMembers] = useState<{ user_id: string; user_name: string; user_email?: string }[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>("");
-  const [amount, setAmount] = useState<number>(0);
+  const members$ = useObservable<{ user_id: string; user_name: string; user_email?: string }[]>([]);
+  const selectedUser$ = useObservable<string>("");
+  const amount$ = useObservable<number>(0);
+
+  const members = useValue(members$);
+  const selectedUser = useValue(selectedUser$);
+  const amount = useValue(amount$);
 
   useEffect(() => {
     async function fetchMembers() {
@@ -17,7 +22,7 @@ export function CreditManager() {
       if (error) {
         notification.error({ message: "Erro ao carregar membros" });
       }
-      setMembers(data || []);
+      members$.set(data || []);
     }
     fetchMembers();
   }, []);
@@ -170,8 +175,8 @@ export function CreditManager() {
         description: description
       });
       
-      setAmount(0);
-      setSelectedUser("");
+      amount$.set(0);
+      selectedUser$.set("");
     } catch (error: any) {
       notification.error({ 
         message: "Erro ao processar crédito", 
@@ -182,7 +187,7 @@ export function CreditManager() {
 
   return (
     <div className="flex flex-col gap-3">
-      <Select value={selectedUser || ""} onValueChange={setSelectedUser}>
+      <Select value={selectedUser || ""} onValueChange={selectedUser$.set}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Selecione um membro" />
         </SelectTrigger>
@@ -198,7 +203,7 @@ export function CreditManager() {
         <InputNumber
           placeholder="Valor (R$)"
           value={amount}
-          onChange={(val) => setAmount(val ?? 0)}
+          onChange={(val) => amount$.set(val ?? 0)}
           min={0}
           step={0.01}
           className="w-full"

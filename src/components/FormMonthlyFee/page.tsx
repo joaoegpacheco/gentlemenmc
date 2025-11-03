@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -41,7 +42,8 @@ export function FormMonthlyFee() {
       date: new Date(),
     },
   });
-  const [members, setMembers] = useState<Member[]>([]);
+  const members$ = useObservable<Member[]>([]);
+  const members = useValue(members$);
 
   const fetchMembers = useCallback(async () => {
     const { data: membersData, error } = await supabase
@@ -50,7 +52,7 @@ export function FormMonthlyFee() {
       .order("user_name", { ascending: true });
 
     if (!error && membersData) {
-      setMembers(membersData);
+      members$.set(membersData);
     }
   }, []);
 
