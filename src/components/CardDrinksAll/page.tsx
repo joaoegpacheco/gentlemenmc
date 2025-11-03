@@ -1,10 +1,10 @@
 "use client";
 import {
   useEffect,
-  useState,
   forwardRef,
   useImperativeHandle,
 } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { message } from "@/lib/message";
@@ -14,13 +14,13 @@ import { formatCurrency } from "@/utils/formatCurrency";
 interface Props {}
 
 export const CardCommandAll = forwardRef((_: Props, ref) => {
-  const [totalSum, setTotalSum] = useState(0);
-  const [debtData, setDebtData] = useState<Array<{ name: string; sumPrice: number }>>(
-    []
-  );
-  const [members, setMembers] = useState<
-    Array<{ user_name: string; phone: string; user_email?: string }>
-  >([]);
+  const totalSum$ = useObservable(0);
+  const debtData$ = useObservable<Array<{ name: string; sumPrice: number }>>([]);
+  const members$ = useObservable<Array<{ user_name: string; phone: string; user_email?: string }>>([]);
+
+  const totalSum = useValue(totalSum$);
+  const debtData = useValue(debtData$);
+  const members = useValue(members$);
 
   const STORE_HANDLE = "gentlemenmc";
 
@@ -34,7 +34,7 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
       .from("membros")
       .select("user_name, phone, user_email");
 
-    setMembers(membersData || []);
+    members$.set(membersData || []);
 
     const calculateSumValues = (transactions: Array<any> | null) => {
       const result: Record<string, { name: string; sumPrice: number }> = {};
@@ -64,8 +64,8 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
 
     const totalSumBase = calculateSumValues(drinks);
 
-    setDebtData(totalSumBase);
-    setTotalSum(
+    debtData$.set(totalSumBase);
+    totalSum$.set(
       totalSumBase.reduce((acc, curr) => acc + (curr.sumPrice || 0), 0)
     );
   };

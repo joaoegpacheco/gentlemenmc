@@ -1,11 +1,11 @@
 "use client";
 import {
   useEffect,
-  useState,
   forwardRef,
   useImperativeHandle,
   useCallback,
 } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime } from "@/utils/formatDateTime";
@@ -34,29 +34,38 @@ interface AdminData {
 }
 
 export const CardCommand = forwardRef((_, ref) => {
-  const [userData, setUserData] = useState<{ id: string; email?: string } | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isBarMC, setIsBarMC] = useState(false);
-  const [selectedUUID, setSelectedUUID] = useState<string | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [totalAmount, setTotalAmount] = useState<number>(0);
-  const [drinksData, setDrinksData] = useState<Drink[]>([]);
-  const [todayBR, setTodayBR] = useState<string>("");
+  const userData$ = useObservable<{ id: string; email?: string } | null>(null);
+  const isAdmin$ = useObservable(false);
+  const isBarMC$ = useObservable(false);
+  const selectedUUID$ = useObservable<string | null>(null);
+  const members$ = useObservable<Member[]>([]);
+  const totalAmount$ = useObservable<number>(0);
+  const drinksData$ = useObservable<Drink[]>([]);
+  const todayBR$ = useObservable<string>("");
+
+  const userData = useValue(userData$);
+  const isAdmin = useValue(isAdmin$);
+  const isBarMC = useValue(isBarMC$);
+  const selectedUUID = useValue(selectedUUID$);
+  const members = useValue(members$);
+  const totalAmount = useValue(totalAmount$);
+  const drinksData = useValue(drinksData$);
+  const todayBR = useValue(todayBR$);
 
   const fetchUserData = async () => {
     const { data: authData } = await supabase.auth.getUser();
     const user = authData?.user;
-    setUserData(user);
+    userData$.set(user);
     if (!user) return;
 
     const now = new Date();
     const brToday = now.toLocaleDateString("pt-BR"); // dd/mm/aaaa
-    setTodayBR(brToday);
+    todayBR$.set(brToday);
 
     // Caso seja o email do Bar MC → "admin limitado ao dia atual"
     if (user.email === "barmc@gentlemenmc.com.br") {
-      setIsAdmin(true);
-      setIsBarMC(true);
+      isAdmin$.set(true);
+      isBarMC$.set(true);
       return;
     }
 
@@ -68,7 +77,7 @@ export const CardCommand = forwardRef((_, ref) => {
       .eq("role", "admin");
 
     const adminStatus = !!(admins && admins.length > 0);
-    setIsAdmin(adminStatus);
+    isAdmin$.set(adminStatus);
 
     if (adminStatus) {
       const { data: membersData } = await supabase
@@ -76,10 +85,10 @@ export const CardCommand = forwardRef((_, ref) => {
         .select("user_id, user_name")
         .order("user_name", { ascending: true });
 
-      setMembers(membersData || []);
+      members$.set(membersData || []);
     }
 
-    setSelectedUUID(user.id);
+    selectedUUID$.set(user.id);
   };
 
   const fetchDrinks = useCallback(
@@ -123,8 +132,8 @@ export const CardCommand = forwardRef((_, ref) => {
           0
         ) || 0;
 
-      setDrinksData(drinks || []);
-      setTotalAmount(total);
+      drinksData$.set(drinks || []);
+      totalAmount$.set(total);
     },
     [isBarMC]
   );
@@ -149,7 +158,7 @@ export const CardCommand = forwardRef((_, ref) => {
     <div>
       {!isBarMC && isAdmin && (
         <div className="mb-4">
-          <Select value={selectedUUID || ""} onValueChange={(value) => setSelectedUUID(value)}>
+          <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
             <SelectTrigger className="w-[300px]">
               <SelectValue placeholder="Filtrar por usuário" />
             </SelectTrigger>

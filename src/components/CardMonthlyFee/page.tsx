@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase.js";
 
 export function CardMonthlyFee() {
-  const [monthlyFeeData, setMonthlyFeeData] = useState([
+  const monthlyFeeData$ = useObservable<any[]>([
     {
       id: "",
       month: "",
@@ -13,6 +14,7 @@ export function CardMonthlyFee() {
       uuid: "",
     },
   ]);
+  const monthlyFeeData = useValue(monthlyFeeData$);
 
   useEffect(() => {
     const getData = async () => {
@@ -38,7 +40,7 @@ export function CardMonthlyFee() {
     });
 
       //@ts-ignore
-      setMonthlyFeeData(listWithNames);
+      monthlyFeeData$.set(listWithNames);
     };
     getData();
     
