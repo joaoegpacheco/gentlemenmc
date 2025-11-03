@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useObservable, useValue } from "@legendapp/state/react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +19,8 @@ interface SelectMultipleProps {
 }
 
 export function SelectMultiple({ options, value, onChange, placeholder = "Selecione..." }: SelectMultipleProps) {
-  const [open, setOpen] = React.useState(false)
+  const open$ = useObservable(false);
+  const open = useValue(open$);
 
   const handleToggle = (optionValue: string) => {
     if (value.includes(optionValue)) {
@@ -31,7 +33,7 @@ export function SelectMultiple({ options, value, onChange, placeholder = "Seleci
   const selectedLabels = options.filter(opt => value.includes(opt.value)).map(opt => opt.label)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={open$.set}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"

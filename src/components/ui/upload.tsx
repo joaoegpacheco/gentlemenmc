@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useObservable, useValue } from "@legendapp/state/react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Upload as UploadIcon } from "lucide-react"
@@ -14,7 +15,8 @@ export interface UploadProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 
 const Upload = React.forwardRef<HTMLInputElement, UploadProps>(
   ({ className, beforeUpload, onChange, showUploadList = true, accept, ...props }, ref) => {
-    const [file, setFile] = React.useState<File | null>(null)
+    const file$ = useObservable<File | null>(null);
+    const file = useValue(file$);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null)
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +29,7 @@ const Upload = React.forwardRef<HTMLInputElement, UploadProps>(
       }
 
       if (shouldUpload) {
-        setFile(selectedFile)
+        file$.set(selectedFile)
         onChange?.({ file: selectedFile })
       }
     }
