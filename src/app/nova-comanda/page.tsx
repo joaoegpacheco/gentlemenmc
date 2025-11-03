@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button, Table, message, Input, Checkbox } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { message } from "@/lib/message";
+import { Plus, Trash2 } from "lucide-react";
 import { registerComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
 import { consumirEstoque } from "@/services/estoqueService";
@@ -75,45 +86,53 @@ export default function CreateComandaPage() {
   return (
     <div className="p-4 flex flex-col gap-25">
       <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <Input
-          addonBefore="Nome do convidado"
-          placeholder="Falano de tal"
-          value={guestName}
-          onChange={(e) => setGuestName(e.target.value)}
-        />
-        <Input
-          addonBefore="Telefone do convidado"
-          placeholder="(XX) 9XXXX-XXXX"
-          value={guestPhone}
-          maxLength={15}
-          onChange={(e) => {
-            const raw = e.target.value.replace(/\D/g, "");
-            const formatted = raw.replace(
-              /^(\d{2})(\d{5})(\d{4}).*/,
-              "($1) $2-$3"
-            );
-            e.target.value = formatted
-            setGuestPhone(formatted);
-          }}
-        />
+        <div className="flex flex-col w-full">
+          <label className="text-sm mb-1">Nome do convidado</label>
+          <Input
+            placeholder="Falano de tal"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col w-full">
+          <label className="text-sm mb-1">Telefone do convidado</label>
+          <Input
+            placeholder="(XX) 9XXXX-XXXX"
+            value={guestPhone}
+            maxLength={15}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "");
+              const formatted = raw.replace(
+                /^(\d{2})(\d{5})(\d{4}).*/,
+                "($1) $2-$3"
+              );
+              e.target.value = formatted
+              setGuestPhone(formatted);
+            }}
+          />
+          </div>
       </div>
-
-      <div className="mb-4">
+      <div className="mb-4 flex items-center space-x-2">
         <Checkbox
+          id="directSale"
           checked={isDirectSale}
-          onChange={(e) => setIsDirectSale(e.target.checked)}
+          onCheckedChange={(checked) => setIsDirectSale(checked === true)}
+        />
+        <label
+          htmlFor="directSale"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           Venda direta (pagamento automático)
-        </Checkbox>
+        </label>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: "wrap", gap: 25, padding: 25 }} className=" grid-cols-2 sm:grid-cols-3 md:grid-cols-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 p-6 mb-6">
         {Object.entries(DRINKS_PRICES).map(([drink, price]) => (
           <Button
             key={drink}
-            size="large"
-            className="h-24 text-lg whitespace-pre-wrap flex flex-wrap gap-[25px]"
-            type="default"
+            variant="outline"
+            size="lg"
+            className="h-24 text-lg whitespace-pre-wrap flex flex-col gap-2"
             onClick={() => {
               const exists = items.find((i) => i.drink === drink);
               if (exists) {
@@ -128,41 +147,54 @@ export default function CreateComandaPage() {
             }}
           >
             {drink}
-            <br />
             <span className="text-sm">R$ {price.toFixed(2)}</span>
           </Button>
         ))}
       </div>
 
-      <Table
-        size="small"
-        dataSource={items.map((item, idx) => ({ ...item, key: idx }))}
-        pagination={false}
-        className="mb-4"
-        columns={[
-          { title: "Bebida", dataIndex: "drink" },
-          { title: "Qtd", dataIndex: "quantity" },
-          {
-            title: "Preço",
-            render: (_, record) => `R$ ${(record.price * record.quantity).toFixed(2)}`,
-          },
-          {
-            title: "",
-            render: (_, record) => (
-              <Button
-                size="small"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => setItems((old) => old.filter((i) => i.drink !== record.drink))}
-              />
-            ),
-          },
-        ]}
-      />
+      <div className="border rounded-lg mb-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Bebida</TableHead>
+              <TableHead>Qtd</TableHead>
+              <TableHead>Preço</TableHead>
+              <TableHead></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  Nenhum item adicionado
+                </TableCell>
+              </TableRow>
+            ) : (
+              items.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{item.drink}</TableCell>
+                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setItems((old) => old.filter((i) => i.drink !== item.drink))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <div className="flex justify-between items-center">
-        <div style={{ margin: 25 }} className="text-xl font-bold">Total: R$ {total.toFixed(2)}</div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateComanda}>
+        <div className="m-6 text-xl font-bold">Total: R$ {total.toFixed(2)}</div>
+        <Button onClick={handleCreateComanda}>
+          <Plus className="h-4 w-4 mr-2" />
           {isDirectSale ? "Criar Venda Direta" : "Criar Comanda"}
         </Button>
       </div>

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/hooks/use-supabase";
-import { Result, Button, Spin } from "antd";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Image from 'next/image';
-import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined } from "@ant-design/icons";
+import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -86,7 +88,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
   if (status === "loading") {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center">
-        <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+        <Spinner className="h-12 w-12" />
         <p className="mt-4 text-lg">Verificando pagamento...</p>
       </div>
     );
@@ -103,17 +105,20 @@ export default function PaymentReturnClient({ searchParams }: Props) {
           className="object-contain"
           priority
         />
-        <Result
-          status="error"
-          title="Erro ao confirmar seu pagamento"
-          subTitle="Não foi possível confirmar sua transação. Fale diretamente com o diretor financeiro."
-          icon={<CloseCircleOutlined style={{ color: "#ff4d4f" }} />}
-          extra={[
-            <Link href="/comandas" key="home">
-              <Button type="primary">Voltar ao início</Button>
-            </Link>,
-          ]}
-        />
+        <Card className="max-w-md">
+          <CardHeader className="text-center">
+            <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+            <CardTitle>Erro ao confirmar seu pagamento</CardTitle>
+            <CardDescription>
+              Não foi possível confirmar sua transação. Fale diretamente com o diretor financeiro.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Link href="/comandas">
+              <Button>Voltar ao início</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -128,22 +133,23 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         className="object-contain"
         priority
       />
-      <Result
-        status="success"
-        title={`Obrigado, ${name || "irmão"}!`}
-        subTitle="Seu pagamento foi confirmado com sucesso."
-        icon={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
-        extra={[
-          <Link href="/comandas" key="home">
-            <Button type="primary">Voltar ao início</Button>
-          </Link>,
-          searchParams?.receipt_url ? (
-            <a href={searchParams.receipt_url} key="receipt" target="_blank" rel="noreferrer">
-              <Button>Ver recibo</Button>
+      <Card className="max-w-md">
+        <CardHeader className="text-center">
+          <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <CardTitle>{`Obrigado, ${name || "irmão"}!`}</CardTitle>
+          <CardDescription>Seu pagamento foi confirmado com sucesso.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center gap-4">
+          <Link href="/comandas">
+            <Button>Voltar ao início</Button>
+          </Link>
+          {searchParams?.receipt_url && (
+            <a href={searchParams.receipt_url} target="_blank" rel="noreferrer">
+              <Button variant="outline">Ver recibo</Button>
             </a>
-          ) : null,
-        ]}
-      />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

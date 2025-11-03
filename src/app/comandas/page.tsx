@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { notification } from "antd";
+import { notification } from "@/lib/notification";
 import TabsComponent from "@/components/Tabs/page";
 
 export default function Comandas() {
