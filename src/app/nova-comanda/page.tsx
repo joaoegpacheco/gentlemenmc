@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import { message } from "@/lib/message";
 import { Plus, Trash2 } from "lucide-react";
 import { registerComanda } from "@/services/comandaService";
 import { DRINKS_PRICES } from "@/constants/drinks";
-import { consumirEstoque } from "@/services/estoqueService";
+import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
 import { supabase } from "@/hooks/use-supabase.js";
 
 export default function CreateComandaPage() {
@@ -25,11 +25,27 @@ export default function CreateComandaPage() {
   const guestName$ = useObservable<string>("");
   const guestPhone$ = useObservable<string>("");
   const isDirectSale$ = useObservable<boolean>(false);
+  const drinkStock$ = useObservable<Record<string, number>>({});
 
   const items = useValue(items$);
   const guestName = useValue(guestName$);
   const guestPhone = useValue(guestPhone$);
   const isDirectSale = useValue(isDirectSale$);
+  const drinkStock = useValue(drinkStock$);
+
+  useEffect(() => {
+    async function fetchAllStock() {
+      const stockMap: Record<string, number> = {};
+      for (const drink of Object.keys(DRINKS_PRICES)) {
+        const quantity = await getEstoqueByDrink(drink);
+        stockMap[drink] = quantity;
+      }
+      drinkStock$.set(stockMap);
+    }
+
+    fetchAllStock();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreateComanda = async () => {
     if (!guestName) {
@@ -42,10 +58,22 @@ export default function CreateComandaPage() {
       return;
     }
 
+    // Valida estoque antes de criar comanda
+    for (const item of items) {
+      const stock = drinkStock[item.drink] || 0;
+      if (stock < item.quantity) {
+        message.error(`Estoque insuficiente para ${item.drink}. Disponível: ${stock}, Solicitado: ${item.quantity}`);
+        return;
+      }
+    }
+
     try {
       // Consome estoque
       for (const item of items) {
         await consumirEstoque(item.drink, item.quantity);
+        // Atualiza o estoque local após consumo
+        const newStock = await getEstoqueByDrink(item.drink);
+        drinkStock$.set({ ...drinkStock, [item.drink]: newStock });
       }
 
       // Cria a comanda
@@ -82,6 +110,14 @@ export default function CreateComandaPage() {
       guestName$.set("");
       guestPhone$.set("");
       isDirectSale$.set(false);
+
+      // Atualiza todo o estoque após criar a comanda
+      const stockMap: Record<string, number> = {};
+      for (const drink of Object.keys(DRINKS_PRICES)) {
+        const quantity = await getEstoqueByDrink(drink);
+        stockMap[drink] = quantity;
+      }
+      drinkStock$.set(stockMap);
     } catch (error: any) {
       message.error(`Erro: ${error.message || "Erro ao processar"}`);
     }
@@ -133,29 +169,45 @@ export default function CreateComandaPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 p-6 mb-6">
-        {Object.entries(DRINKS_PRICES).map(([drink, price]) => (
-          <Button
-            key={drink}
-            variant="outline"
-            size="lg"
-            className="h-24 text-lg whitespace-pre-wrap flex flex-col gap-2"
-            onClick={() => {
-              const exists = items.find((i) => i.drink === drink);
-              if (exists) {
-                items$.set((old) =>
-                  old.map((i) =>
-                    i.drink === drink ? { ...i, quantity: i.quantity + 1 } : i
-                  )
-                );
-              } else {
-                items$.set((old) => [...old, { drink, quantity: 1, price }]);
-              }
-            }}
-          >
-            {drink}
-            <span className="text-sm">R$ {price.toFixed(2)}</span>
-          </Button>
-        ))}
+        {Object.entries(DRINKS_PRICES).map(([drink, price]) => {
+          const stock = drinkStock[drink] || 0;
+          const hasStock = stock > 0;
+          const itemInCart = items.find((i) => i.drink === drink);
+          const quantityInCart = itemInCart?.quantity || 0;
+          const canAddMore = stock > quantityInCart;
+          
+          return (
+            <div key={drink} className="flex flex-col items-center gap-1">
+              <Button
+                variant="outline"
+                className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
+                disabled={!hasStock || !canAddMore}
+                onClick={() => {
+                  const exists = items.find((i) => i.drink === drink);
+                  if (exists) {
+                    items$.set((old) =>
+                      old.map((i) =>
+                        i.drink === drink ? { ...i, quantity: i.quantity + 1 } : i
+                      )
+                    );
+                  } else {
+                    items$.set((old) => [...old, { drink, quantity: 1, price }]);
+                  }
+                }}
+              >
+                {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+              </Button>
+              <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
+                Estoque: {stock}
+              </span>
+              {quantityInCart > 0 && (
+                <span className="text-xs text-blue-600 font-medium">
+                  No carrinho: {quantityInCart}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="border rounded-lg mb-4">
