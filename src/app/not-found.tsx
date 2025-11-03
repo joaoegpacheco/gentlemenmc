@@ -6,15 +6,10 @@ export default function NotFoundPage() {
     const { isMobile } = useDeviceSizes()
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh", 
-        textAlign: "center",
-        flexDirection: isMobile ? "column" : "row", 
-        gap: "20px", 
-      }}
+      className={`
+        flex items-center justify-center h-screen text-center
+        ${isMobile ? "flex-col gap-5" : "flex-row gap-5"}
+      `}
     >
       <Image
         src="/images/gentlemenmc.png"
@@ -26,8 +21,8 @@ export default function NotFoundPage() {
         }}
       />
       <div>
-        <h1 style={{ fontSize: "2rem", margin: "0" }}>404 - Página não existe</h1>
-        <p style={{ fontSize: "0.9rem", color: "#555" }}>
+        <h1 className="text-3xl font-bold m-0">404 - Página não existe</h1>
+        <p className="text-sm text-gray-600">
           A página que você tentou acessar não existe.
         </p>
       </div>
