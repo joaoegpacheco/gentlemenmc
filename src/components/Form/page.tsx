@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -41,11 +42,17 @@ export function FormCommand() {
     },
   });
 
-  const [userId, setUserId] = useState("");
-  const [userName, setUserName] = useState("");
-  const [selectedDrink, setSelectedDrink] = useState("");
-  const [members, setMembers] = useState<Record<string, MemberType>>({});
-  const [userCredit, setUserCredit] = useState<number>(0);
+  const userId$ = useObservable("");
+  const userName$ = useObservable("");
+  const selectedDrink$ = useObservable("");
+  const members$ = useObservable<Record<string, MemberType>>({});
+  const userCredit$ = useObservable<number>(0);
+
+  const userId = useValue(userId$);
+  const userName = useValue(userName$);
+  const selectedDrink = useValue(selectedDrink$);
+  const members = useValue(members$);
+  const userCredit = useValue(userCredit$);
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
@@ -63,7 +70,7 @@ export function FormCommand() {
         return acc;
       }, {} as Record<string, MemberType>);
 
-      setMembers(membersMap);
+      members$.set(membersMap);
     }
 
     fetchMembers();
@@ -77,9 +84,9 @@ export function FormCommand() {
     
     if (!error && data) {
       const balance = data.reduce((sum, c) => sum + (c.balance || 0), 0);
-      setUserCredit(balance);
+      userCredit$.set(balance);
     } else {
-      setUserCredit(0);
+      userCredit$.set(0);
     }
   };
 
@@ -192,10 +199,10 @@ export function FormCommand() {
 
       notification.success({ message: "Bebida adicionada com sucesso!" });
       form.reset();
-      setSelectedDrink("");
-      setUserName("");
-      setUserId("");
-      setUserCredit(0);
+      selectedDrink$.set("");
+      userName$.set("");
+      userId$.set("");
+      userCredit$.set(0);
     } catch (err) {
       notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida. Verifique se há estoque!" });
     }
@@ -217,8 +224,8 @@ export function FormCommand() {
                     onValueChange={(value) => {
                       const member = Object.values(members).find(m => m.user_id === value);
                       if (member) {
-                        setUserId(member.user_id);
-                        setUserName(member.user_name);
+                        userId$.set(member.user_id);
+                        userName$.set(member.user_name);
                         field.onChange(member.user_name);
                         fetchUserCredit(member.user_id);
                       }
@@ -243,8 +250,8 @@ export function FormCommand() {
                         type="button"
                         variant={userId === member.user_id ? "default" : "outline"}
                         onClick={() => {
-                          setUserId(member.user_id);
-                          setUserName(member.user_name);
+                          userId$.set(member.user_id);
+                          userName$.set(member.user_name);
                           field.onChange(member.user_name);
                           fetchUserCredit(member.user_id);
                         }}
@@ -276,7 +283,7 @@ export function FormCommand() {
                 <Select
                   value={selectedDrink}
                   onValueChange={(value) => {
-                    setSelectedDrink(value);
+                    selectedDrink$.set(value);
                     field.onChange(value);
                   }}
                 >
@@ -299,7 +306,7 @@ export function FormCommand() {
                       type="button"
                       variant={selectedDrink === drink ? "default" : "outline"}
                       onClick={() => {
-                        setSelectedDrink(drink);
+                        selectedDrink$.set(drink);
                         field.onChange(drink);
                       }}
                     >
