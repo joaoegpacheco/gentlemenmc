@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { supabase } from "@/hooks/use-supabase";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,8 +31,11 @@ type Props = {
 };
 
 export default function PaymentReturnClient({ searchParams }: Props) {
-  const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
-  const [name, setName] = useState<string | null>(null);
+  const status$ = useObservable<"loading" | "success" | "failed">("loading");
+  const name$ = useObservable<string | null>(null);
+
+  const status = useValue(status$);
+  const name = useValue(name$);
 
   useEffect(() => {
     const confirmPayment = async () => {
@@ -74,11 +78,11 @@ export default function PaymentReturnClient({ searchParams }: Props) {
           .eq("name", data.customer_name);
         if (bebidasError) throw bebidasError;
 
-        setName(data.customer_name);
-        setStatus("success");
+        name$.set(data.customer_name);
+        status$.set("success");
       } catch (err) {
         console.error("Erro ao confirmar pagamento:", err);
-        setStatus("failed");
+        status$.set("failed");
       }
     };
 

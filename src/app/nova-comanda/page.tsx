@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,10 +21,15 @@ import { consumirEstoque } from "@/services/estoqueService";
 import { supabase } from "@/hooks/use-supabase.js";
 
 export default function CreateComandaPage() {
-  const [items, setItems] = useState<{ drink: string; quantity: number; price: number }[]>([]);
-  const [guestName, setGuestName] = useState<string>("");
-  const [guestPhone, setGuestPhone] = useState<string>("");
-  const [isDirectSale, setIsDirectSale] = useState<boolean>(false);
+  const items$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
+  const guestName$ = useObservable<string>("");
+  const guestPhone$ = useObservable<string>("");
+  const isDirectSale$ = useObservable<boolean>(false);
+
+  const items = useValue(items$);
+  const guestName = useValue(guestName$);
+  const guestPhone = useValue(guestPhone$);
+  const isDirectSale = useValue(isDirectSale$);
 
   const handleCreateComanda = async () => {
     if (!guestName) {
@@ -72,10 +78,10 @@ export default function CreateComandaPage() {
       }
 
       // Limpa formulário
-      setItems([]);
-      setGuestName("");
-      setGuestPhone("");
-      setIsDirectSale(false);
+      items$.set([]);
+      guestName$.set("");
+      guestPhone$.set("");
+      isDirectSale$.set(false);
     } catch (error: any) {
       message.error(`Erro: ${error.message || "Erro ao processar"}`);
     }
@@ -91,7 +97,7 @@ export default function CreateComandaPage() {
           <Input
             placeholder="Falano de tal"
             value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
+            onChange={(e) => guestName$.set(e.target.value)}
           />
         </div>
         <div className="flex flex-col w-full">
@@ -107,7 +113,7 @@ export default function CreateComandaPage() {
                 "($1) $2-$3"
               );
               e.target.value = formatted
-              setGuestPhone(formatted);
+              guestPhone$.set(formatted);
             }}
           />
           </div>
@@ -116,7 +122,7 @@ export default function CreateComandaPage() {
         <Checkbox
           id="directSale"
           checked={isDirectSale}
-          onCheckedChange={(checked) => setIsDirectSale(checked === true)}
+          onCheckedChange={(checked) => isDirectSale$.set(checked === true)}
         />
         <label
           htmlFor="directSale"
@@ -136,13 +142,13 @@ export default function CreateComandaPage() {
             onClick={() => {
               const exists = items.find((i) => i.drink === drink);
               if (exists) {
-                setItems((old) =>
+                items$.set((old) =>
                   old.map((i) =>
                     i.drink === drink ? { ...i, quantity: i.quantity + 1 } : i
                   )
                 );
               } else {
-                setItems((old) => [...old, { drink, quantity: 1, price }]);
+                items$.set((old) => [...old, { drink, quantity: 1, price }]);
               }
             }}
           >
@@ -179,7 +185,7 @@ export default function CreateComandaPage() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => setItems((old) => old.filter((i) => i.drink !== item.drink))}
+                      onClick={() => items$.set((old) => old.filter((i) => i.drink !== item.drink))}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
