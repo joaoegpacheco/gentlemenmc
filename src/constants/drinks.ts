@@ -39,6 +39,7 @@ export const drinksByCategory = {
       "Guaraná Zero": 6,
       "Sprite Zero": 6,
       "Suco de Laranja": 5,
+      "Schweppes Citrus": 6,
     },
     members: {
       "Água sem gás": 5,
@@ -51,6 +52,7 @@ export const drinksByCategory = {
       "Guaraná Zero": 6,
       "Sprite Zero": 6,
       "Suco de Laranja": 5,
+      "Schweppes Citrus": 6,
     },
   },
   energetico: {
