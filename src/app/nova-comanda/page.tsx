@@ -122,9 +122,15 @@ export default function CreateComandaPage() {
 
       // Se for venda direta, marca a comanda como paga
       if (isDirectSale) {
+        // Calcula o valor total
+        const valorTotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+        
         const { error: updateError } = await supabase
           .from("comandas")
-          .update({ paga: true })
+          .update({ 
+            paga: true,
+            valor_total: valorTotal
+          })
           .eq("id", order.id);
 
         if (updateError) {
