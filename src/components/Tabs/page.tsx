@@ -17,6 +17,7 @@ import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
 import CreateComandaPage from "@/app/nova-comanda/page";
 import { OpenComandasPageContent } from "@/components/OpenComandasPageContent/page";
+import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/page";
 import EstoquePage from "@/app/admin/estoque/page";
 import HistoricoEstoquePage from "@/app/admin/estoque/historico/page";
 import { CreditManager } from "../CreditManager/page";
@@ -45,6 +46,7 @@ export default function TabsComponent() {
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
   const comandOpenTableRef = useRef<any>(null);
+  const paidComandasTableRef = useRef<any>(null);
 
   useEffect(() => {
     const checkIfUserIsAdmin = async () => {
@@ -82,6 +84,7 @@ export default function TabsComponent() {
     if (key === "2") cardComandRef.current?.refreshData();
     if (key === "10") comandAllTableRef.current?.refreshData();
     if (key === "13") comandOpenTableRef.current?.refreshData();
+    if (key === "17") paidComandasTableRef.current?.refreshData();
   };
 
   const getCurrentTabs = () => {
@@ -94,6 +97,7 @@ export default function TabsComponent() {
         { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
         { key: "10", label: "Dívidas todos", children: <CardCommandAll ref={comandAllTableRef} /> },
         { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+        { key: "17", label: "Histórico de Comandas", children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
         { key: "14", label: "Estoque", children: <EstoquePage /> },
         { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
         { key: "16", label: "Créditos", children: <CreditManager /> },
