@@ -93,6 +93,10 @@ export const CardCommand = forwardRef((_, ref) => {
 
   const fetchDrinks = useCallback(
     async (uuid: string | null = null) => {
+      // Limpa os dados antes de buscar para evitar mostrar dados antigos
+      drinksData$.set([]);
+      totalAmount$.set(0);
+
       let query = supabase
         .from("bebidas")
         .select("created_at, name, drink, paid, quantity, price, user, uuid")
@@ -121,6 +125,11 @@ export const CardCommand = forwardRef((_, ref) => {
       } else if (uuid) {
         // Admin normal ou usuário comum → filtra pelo UUID
         query = query.eq("uuid", uuid);
+      } else {
+        // Se não há UUID e não é BarMC, não busca nada
+        drinksData$.set([]);
+        totalAmount$.set(0);
+        return;
       }
 
       const { data: drinks } = await query.select();
@@ -149,12 +158,14 @@ export const CardCommand = forwardRef((_, ref) => {
   }, []);
 
   useEffect(() => {
+    if (!userData) return; // Aguarda os dados do usuário
+    
     if (isBarMC) {
       fetchDrinks(null); // Busca todos os usuários
     } else if (selectedUUID) {
       fetchDrinks(selectedUUID);
     }
-  }, [selectedUUID, isBarMC, fetchDrinks]);
+  }, [selectedUUID, isBarMC, fetchDrinks, userData]);
 
   return (
     <div>
