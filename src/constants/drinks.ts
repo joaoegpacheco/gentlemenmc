@@ -42,8 +42,8 @@ export const drinksByCategory = {
       "Schweppes Citrus": 6,
     },
     members: {
-      "Água sem gás": 5,
-      "Água com gás": 5,
+      "Água sem gás": 3,
+      "Água com gás": 3,
       "Água Tônica Zero": 6,
       "Café": 3,
       "Coca-Cola": 6,
@@ -51,7 +51,7 @@ export const drinksByCategory = {
       "Coca-Cola Light": 6,
       "Guaraná Zero": 6,
       "Sprite Zero": 6,
-      "Suco de Laranja": 5,
+      "Suco de Laranja": 4,
       "Schweppes Citrus": 6,
     },
   },
@@ -98,7 +98,7 @@ export const drinksByCategory = {
       "Goma de Mascar": 3,
     },
     members: {
-      "Goma de Mascar": 3,
+      "Goma de Mascar": 2,
     },
   },
   cigarros: {
