@@ -87,10 +87,31 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       return;
     }
 
-    // Após autenticar, atualiza a comanda
+    // Busca a comanda com seus itens para calcular o total
+    const { data: comandaData, error: fetchError } = await supabase
+      .from("comandas")
+      .select("*, comanda_itens(*)")
+      .eq("id", payingComandaId)
+      .single();
+
+    if (fetchError || !comandaData) {
+      message.error("Erro ao buscar dados da comanda");
+      return;
+    }
+
+    // Calcula o valor total da comanda
+    const valorTotal = comandaData.comanda_itens.reduce(
+      (sum: number, item: any) => sum + (item.quantidade * item.preco_unitario),
+      0
+    );
+
+    // Após autenticar, atualiza a comanda com paga: true e valor_total
     const { error } = await supabase
       .from("comandas")
-      .update({ paga: true })
+      .update({ 
+        paga: true,
+        valor_total: valorTotal
+      })
       .eq("id", payingComandaId);
 
     if (error) {
