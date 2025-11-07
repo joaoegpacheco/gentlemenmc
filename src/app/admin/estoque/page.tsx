@@ -4,7 +4,6 @@ import React, { useEffect, useMemo } from "react";
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputNumber } from "@/components/ui/input-number";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -141,10 +140,19 @@ export default function EstoquePage() {
               ))}
             </SelectContent>
           </Select>
-          <InputNumber
-            min={1}
-            value={quantity}
-            onChange={(v) => quantity$.set(v ?? 1)}
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={quantity.toString()}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Remove tudo que não é número
+              const numericValue = value.replace(/\D/g, "");
+              // Se estiver vazio, define como 0, senão converte para número
+              const numValue = numericValue === "" ? 0 : parseInt(numericValue, 10);
+              // Garante que o valor mínimo seja 0
+              quantity$.set(Math.max(0, numValue));
+            }}
             className="w-full md:w-32"
             placeholder="Quantidade"
           />
