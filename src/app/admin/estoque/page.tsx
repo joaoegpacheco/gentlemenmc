@@ -129,7 +129,7 @@ export default function EstoquePage() {
         <h4 className="text-lg font-semibold mb-4">Adicionar ou atualizar bebida</h4>
         <div className="flex flex-col md:flex-row gap-4">
           <Select value={drink || ""} onValueChange={drink$.set}>
-            <SelectTrigger className="w-full md:w-auto min-w-[200px]">
+            <SelectTrigger className="w-full md:w-full min-w-[200px]">
               <SelectValue placeholder="Selecione uma bebida" />
             </SelectTrigger>
             <SelectContent>
