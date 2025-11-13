@@ -7,6 +7,7 @@ export const drinksByCategory = {
       "Long Neck Corona": 15,
       "Long Neck Stella Artois": 12,
       "Long Neck Sol": 12,
+      "Long Neck Therezópolis": 12,
     },
     members: {
       "Chopp Pilsen": 10,
@@ -15,6 +16,7 @@ export const drinksByCategory = {
       "Long Neck Corona": 12,
       "Long Neck Stella Artois": 8,
       "Long Neck Sol": 8,
+      "Long Neck Therezópolis": 8,
     },
   },
   cervejasPremium: {
