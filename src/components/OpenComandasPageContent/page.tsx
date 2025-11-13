@@ -90,7 +90,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     // Busca a comanda com seus itens para calcular o total
     const { data: comandaData, error: fetchError } = await supabase
       .from("comandas")
-      .select("*, comanda_itens(*)")
+      .select("*, comanda_itens!comanda_itens_comanda_id_fkey(*)")
       .eq("id", payingComandaId)
       .single();
 

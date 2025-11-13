@@ -76,7 +76,7 @@ export async function getComandas(date: Date | string) {
 
   const { data: comandas, error } = await supabase
     .from("comandas")
-    .select("*, comanda_itens(*)")
+    .select("*, comanda_itens!comanda_itens_comanda_id_fkey(*)")
     .gte("created_at", startOfDay.toISOString())
     .lte("created_at", endOfDay.toISOString())
     .order("created_at", { ascending: false });
