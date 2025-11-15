@@ -47,6 +47,12 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 - Secure authentication system
 - User profile management
 
+#### 👤 User Profile
+- View and edit personal information
+- Update profile photo
+- Manage personal details
+- View membership status
+
 ### For Administrators
 
 #### 📈 Financial Management
@@ -85,7 +91,38 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 #### 👥 Member Management
 - View all club members
 - Access member information
-- Manage member profiles
+- Create and edit member profiles
+- Upload member photos
+- Manage member status (active/inactive/suspended)
+- Track member registration dates
+- View member contact information
+
+#### 📊 Administrative Dashboard
+- **Overview Cards:**
+  - Total debts tracking
+  - Monthly revenue monitoring
+  - Open orders count
+  - Low stock items alerts
+  - Active/inactive members count
+  - Upcoming birthdays (next 7 days)
+
+- **Analytics & Charts:**
+  - Monthly revenue trends (last 12 months)
+  - Top 5 best-selling drinks
+  - Top 5 consumer members
+  - Consumption trend analysis (last 6 months)
+  - Drinks investment analysis with period filters (week/month/year)
+
+- **Quick Tables:**
+  - Recent paid orders
+  - Members with highest debt
+  - Recent stock movements
+
+- **Investment Insights:**
+  - Best investment drink by revenue
+  - Best-selling drink by quantity
+  - Highest unit value analysis
+  - Potential rating (High/Medium/Low)
 
 #### 🔍 Advanced Features
 - Real-time data synchronization
@@ -110,17 +147,32 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 
 ```
 src/
-├── app/              # Next.js app router pages
-│   ├── admin/       # Admin-only pages
-│   ├── comandas/    # Main application page
-│   └── nova-comanda/# Guest comanda creation
-├── components/      # React components
-│   ├── ui/          # Reusable UI components
-│   └── ...          # Feature-specific components
-├── stores/          # Legend State stores
-├── services/        # API service functions
-├── hooks/           # Custom React hooks
-└── utils/           # Utility functions
+├── app/                    # Next.js app router pages
+│   ├── admin/             # Admin-only pages
+│   │   ├── dashboard/     # Administrative dashboard
+│   │   └── membros/       # Member management page
+│   ├── api/               # API routes
+│   │   └── members/       # Member-related endpoints
+│   ├── comandas/          # Main application page
+│   └── nova-comanda/      # Guest comanda creation
+├── components/            # React components
+│   ├── Dashboard/         # Dashboard components
+│   │   ├── Charts.tsx     # Analytics charts
+│   │   ├── StatsCards.tsx # Statistics cards
+│   │   └── QuickTables.tsx# Quick view tables
+│   ├── MemberForm/        # Member registration/edit
+│   ├── MemberProfile/     # Member profile display
+│   ├── UserProfileTab/    # User profile management
+│   ├── ui/                # Reusable UI components
+│   └── ...                # Feature-specific components
+├── services/              # API service functions
+│   └── dashboardService.ts# Dashboard data fetching
+├── stores/                # Legend State stores
+├── types/                 # TypeScript type definitions
+├── hooks/                 # Custom React hooks
+└── utils/                 # Utility functions
+    ├── formatCurrency.js  # Currency formatting
+    └── formatDateTime.js  # Date/time formatting
 ```
 
 ## Key Technologies
@@ -131,6 +183,8 @@ src/
 - **Tailwind CSS:** Utility-first CSS framework
 - **React Hook Form:** Performant form handling
 - **Zod:** Schema validation
+- **Recharts:** Data visualization and analytics charts
+- **date-fns:** Modern date utility library
 
 ## Development
 
@@ -195,6 +249,25 @@ The project uses **Legend State** for reactive state management, providing:
 - Touch-friendly interface
 - Adaptive UI components
 - Progressive Web App capabilities
+
+### Code Standards
+- **UI Text:** Brazilian Portuguese for user-facing content
+- **Code:** English for variables, functions, and types
+- **Comments:** English for code documentation
+- **Commits:** Conventional commits in English
+
+## API Endpoints
+
+### Member Management
+- `POST /api/members/create-user` - Create new member account
+- `POST /api/members/update-photo` - Update member profile photo
+
+### Dashboard (Server-side)
+- Dashboard statistics aggregation
+- Monthly revenue calculations
+- Member analytics
+- Drink consumption analysis
+- Stock movement tracking
 
 ## License
 

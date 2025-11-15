@@ -21,6 +21,9 @@ import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/pa
 import EstoquePage from "@/app/admin/estoque/page";
 import HistoricoEstoquePage from "@/app/admin/estoque/historico/page";
 import { CreditManager } from "../CreditManager/page";
+import MembrosPage from "@/app/admin/membros/page";
+import { UserProfileTab } from "../UserProfileTab/page";
+import { DashboardTab } from "../Dashboard/DashboardTab";
 
 interface AdminData {
   id: string;
@@ -94,6 +97,8 @@ export default function TabsComponent() {
         { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: "Eventos", children: <CalendarEvents /> },
         { key: "6", label: "Estatuto", children: <ByLaw /> },
+        { key: "18", label: "Membros", children: <MembrosPage /> },
+        { key: "20", label: "Dashboard", children: <DashboardTab /> },
         { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
         { key: "10", label: "Dívidas todos", children: <CardCommandAll ref={comandAllTableRef} /> },
         { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
@@ -101,7 +106,8 @@ export default function TabsComponent() {
         { key: "14", label: "Estoque", children: <EstoquePage /> },
         { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
         { key: "16", label: "Créditos", children: <CreditManager /> },
-        { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
+        // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
     } else if (isBarUser) {
@@ -121,7 +127,8 @@ export default function TabsComponent() {
         { key: "6", label: "Estatuto", children: <ByLaw /> },
         { key: "14", label: "Estoque", children: <EstoquePage /> },
         { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
-        { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
+        // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
     } else {
@@ -130,7 +137,8 @@ export default function TabsComponent() {
         { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: "Eventos", children: <CalendarEvents /> },
         { key: "6", label: "Estatuto", children: <ByLaw /> },
-        { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
+        // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "8", label: <LogoutButton /> },
       ];
     }
