@@ -13,23 +13,23 @@ import { Charts } from "@/components/Dashboard/Charts";
 import { QuickTables } from "@/components/Dashboard/QuickTables";
 import {
   getDashboardStats,
-  getReceitaMensal,
-  getTopBebidas,
-  getTopMembros,
-  getMembrosComMaiorDivida,
-  getUltimasComandasPagas,
-  getMovimentacoesEstoque,
-  getTendenciaConsumo,
-  getAnaliseBebidasPorPeriodo,
+  getMonthlyRevenue,
+  getTopDrinks,
+  getTopMembers,
+  getMembersWithHighestDebt,
+  getRecentPaidOrders,
+  getRecentStockMovements,
+  getConsumptionTrend,
+  getDrinkAnalysisByPeriod,
   type DashboardStats,
-  type ReceitaMensal,
-  type TopBebida,
-  type TopMembro,
-  type DividaMembro,
-  type UltimaComanda,
-  type MovimentacaoEstoque,
-  type TendenciaConsumo,
-  type BebidaAnalise,
+  type MonthlyRevenue,
+  type TopDrink,
+  type TopMember,
+  type MemberDebt,
+  type RecentOrder,
+  type StockMovement,
+  type ConsumptionTrend,
+  type DrinkAnalysis,
 } from "@/services/dashboardService";
 
 export default function DashboardPage() {
@@ -38,32 +38,32 @@ export default function DashboardPage() {
   const loading$ = useObservable(true);
   const refreshing$ = useObservable(false);
 
-  // Estados para os dados
+  // State for data
   const stats$ = useObservable<DashboardStats | null>(null);
-  const receitaMensal$ = useObservable<ReceitaMensal[]>([]);
-  const topBebidas$ = useObservable<TopBebida[]>([]);
-  const topMembros$ = useObservable<TopMembro[]>([]);
-  const ultimasComandasPagas$ = useObservable<UltimaComanda[]>([]);
-  const membrosComMaiorDivida$ = useObservable<DividaMembro[]>([]);
-  const movimentacoesEstoque$ = useObservable<MovimentacaoEstoque[]>([]);
-  const tendenciaConsumo$ = useObservable<TendenciaConsumo[]>([]);
-  const bebidaAnalise$ = useObservable<BebidaAnalise[]>([]);
-  const periodoAnalise$ = useObservable<"semana" | "mes" | "ano">("mes");
+  const monthlyRevenue$ = useObservable<MonthlyRevenue[]>([]);
+  const topDrinks$ = useObservable<TopDrink[]>([]);
+  const topMembers$ = useObservable<TopMember[]>([]);
+  const recentPaidOrders$ = useObservable<RecentOrder[]>([]);
+  const membersWithHighestDebt$ = useObservable<MemberDebt[]>([]);
+  const recentStockMovements$ = useObservable<StockMovement[]>([]);
+  const consumptionTrend$ = useObservable<ConsumptionTrend[]>([]);
+  const drinkAnalysis$ = useObservable<DrinkAnalysis[]>([]);
+  const analysisPeriod$ = useObservable<"week" | "month" | "year">("month");
 
-  // Valores observáveis
+  // Observable values
   const isAdmin = useValue(isAdmin$);
   const loading = useValue(loading$);
   const refreshing = useValue(refreshing$);
   const stats = useValue(stats$);
-  const receitaMensal = useValue(receitaMensal$);
-  const topBebidas = useValue(topBebidas$);
-  const topMembros = useValue(topMembros$);
-  const ultimasComandasPagas = useValue(ultimasComandasPagas$);
-  const membrosComMaiorDivida = useValue(membrosComMaiorDivida$);
-  const movimentacoesEstoque = useValue(movimentacoesEstoque$);
-  const tendenciaConsumo = useValue(tendenciaConsumo$);
-  const bebidaAnalise = useValue(bebidaAnalise$);
-  const periodoAnalise = useValue(periodoAnalise$);
+  const monthlyRevenue = useValue(monthlyRevenue$);
+  const topDrinks = useValue(topDrinks$);
+  const topMembers = useValue(topMembers$);
+  const recentPaidOrders = useValue(recentPaidOrders$);
+  const membersWithHighestDebt = useValue(membersWithHighestDebt$);
+  const recentStockMovements = useValue(recentStockMovements$);
+  const consumptionTrend = useValue(consumptionTrend$);
+  const drinkAnalysis = useValue(drinkAnalysis$);
+  const analysisPeriod = useValue(analysisPeriod$);
 
   useEffect(() => {
     checkAdminAndLoadData();
@@ -107,38 +107,38 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     loading$.set(true);
     try {
-      // Buscar todos os dados em paralelo
+      // Fetch all data in parallel
       const [
         statsData,
-        receitaMensalData,
-        topBebidasData,
-        topMembrosData,
-        ultimasComandasData,
-        membrosComDividaData,
-        movimentacoesData,
-        tendenciaData,
-        bebidaAnaliseData,
+        monthlyRevenueData,
+        topDrinksData,
+        topMembersData,
+        recentPaidOrdersData,
+        membersWithHighestDebtData,
+        recentStockMovementsData,
+        consumptionTrendData,
+        drinkAnalysisData,
       ] = await Promise.all([
         getDashboardStats(),
-        getReceitaMensal(12),
-        getTopBebidas(5),
-        getTopMembros(5),
-        getUltimasComandasPagas(10),
-        getMembrosComMaiorDivida(5),
-        getMovimentacoesEstoque(10),
-        getTendenciaConsumo(6),
-        getAnaliseBebidasPorPeriodo(periodoAnalise$.peek()),
+        getMonthlyRevenue(12),
+        getTopDrinks(5),
+        getTopMembers(5),
+        getRecentPaidOrders(10),
+        getMembersWithHighestDebt(5),
+        getRecentStockMovements(10),
+        getConsumptionTrend(6),
+        getDrinkAnalysisByPeriod(analysisPeriod$.peek()),
       ]);
 
       stats$.set(statsData);
-      receitaMensal$.set(receitaMensalData);
-      topBebidas$.set(topBebidasData);
-      topMembros$.set(topMembrosData);
-      ultimasComandasPagas$.set(ultimasComandasData);
-      membrosComMaiorDivida$.set(membrosComDividaData);
-      movimentacoesEstoque$.set(movimentacoesData);
-      tendenciaConsumo$.set(tendenciaData);
-      bebidaAnalise$.set(bebidaAnaliseData);
+      monthlyRevenue$.set(monthlyRevenueData);
+      topDrinks$.set(topDrinksData);
+      topMembers$.set(topMembersData);
+      recentPaidOrders$.set(recentPaidOrdersData);
+      membersWithHighestDebt$.set(membersWithHighestDebtData);
+      recentStockMovements$.set(recentStockMovementsData);
+      consumptionTrend$.set(consumptionTrendData);
+      drinkAnalysis$.set(drinkAnalysisData);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
       message.error("Erro ao carregar dados do dashboard");
@@ -159,11 +159,11 @@ export default function DashboardPage() {
     }
   };
 
-  const handlePeriodoChange = async (periodo: "semana" | "mes" | "ano") => {
-    periodoAnalise$.set(periodo);
+  const handlePeriodChange = async (period: "week" | "month" | "year") => {
+    analysisPeriod$.set(period);
     try {
-      const bebidaAnaliseData = await getAnaliseBebidasPorPeriodo(periodo);
-      bebidaAnalise$.set(bebidaAnaliseData);
+      const drinkAnalysisData = await getDrinkAnalysisByPeriod(period);
+      drinkAnalysis$.set(drinkAnalysisData);
     } catch (error) {
       console.error("Erro ao atualizar análise de bebidas:", error);
       message.error("Erro ao atualizar análise de bebidas");
@@ -221,14 +221,14 @@ export default function DashboardPage() {
       <section>
         <h2 className="text-xl font-semibold mb-4">Gráficos e Análises</h2>
         <Charts
-          receitaMensal={receitaMensal}
-          topBebidas={topBebidas}
-          topMembros={topMembros}
-          tendenciaConsumo={tendenciaConsumo}
-          bebidaAnalise={bebidaAnalise}
+          monthlyRevenue={monthlyRevenue}
+          topDrinks={topDrinks}
+          topMembers={topMembers}
+          consumptionTrend={consumptionTrend}
+          drinkAnalysis={drinkAnalysis}
           loading={loading}
-          onPeriodoChange={handlePeriodoChange}
-          periodoAtual={periodoAnalise}
+          onPeriodChange={handlePeriodChange}
+          currentPeriod={analysisPeriod}
         />
       </section>
 
@@ -236,9 +236,9 @@ export default function DashboardPage() {
       <section>
         <h2 className="text-xl font-semibold mb-4">Atividades Recentes</h2>
         <QuickTables
-          ultimasComandasPagas={ultimasComandasPagas}
-          membrosComMaiorDivida={membrosComMaiorDivida}
-          movimentacoesEstoque={movimentacoesEstoque}
+          recentPaidOrders={recentPaidOrders}
+          membersWithHighestDebt={membersWithHighestDebt}
+          recentStockMovements={recentStockMovements}
           loading={loading}
         />
       </section>

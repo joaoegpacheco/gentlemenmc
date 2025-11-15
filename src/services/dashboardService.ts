@@ -463,21 +463,21 @@ export async function getConsumptionTrend(monthsBack: number = 6): Promise<Consu
 
 // Análise de bebidas por período (semana, mês ou ano)
 export async function getDrinkAnalysisByPeriod(
-  period: "semana" | "mes" | "ano"
+  period: "week" | "month" | "year"
 ): Promise<DrinkAnalysis[]> {
   try {
     let startDate: Date;
     const today = new Date();
 
     switch (period) {
-      case "semana":
+      case "week":
         startDate = new Date(today);
         startDate.setDate(today.getDate() - 7);
         break;
-      case "mes":
+      case "month":
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         break;
-      case "ano":
+      case "year":
         startDate = new Date(today.getFullYear(), 0, 1);
         break;
     }

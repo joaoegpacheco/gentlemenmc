@@ -405,8 +405,8 @@ export function Charts({
               <tbody>
                 {drinkAnalysis.slice(0, 10).map((drink, idx) => (
                   <tr key={idx} className="border-b hover:bg-muted/50">
-                    <td className="py-2 px-2 font-medium">{drink.name}</td>
-                    <td className="text-right py-2 px-2">{drink.sold_quantity}</td>
+                    <td className="py-2 px-2 font-medium">{drink.drink}</td>
+                    <td className="text-right py-2 px-2">{drink.quantity_sold}</td>
                     <td className="text-right py-2 px-2 font-semibold text-green-600">
                       {formatCurrency(drink.total_revenue)}
                     </td>
@@ -414,9 +414,9 @@ export function Charts({
                       {formatCurrency(drink.average_revenue_per_unit)}
                     </td>
                     <td className="text-right py-2 px-2">
-                      {drink.sold_quantity > 10 && drink.average_revenue_per_unit > 10 ? (
+                      {drink.quantity_sold > 10 && drink.average_revenue_per_unit > 10 ? (
                         <span className="text-green-600 font-semibold">Alto</span>
-                      ) : drink.sold_quantity > 5 || drink.average_revenue_per_unit > 8 ? (
+                      ) : drink.quantity_sold > 5 || drink.average_revenue_per_unit > 8 ? (
                         <span className="text-yellow-600 font-semibold">Médio</span>
                       ) : (
                         <span className="text-gray-600">Baixo</span>
@@ -435,17 +435,17 @@ export function Charts({
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li>
                   <strong className="text-foreground">Melhor Investimento:</strong>{" "}
-                  {drinkAnalysis[0]?.name} - {formatCurrency(drinkAnalysis[0]?.total_revenue)} em receita
+                  {drinkAnalysis[0]?.drink} - {formatCurrency(drinkAnalysis[0]?.total_revenue)} em receita
                 </li>
                 <li>
                   <strong className="text-foreground">Mais Vendido:</strong>{" "}
-                  {[...drinkAnalysis].sort((a, b) => b.sold_quantity - a.sold_quantity)[0]?.name}
+                  {[...drinkAnalysis].sort((a, b) => b.quantity_sold - a.quantity_sold)[0]?.drink}
                   {" - "}
-                  {[...drinkAnalysis].sort((a, b) => b.sold_quantity - a.sold_quantity)[0]?.sold_quantity} unidades
+                  {[...drinkAnalysis].sort((a, b) => b.quantity_sold - a.quantity_sold)[0]?.quantity_sold} unidades
                 </li>
                 <li>
                   <strong className="text-foreground">Maior Valor Unitário:</strong>{" "}
-                  {[...drinkAnalysis].sort((a, b) => b.average_revenue_per_unit - a.average_revenue_per_unit)[0]?.name}
+                  {[...drinkAnalysis].sort((a, b) => b.average_revenue_per_unit - a.average_revenue_per_unit)[0]?.drink}
                   {" - "}
                   {formatCurrency(
                     [...drinkAnalysis].sort((a, b) => b.average_revenue_per_unit - a.average_revenue_per_unit)[0]?.average_revenue_per_unit
