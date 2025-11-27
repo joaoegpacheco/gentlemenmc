@@ -94,7 +94,7 @@ function SidebarNavItem({ item, collapsed }: { item: SidebarItem; collapsed: boo
   const pathname = usePathname();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const hasSubItems = item.items && item.items.length > 0;
-  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+  const isActive = pathname ? (pathname === item.href || pathname.startsWith(item.href + '/')) : false;
 
   const Icon = item.icon;
 

@@ -32,7 +32,7 @@ export function Breadcrumbs({
   const pathname = usePathname();
 
   // Generate breadcrumbs from pathname if no items provided
-  const breadcrumbItems = items || generateBreadcrumbsFromPath(pathname);
+  const breadcrumbItems = items || generateBreadcrumbsFromPath(pathname || '');
 
   // Add home item if enabled
   const allItems = showHome
@@ -123,12 +123,12 @@ function capitalize(str: string): string {
 export function useBreadcrumbs(customItems?: BreadcrumbItem[]) {
   const pathname = usePathname();
   const [items, setItems] = React.useState<BreadcrumbItem[]>(
-    customItems || generateBreadcrumbsFromPath(pathname)
+    customItems || generateBreadcrumbsFromPath(pathname || '')
   );
 
   React.useEffect(() => {
     if (!customItems) {
-      setItems(generateBreadcrumbsFromPath(pathname));
+      setItems(generateBreadcrumbsFromPath(pathname || ''));
     }
   }, [pathname, customItems]);
 

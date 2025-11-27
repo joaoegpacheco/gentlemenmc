@@ -33,18 +33,8 @@ interface SearchResult {
   category: string;
 }
 
-/**
- * Global Search Component with Cmd+K shortcut
- */
-export function GlobalSearch() {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Define searchable items
-  const searchableItems: SearchResult[] = [
+// Define searchable items (moved outside component to avoid recreation)
+const searchableItems: SearchResult[] = [
     // Pages
     {
       id: 'dashboard',
@@ -126,7 +116,17 @@ export function GlobalSearch() {
       icon: Settings,
       category: 'Páginas',
     },
-  ];
+];
+
+/**
+ * Global Search Component with Cmd+K shortcut
+ */
+export function GlobalSearch() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Search function
   const performSearch = useCallback((searchQuery: string) => {

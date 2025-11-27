@@ -134,7 +134,11 @@ export async function rateLimit(
     };
   }
 
-  return result;
+  return {
+    success: true as const,
+    remaining: result.remaining,
+    resetTime: result.resetTime,
+  };
 }
 
 /**

@@ -69,7 +69,7 @@ export function useAsync<T>(
     if (immediate) {
       execute();
     }
-  }, []);
+  }, [immediate, execute]);
 
   return { ...state, execute, reset };
 }
