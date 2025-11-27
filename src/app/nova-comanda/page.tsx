@@ -26,17 +26,23 @@ import { useMediaQuery } from "react-responsive";
 export default function CreateComandaPage() {
   const items$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
   const guestName$ = useObservable<string>("");
+  const memberName$ = useObservable<string>("");
   const guestPhone$ = useObservable<string>("");
   const isDirectSale$ = useObservable<boolean>(false);
   const drinkStock$ = useObservable<Record<string, number>>({});
   const selectedCategory$ = useObservable<string>("");
+  const selectedUUID$ = useObservable<string>("");
+  const members$ = useObservable<{ user_id: string; user_name: string }[]>([]);
 
   const items = useValue(items$);
   const guestName = useValue(guestName$);
+  const memberName = useValue(memberName$);
   const guestPhone = useValue(guestPhone$);
   const isDirectSale = useValue(isDirectSale$);
   const drinkStock = useValue(drinkStock$);
   const selectedCategory = useValue(selectedCategory$);
+  const selectedUUID = useValue(selectedUUID$);
+  const members = useValue(members$);
 
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
@@ -84,12 +90,28 @@ export default function CreateComandaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    async function fetchMembers() {
+      const { data, error } = await supabase
+        .from("membros")
+        .select("user_id, user_name")
+        .order("user_name");
+
+      if (!error && data) {
+        members$.set(data);
+      }
+    }
+
+    fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCreateComanda = async () => {
     if (!guestName) {
       message.error("Informe nome do convidado");
       return;
     }
-    
+
     if (items.length === 0) {
       message.error("Adicione ao menos 1 item");
       return;
@@ -113,9 +135,15 @@ export default function CreateComandaPage() {
         drinkStock$.set({ ...drinkStock, [item.drink]: newStock });
       }
 
+      // Busca o nome do membro selecionado
+      const selectedMemberName = selectedUUID 
+        ? members.find(m => m.user_id === selectedUUID)?.user_name || undefined
+        : memberName || undefined;
+
       // Cria a comanda
       const order = await registerComanda({
         guestName: guestName || undefined,
+        memberName: selectedMemberName,
         guestPhone: guestPhone || undefined,
         items,
       });
@@ -124,10 +152,10 @@ export default function CreateComandaPage() {
       if (isDirectSale) {
         // Calcula o valor total
         const valorTotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-        
+
         const { error: updateError } = await supabase
           .from("comandas")
-          .update({ 
+          .update({
             paga: true,
             valor_total: valorTotal
           })
@@ -144,7 +172,7 @@ export default function CreateComandaPage() {
 
         if (typeof window !== "undefined") {
           const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
-          await printComandaHTML({ guestName: guestName || "Sem nome", items });
+          printComandaHTML({ guestName: guestName || "Sem nome", items });
         }
       }
 
@@ -152,6 +180,7 @@ export default function CreateComandaPage() {
       items$.set([]);
       guestName$.set("");
       guestPhone$.set("");
+      selectedUUID$.set("");
       isDirectSale$.set(false);
 
       // Atualiza todo o estoque após criar a comanda
@@ -170,33 +199,52 @@ export default function CreateComandaPage() {
 
   return (
     <div className="p-4 flex flex-col gap-25">
-      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="flex flex-col w-full">
-          <label className="text-sm mb-1">Nome do convidado</label>
-          <Input
-            placeholder="Falano de tal"
-            value={guestName}
-            onChange={(e) => guestName$.set(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col w-full">
-          <label className="text-sm mb-1">Telefone do convidado</label>
-          <Input
-            placeholder="(XX) 9XXXX-XXXX"
-            value={guestPhone}
-            maxLength={15}
-            onChange={(e) => {
-              const raw = e.target.value.replace(/\D/g, "");
-              const formatted = raw.replace(
-                /^(\d{2})(\d{5})(\d{4}).*/,
-                "($1) $2-$3"
-              );
-              e.target.value = formatted
-              guestPhone$.set(formatted);
-            }}
-          />
+      {!isDirectSale && (
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="flex items-center gap-2 flex-row w-full">
+            <div className="flex flex-col w-full">
+              <label className="text-sm mb-1">Nome do convidado</label>
+              <Input
+                placeholder="Falano de tal"
+                value={guestName}
+                onChange={(e) => guestName$.set(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <label className="text-sm mb-1">Convidado do</label>
+              <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione um membro" />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.map((m) => (
+                    <SelectItem key={m.user_id} value={m.user_id}>
+                      {m.user_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-      </div>
+          <div className="flex flex-col w-full">
+            <label className="text-sm mb-1">Telefone do convidado</label>
+            <Input
+              placeholder="(XX) 9XXXX-XXXX"
+              value={guestPhone}
+              maxLength={15}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/\D/g, "");
+                const formatted = raw.replace(
+                  /^(\d{2})(\d{5})(\d{4}).*/,
+                  "($1) $2-$3"
+                );
+                e.target.value = formatted
+                guestPhone$.set(formatted);
+              }}
+            />
+          </div>
+        </div>
+      )}
       <div className="mb-4 flex items-center space-x-2">
         <Checkbox
           id="directSale"
@@ -240,7 +288,7 @@ export default function CreateComandaPage() {
                 const canAddMore = stock > quantityInCart;
                 const categoryDrinks = getDrinksForCategory(selectedCategory);
                 const price = categoryDrinks[drink] || 0;
-                
+
                 return (
                   <div key={drink} className="flex flex-col items-center gap-1">
                     <Button
@@ -278,8 +326,8 @@ export default function CreateComandaPage() {
         </div>
       ) : (
         <div className="mb-6">
-          <Tabs 
-            value={selectedCategory || categories[0] || ""} 
+          <Tabs
+            value={selectedCategory || categories[0] || ""}
             onValueChange={(value) => {
               selectedCategory$.set(value);
             }}
@@ -305,7 +353,7 @@ export default function CreateComandaPage() {
                       const quantityInCart = itemInCart?.quantity || 0;
                       const canAddMore = stock > quantityInCart;
                       const price = categoryDrinks[drink] || 0;
-                      
+
                       return (
                         <div key={drink} className="flex flex-col items-center gap-1">
                           <Button

@@ -7,7 +7,7 @@ import { CardCommand } from "@/components/CardDrinks/page";
 import { CardCommandAll } from "@/components/CardDrinksAll/page";
 // import { InvoiceForm } from "@/components/InvoiceForm/page";
 // import { InvoiceTable } from "@/components/InvoiceTable/page";
-import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
+// import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
 import CalendarEvents from "../Calendar/page";
@@ -20,7 +20,7 @@ import { OpenComandasPageContent } from "@/components/OpenComandasPageContent/pa
 import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/page";
 import EstoquePage from "@/app/admin/estoque/page";
 import HistoricoEstoquePage from "@/app/admin/estoque/historico/page";
-import { CreditManager } from "../CreditManager/page";
+// import { CreditManager } from "../CreditManager/page";
 import MembrosPage from "@/app/admin/membros/page";
 import { UserProfileTab } from "../UserProfileTab/page";
 import { DashboardTab } from "../Dashboard/DashboardTab";
@@ -105,7 +105,7 @@ export default function TabsComponent() {
         { key: "17", label: "Histórico de Comandas", children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
         { key: "14", label: "Estoque", children: <EstoquePage /> },
         { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
-        { key: "16", label: "Créditos", children: <CreditManager /> },
+        // { key: "16", label: "Créditos", children: <CreditManager /> },
         { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
