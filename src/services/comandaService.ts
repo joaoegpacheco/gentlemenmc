@@ -8,6 +8,7 @@ type ComandaItem = {
 
 type RegisterComandaParams = {
   guestName?: string;
+  memberName?: string;
   guestPhone?: string;
   items: ComandaItem[];
 };
@@ -27,11 +28,12 @@ type UpdateComandaParams = {
 
 export async function registerComanda({
   guestName,
+  memberName,
   guestPhone,
   items,
 }: RegisterComandaParams) {
-  if (!guestName || !guestPhone) {
-    throw new Error("A comanda deve ter um nome de convidado e telefone.");
+  if (!guestName || !guestPhone || !memberName) {
+    throw new Error("A comanda deve ter um nome de convidado, nome do integrante e telefone.");
   }
 
   // Criação da comanda
@@ -40,6 +42,7 @@ export async function registerComanda({
     .insert([
       {
         nome_convidado: guestName || null,
+        nome_integrante: memberName || null,
         telefone_convidado: guestPhone || null,
         created_at: new Date().toISOString(),
       },
@@ -102,8 +105,6 @@ export async function updateComanda({ id, guestName, items }: UpdateComandaParam
 
   if (fetchItemsError) throw fetchItemsError;
 
-  const currentItemsById = new Map(currentItems.map((i) => [i.id, i]));
-
   // 3. Processar os itens enviados na atualização
 
   // Itens para inserir (não possuem id)
@@ -165,6 +166,6 @@ export async function updateComanda({ id, guestName, items }: UpdateComandaParam
     if (insertError) throw insertError;
   }
 
-  return true; // ou retorne algo se quiser
+  return true; 
 }
 
