@@ -1,0 +1,67 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "enter": "Enter",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "processing": "Processing...",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submitButton": "Enter",
+      "errorTitle": "Login error",
+      "tokenError": "Token retrieval error",
+      "tokenErrorDescription": "Could not retrieve authentication token.",
+      "contactAdmin": "To access the system, contact the administrator"
+    },
+    "validation": {
+      "invalidEmail": "Invalid email",
+      "emailRequired": "Please enter your email!",
+      "passwordRequired": "Please enter your password!"
+    }
+  },
+  "layout": {
+    "copyright": "Copyright © 2026 Gentlemen MC",
+    "toggleTheme": "Toggle theme"
+  },
+  "confirmationDialog": {
+    "defaultConfirm": "Confirm",
+    "defaultCancel": "Cancel",
+    "processing": "Processing..."
+  },
+  "metadata": {
+    "title": "Gentlemen MC",
+    "description": "Gentlemen Motorcycle Club internal system"
+  },
+  "dashboard": {
+    "loadingStats": "Loading statistics...",
+    "addToStock": "Add to stock",
+    "loadingMembers": "Loading members...",
+    "loadingProfile": "Loading profile...",
+    "searching": "Searching...",
+    "noResults": "No results found."
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Senha",
+    "enter": "Entrar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "close": "Fechar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "actions": "Ações",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "processing": "Processando...",
+    "language": "Idioma",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "emailLabel": "Email",
+      "passwordLabel": "Senha",
+      "submitButton": "Entrar",
+      "errorTitle": "Erro ao fazer login",
+      "tokenError": "Erro ao recuperar token",
+      "tokenErrorDescription": "Não foi possível recuperar o token de autenticação.",
+      "contactAdmin": "Para acesso ao sistema, entre em contato com o administrador"
+    },
+    "validation": {
+      "invalidEmail": "Email inválido",
+      "emailRequired": "Por favor, insira seu email!",
+      "passwordRequired": "Por favor, insira sua senha!"
+    }
+  },
+  "layout": {
+    "copyright": "Copyright © 2026 Gentlemen MC",
+    "toggleTheme": "Alternar tema"
+  },
+  "confirmationDialog": {
+    "defaultConfirm": "Confirmar",
+    "defaultCancel": "Cancelar",
+    "processing": "Processando..."
+  },
+  "metadata": {
+    "title": "Gentlemen MC",
+    "description": "Sistema interno do Gentlemen Moto Clube"
+  },
+  "dashboard": {
+    "loadingStats": "Carregando estatísticas...",
+    "addToStock": "Adicionar ao estoque",
+    "loadingMembers": "Carregando membros...",
+    "loadingProfile": "Carregando perfil...",
+    "searching": "Buscando...",
+    "noResults": "Nenhum resultado encontrado."
+  }
+}

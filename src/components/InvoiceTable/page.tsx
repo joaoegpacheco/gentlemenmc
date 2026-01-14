@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import {
   Table,
@@ -25,7 +26,7 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 
 interface Invoice {
   id: string;
@@ -46,6 +47,7 @@ interface Payment {
 }
 
 export const InvoiceTable = () => {
+  const t = useTranslations('common');
   const invoices$ = useObservable<Invoice[]>([]);
   const members$ = useObservable<Record<string, string>>({});
   const loading$ = useObservable(true);
@@ -188,7 +190,7 @@ export const InvoiceTable = () => {
   };
 
 
-  if (!user) return <p>Carregando...</p>;
+  if (!user) return <p>{t('loading')}</p>;
 
   return (
     <div className="max-w-6xl mx-auto w-full">

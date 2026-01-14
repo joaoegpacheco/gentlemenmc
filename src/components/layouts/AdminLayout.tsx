@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 import { Sidebar, SidebarSection } from '../ui/sidebar';
 import { Breadcrumbs } from '../ui/breadcrumbs';
 import { 

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import {
   CommandDialog,
   CommandEmpty,
@@ -123,6 +124,7 @@ const searchableItems: SearchResult[] = [
  */
 export function GlobalSearch() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -208,7 +210,7 @@ export function GlobalSearch() {
         />
         <CommandList>
           <CommandEmpty>
-            {isLoading ? 'Buscando...' : 'Nenhum resultado encontrado.'}
+            {isLoading ? t('searching') : t('noResults')}
           </CommandEmpty>
 
           {Object.entries(groupedResults).map(([category, items], index) => (

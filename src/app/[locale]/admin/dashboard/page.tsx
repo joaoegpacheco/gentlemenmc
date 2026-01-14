@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
+import { useRouter } from "@/i18n/routing";
+import { useTranslations } from 'next-intl';
+import { supabase } from "@/hooks/use-supabase";
 import { message } from "@/lib/message";
+import type { SupabaseAuthUser } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, LayoutDashboard } from "lucide-react";
-import { StatsCards } from "./StatsCards";
-import { Charts } from "./Charts";
-import { QuickTables } from "./QuickTables";
+import { StatsCards } from "@/components/Dashboard/StatsCards";
+import { Charts } from "@/components/Dashboard/Charts";
+import { QuickTables } from "@/components/Dashboard/QuickTables";
 import {
   getDashboardStats,
   getMonthlyRevenue,
@@ -30,8 +33,10 @@ import {
   type DrinkAnalysis,
 } from "@/services/dashboardService";
 
-export function DashboardTab() {
+export default function DashboardPage() {
+  const router = useRouter();
   const t = useTranslations('dashboard');
+  const isAdmin$ = useObservable<boolean | null>(null);
   const loading$ = useObservable(true);
   const refreshing$ = useObservable(false);
 
@@ -48,6 +53,7 @@ export function DashboardTab() {
   const analysisPeriod$ = useObservable<"week" | "month" | "year">("month");
 
   // Observable values
+  const isAdmin = useValue(isAdmin$);
   const loading = useValue(loading$);
   const refreshing = useValue(refreshing$);
   const stats = useValue(stats$);
@@ -62,9 +68,43 @@ export function DashboardTab() {
   const analysisPeriod = useValue(analysisPeriod$);
 
   useEffect(() => {
-    loadDashboardData();
+    checkAdminAndLoadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const checkAdminAndLoadData = async () => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user as SupabaseAuthUser | null;
+
+      if (!user) {
+        router.push("/");
+        return;
+      }
+
+      const { data: admins } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "admin");
+
+      const adminStatus = !!(admins && admins.length > 0);
+      isAdmin$.set(adminStatus);
+
+      if (!adminStatus && user.email !== "barmc@gentlemenmc.com.br") {
+        message.error(
+          "Acesso negado. Apenas administradores podem acessar esta página."
+        );
+        router.push("/comandas");
+        return;
+      }
+
+      await loadDashboardData();
+    } catch (error) {
+      console.error("Erro ao verificar permissões:", error);
+      message.error("Erro ao carregar dashboard");
+    }
+  };
 
   const loadDashboardData = async () => {
     loading$.set(true);
@@ -89,7 +129,7 @@ export function DashboardTab() {
         getMembersWithHighestDebt(5),
         getRecentStockMovements(10),
         getConsumptionTrend(6),
-        getDrinkAnalysisByPeriod(analysisPeriod$.get()),
+        getDrinkAnalysisByPeriod(analysisPeriod$.peek()),
       ]);
 
       stats$.set(statsData);
@@ -132,8 +172,19 @@ export function DashboardTab() {
     }
   };
 
+  if (isAdmin === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Verificando permissões...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="p-6 max-w-[1600px] mx-auto space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

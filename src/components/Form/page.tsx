@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +35,7 @@ type MemberType = {
 };
 
 export function FormCommand() {
+  const t = useTranslations('dashboard');
   const form = useForm<z.infer<typeof formCommandSchema>>({
     resolver: zodResolver(formCommandSchema) as any,
     defaultValues: {
@@ -317,7 +319,7 @@ export function FormCommand() {
               ) : (
                 <Select disabled>
                   <SelectTrigger>
-                    <SelectValue placeholder="Carregando membros..." />
+                    <SelectValue placeholder={t('loadingMembers')} />
                   </SelectTrigger>
                 </Select>
               )}

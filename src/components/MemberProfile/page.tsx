@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,7 @@ export function MemberProfile({
   onEdit,
   onRefresh,
 }: MemberProfileProps) {
+  const t = useTranslations('common');
   const creditBalance$ = useObservable<number>(0);
   const drinks$ = useObservable<Drink[]>([]);
   const loading$ = useObservable(false);
@@ -479,7 +481,7 @@ export function MemberProfile({
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Carregando...</p>
+            <p className="text-sm text-muted-foreground">{t('loading')}</p>
           ) : drinks.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Nenhum pedido encontrado

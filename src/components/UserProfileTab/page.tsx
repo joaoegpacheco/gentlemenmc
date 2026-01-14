@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { supabase } from "@/hooks/use-supabase";
 import { UserProfileForm } from "@/components/UserProfileForm/page";
@@ -17,6 +18,7 @@ interface Member {
 }
 
 export function UserProfileTab() {
+  const t = useTranslations('dashboard');
   const loading$ = useObservable(true);
   const member$ = useObservable<Member | null>(null);
   const user$ = useObservable<any>(null);
@@ -76,7 +78,7 @@ export function UserProfileTab() {
       <div className="flex items-center justify-center py-8">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-muted-foreground">Carregando perfil...</p>
+          <p className="text-muted-foreground">{t('loadingProfile')}</p>
         </div>
       </div>
     );
