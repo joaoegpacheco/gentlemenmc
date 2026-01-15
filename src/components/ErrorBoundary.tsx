@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertCircle, RefreshCcw, Home } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
@@ -9,6 +10,15 @@ interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  translations?: {
+    somethingWentWrong: string;
+    unexpectedError: string;
+    error: string;
+    stackTrace: string;
+    pleaseReloadOrGoHome: string;
+    tryAgain: string;
+    goToHome: string;
+  };
 }
 
 interface State {
@@ -77,29 +87,39 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       // Default error UI
+      const t = this.props.translations || {
+        somethingWentWrong: 'Something went wrong',
+        unexpectedError: 'Sorry, an unexpected error occurred. Our team has been notified.',
+        error: 'Error:',
+        stackTrace: 'Stack Trace:',
+        pleaseReloadOrGoHome: 'Please try reloading the page or go back to the home page.',
+        tryAgain: 'Try again',
+        goToHome: 'Go to home',
+      };
+
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <Card className="max-w-2xl w-full">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-6 w-6 text-destructive" />
-                <CardTitle>Algo deu errado</CardTitle>
+                <CardTitle>{t.somethingWentWrong}</CardTitle>
               </div>
               <CardDescription>
-                Desculpe, ocorreu um erro inesperado. Nossa equipe foi notificada.
+                {t.unexpectedError}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-muted-foreground">Erro:</p>
+                  <p className="text-sm font-semibold text-muted-foreground">{t.error}</p>
                   <pre className="p-4 bg-muted rounded-lg text-xs overflow-auto max-h-40">
                     {this.state.error.toString()}
                   </pre>
                   {this.state.errorInfo && (
                     <>
                       <p className="text-sm font-semibold text-muted-foreground mt-4">
-                        Stack Trace:
+                        {t.stackTrace}
                       </p>
                       <pre className="p-4 bg-muted rounded-lg text-xs overflow-auto max-h-60">
                         {this.state.errorInfo.componentStack}
@@ -110,18 +130,18 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
               {process.env.NODE_ENV === 'production' && (
                 <p className="text-sm text-muted-foreground">
-                  Por favor, tente recarregar a página ou voltar para a página inicial.
+                  {t.pleaseReloadOrGoHome}
                 </p>
               )}
             </CardContent>
             <CardFooter className="flex gap-2">
               <Button onClick={this.handleReset} variant="outline" className="flex-1">
                 <RefreshCcw className="mr-2 h-4 w-4" />
-                Tentar novamente
+                {t.tryAgain}
               </Button>
               <Button onClick={this.handleGoHome} className="flex-1">
                 <Home className="mr-2 h-4 w-4" />
-                Ir para início
+                {t.goToHome}
               </Button>
             </CardFooter>
           </Card>
@@ -134,6 +154,30 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 /**
+ * Wrapper component that provides translations to ErrorBoundary
+ * Usage: wrap components with <ErrorBoundaryWrapper>...</ErrorBoundaryWrapper>
+ */
+export function ErrorBoundaryWrapper({ children, fallback, onError }: Omit<Props, 'translations'>) {
+  const t = useTranslations('errorBoundary');
+  
+  const translations = {
+    somethingWentWrong: t('somethingWentWrong'),
+    unexpectedError: t('unexpectedError'),
+    error: t('error'),
+    stackTrace: t('stackTrace'),
+    pleaseReloadOrGoHome: t('pleaseReloadOrGoHome'),
+    tryAgain: t('tryAgain'),
+    goToHome: t('goToHome'),
+  };
+
+  return (
+    <ErrorBoundary fallback={fallback} onError={onError} translations={translations}>
+      {children}
+    </ErrorBoundary>
+  );
+}
+
+/**
  * Hook version for functional components
  * Usage: wrap components with <ErrorBoundary>...</ErrorBoundary>
  */
@@ -143,9 +187,9 @@ export function withErrorBoundary<P extends object>(
 ) {
   return function WithErrorBoundary(props: P) {
     return (
-      <ErrorBoundary fallback={fallback}>
+      <ErrorBoundaryWrapper fallback={fallback}>
         <Component {...props} />
-      </ErrorBoundary>
+      </ErrorBoundaryWrapper>
     );
   };
 }

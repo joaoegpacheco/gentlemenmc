@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from 'next-intl';
 import { useObservable } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +23,6 @@ import { supabase } from "@/hooks/use-supabase";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-const profileSchema = z.object({
-  newPassword: z.string().min(6, "Senha deve ter no mínimo 6 caracteres").optional().or(z.literal("")),
-});
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
-
 interface Member {
   user_id: string;
   user_name: string;
@@ -44,6 +39,14 @@ interface UserProfileFormProps {
 }
 
 export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProps) {
+  const t = useTranslations('userProfileForm');
+  
+  const profileSchema = z.object({
+    newPassword: z.string().min(6, t('passwordMinChars')).optional().or(z.literal("")),
+  });
+
+  type ProfileFormValues = z.infer<typeof profileSchema>;
+
   const photoFile$ = useObservable<File | null>(null);
   const uploading$ = useObservable(false);
   const photoPreview$ = useObservable<string | null>(member?.foto_url || null);
@@ -75,14 +78,12 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
       const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
       
       if (bucketError) {
-        message.error(`Erro ao verificar buckets: ${bucketError.message}`);
+        message.error(t('errorCheckingBuckets', { message: bucketError.message }));
         return null;
       }
 
       if (!buckets?.some((b) => b.name === "membros_fotos")) {
-        message.error(
-          'Bucket "membros_fotos" não encontrado. Por favor, crie o bucket no Supabase Dashboard: Storage → Create Bucket → Nome: "membros_fotos" → Público: Sim'
-        );
+        message.error(t('bucketNotFound'));
         return null;
       }
 
@@ -97,12 +98,12 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
         });
 
       if (error) {
-        message.error(`Erro ao fazer upload da foto: ${error.message}`);
+        message.error(t('errorUploadingPhoto', { message: error.message }));
         return null;
       }
 
       if (!uploadData?.path) {
-        message.error("Erro: caminho do arquivo não retornado pelo upload");
+        message.error(t('errorFilePathNotReturned'));
         return null;
       }
 
@@ -112,13 +113,13 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
       } = supabase.storage.from("membros_fotos").getPublicUrl(uploadData.path);
 
       if (!publicUrl) {
-        message.error("Erro: URL pública não foi gerada");
+        message.error(t('errorPublicUrlNotGenerated'));
         return null;
       }
 
       return publicUrl;
     } catch (error: any) {
-      message.error(`Erro ao fazer upload: ${error.message}`);
+      message.error(t('errorUploading', { message: error.message }));
       return null;
     }
   };
@@ -131,14 +132,14 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
       const currentUser = userData?.user;
 
       if (!currentUser) {
-        message.error("Usuário não autenticado");
+        message.error(t('userNotAuthenticated'));
         uploading$.set(false);
         return;
       }
 
       // Verificar se o usuário está tentando atualizar seu próprio perfil
       if (currentUser.id !== member.user_id) {
-        message.error("Você só pode atualizar seu próprio perfil");
+        message.error(t('canOnlyUpdateOwnProfile'));
         uploading$.set(false);
         return;
       }
@@ -150,7 +151,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
       if (photoFile) {
         const uploadedUrl = await uploadPhoto();
         if (!uploadedUrl) {
-          message.error("Erro ao fazer upload da foto. Tente novamente.");
+          message.error(t('errorUploadingPhotoTryAgain'));
           uploading$.set(false);
           return;
         }
@@ -165,7 +166,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
           .eq("user_id", member.user_id);
 
         if (updatePhotoError) {
-          message.error(`Erro ao atualizar foto: ${updatePhotoError.message}`);
+          message.error(t('errorUpdatingPhoto', { message: updatePhotoError.message }));
           uploading$.set(false);
           return;
         }
@@ -178,7 +179,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
         });
 
         if (passwordError) {
-          message.error(`Erro ao atualizar senha: ${passwordError.message}`);
+          message.error(t('errorUpdatingPassword', { message: passwordError.message }));
           uploading$.set(false);
           return;
         }
@@ -188,10 +189,10 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
       form.reset({ newPassword: "" });
       photoFile$.set(null);
 
-      message.success("Perfil atualizado com sucesso!");
+      message.success(t('profileUpdatedSuccessfully'));
       onSuccess();
     } catch (error: any) {
-      message.error(`Erro ao atualizar perfil: ${error.message}`);
+      message.error(t('errorUpdatingProfile', { message: error.message }));
       console.error(error);
     } finally {
       uploading$.set(false);
@@ -205,9 +206,9 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
           {/* Seção de Foto */}
           <Card>
             <CardHeader>
-              <CardTitle>Foto de Perfil</CardTitle>
+              <CardTitle>{t('profilePhoto')}</CardTitle>
               <CardDescription>
-                Atualize sua foto de perfil
+                {t('updateProfilePhoto')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -233,7 +234,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
                   onChange={handlePhotoChange}
                   beforeUpload={(file) => {
                     if (file.size > 5 * 1024 * 1024) {
-                      message.error("A imagem deve ter no máximo 5MB");
+                      message.error(t('imageMaxSize'));
                       return false;
                     }
                     return true;
@@ -246,9 +247,9 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
           {/* Seção de Senha */}
           <Card>
             <CardHeader>
-              <CardTitle>Alterar Senha</CardTitle>
+              <CardTitle>{t('changePassword')}</CardTitle>
               <CardDescription>
-                Digite uma nova senha para atualizar sua senha de acesso
+                {t('enterNewPasswordDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -257,11 +258,11 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nova Senha</FormLabel>
+                    <FormLabel>{t('newPassword')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Mínimo 6 caracteres (deixe em branco para não alterar)"
+                        placeholder={t('passwordPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -276,7 +277,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
           <div className="flex justify-end gap-3 pt-4">
             <Button type="submit" disabled={uploading$.get()}>
               {uploading$.get() && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Atualizar Perfil
+              {t('updateProfile')}
             </Button>
           </div>
         </form>

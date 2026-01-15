@@ -34,18 +34,22 @@ import { Upload as UploadIcon } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { ptBR } from "date-fns/locale";
-
-const invoiceSchema = z.object({
-  totalAmount: z.number().min(0.01, "Valor total deve ser maior que zero"),
-  selectedMembers: z.array(z.string()).min(1, "Selecione ao menos um membro"),
-  eventDate: z.date().refine(date => !!date, { message: "Selecione a data do evento" }),
-  visitorCount: z.number().min(0).default(0),
-  visitorNames: z.array(z.string()).optional(),
-  pix: z.string().optional(),
-  file: z.instanceof(File).optional(),
-});
+import { useTranslations } from 'next-intl';
 
 export const InvoiceForm = () => {
+  const t = useTranslations('invoiceForm');
+  const tPlaceholders = useTranslations('placeholders');
+  
+  const invoiceSchema = z.object({
+    totalAmount: z.number().min(0.01, t('totalAmountMustBeGreaterThanZero')),
+    selectedMembers: z.array(z.string()).min(1, t('selectAtLeastOneMember')),
+    eventDate: z.date().refine(date => !!date, { message: t('selectEventDate') }),
+    visitorCount: z.number().min(0).default(0),
+    visitorNames: z.array(z.string()).optional(),
+    pix: z.string().optional(),
+    file: z.instanceof(File).optional(),
+  });
+
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
@@ -67,7 +71,7 @@ export const InvoiceForm = () => {
         .from("membros")
         .select("id, user_id, user_name");
       if (error) {
-        message.error("Erro ao carregar membros");
+        message.error(t('errorLoadingMembers'));
       } else {
         members$.set(data);
       }
@@ -83,7 +87,7 @@ export const InvoiceForm = () => {
 
   const handleSave = async (values: z.infer<typeof invoiceSchema>) => {
     if (!values.file) {
-      message.error("Selecione um arquivo de nota fiscal.");
+      message.error(t('selectInvoiceFile'));
       return;
     }
 
@@ -98,7 +102,7 @@ export const InvoiceForm = () => {
 
     const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
     if (bucketError || !buckets.some((b) => b.name === "notas_fiscais")) {
-      message.error('Bucket "notas_fiscais" não encontrado. Verifique o Supabase.');
+      message.error(t('bucketNotFound'));
       return;
     }
 
@@ -132,9 +136,9 @@ export const InvoiceForm = () => {
     const { error } = await supabase.from("notas_fiscais").insert([insertData]);
 
     if (error) {
-      message.error("Erro ao salvar nota fiscal");
+      message.error(t('errorSavingInvoice'));
     } else {
-      message.success("Nota fiscal salva com sucesso");
+      message.success(t('invoiceSavedSuccessfully'));
       form.reset();
       visitorCount$.set(0);
     }
@@ -156,10 +160,10 @@ export const InvoiceForm = () => {
             name="totalAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Valor total</FormLabel>
+                <FormLabel>{t('totalAmount')}</FormLabel>
                 <FormControl>
                   <InputNumber
-                    placeholder="Valor total"
+                    placeholder={t('totalAmount')}
                     value={field.value}
                     onChange={(val) => field.onChange(val ?? 0)}
                     min={0}
@@ -195,12 +199,12 @@ export const InvoiceForm = () => {
             name="eventDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Data do evento</FormLabel>
+                <FormLabel>{t('eventDate')}</FormLabel>
                 <FormControl>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full">
-                        {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                        {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : t('selectDate')}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -223,7 +227,7 @@ export const InvoiceForm = () => {
             name="visitorCount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Visitantes</FormLabel>
+                <FormLabel>{t('visitors')}</FormLabel>
                 <FormControl>
                   <Select
                     value={visitorCount.toString()}
@@ -234,12 +238,12 @@ export const InvoiceForm = () => {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Quantidade de visitantes" />
+                      <SelectValue placeholder={t('visitorQuantity')} />
                     </SelectTrigger>
                     <SelectContent>
                       {[...Array(11)].map((_, i) => (
                         <SelectItem key={i} value={i.toString()}>
-                          {i === 0 ? "Nenhum visitante" : `${i} visitante${i > 1 ? "s" : ""}`}
+                          {i === 0 ? t('noVisitors') : `${i} ${i > 1 ? t('visitorsPlural') : t('visitor')}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -257,10 +261,10 @@ export const InvoiceForm = () => {
               name={`visitorNames.${index}` as any}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome do visitante {index + 1}</FormLabel>
+                  <FormLabel>{t('visitorName', { number: index + 1 })}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder={`Nome do visitante ${index + 1}`}
+                      placeholder={t('visitorName', { number: index + 1 })}
                       {...field}
                     />
                   </FormControl>
@@ -275,9 +279,9 @@ export const InvoiceForm = () => {
             name="pix"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>PIX para pagamento</FormLabel>
+                <FormLabel>{t('pixForPayment')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="PIX para pagamento" {...field} />
+                  <Input placeholder={t('pixForPayment')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -289,7 +293,7 @@ export const InvoiceForm = () => {
             name="file"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nota Fiscal</FormLabel>
+                <FormLabel>{t('invoice')}</FormLabel>
                 <FormControl>
                   <div>
                     <input
@@ -310,7 +314,7 @@ export const InvoiceForm = () => {
                       className="w-full"
                     >
                       <UploadIcon className="mr-2 h-4 w-4" />
-                      {field.value ? field.value.name : "Selecionar Nota Fiscal"}
+                      {field.value ? field.value.name : t('selectInvoice')}
                     </Button>
                     {field.value && (
                       <p className="text-sm text-muted-foreground mt-2">{field.value.name}</p>
@@ -327,8 +331,8 @@ export const InvoiceForm = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Membro/Visitante</TableHead>
-                    <TableHead>Valor</TableHead>
+                    <TableHead>{t('memberVisitor')}</TableHead>
+                    <TableHead>{t('value')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -357,7 +361,7 @@ export const InvoiceForm = () => {
             className="w-full mt-4"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Salvando..." : "Salvar Nota Fiscal"}
+            {form.formState.isSubmitting ? t('saving') : t('saveInvoice')}
           </Button>
         </form>
       </Form>

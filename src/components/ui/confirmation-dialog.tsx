@@ -1,6 +1,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,12 +37,16 @@ export function ConfirmationDialog({
   onConfirm,
   title,
   description,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar',
+  confirmText,
+  cancelText,
   variant = 'default',
   icon,
   isLoading = false,
 }: ConfirmationDialogProps) {
+  const t = useTranslations('confirmationDialog');
+  const defaultConfirmText = confirmText ?? t('defaultConfirm');
+  const defaultCancelText = cancelText ?? t('defaultCancel');
+  
   const handleConfirm = async () => {
     await onConfirm();
     onOpenChange(false);
@@ -73,7 +78,7 @@ export function ConfirmationDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{defaultCancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isLoading}
@@ -83,7 +88,7 @@ export function ConfirmationDialog({
                 : undefined
             }
           >
-            {isLoading ? 'Processando...' : confirmText}
+            {isLoading ? t('processing') : defaultConfirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

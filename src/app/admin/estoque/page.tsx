@@ -1,6 +1,10 @@
 "use client";
 
+// Force dynamic rendering to avoid build-time prerendering errors
+export const dynamic = 'force-dynamic';
+
 import React, { useEffect, useMemo } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +36,7 @@ type EstoqueType = {
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
+  const t = useTranslations('adminEstoque');
   const stock$ = useObservable<EstoqueType[]>([]);
   const drink$ = useObservable("");
   const quantity$ = useObservable<number>(1);
@@ -63,7 +68,7 @@ export default function EstoquePage() {
       const data = await getEstoque();
       stock$.set(data);
     } catch {
-      message.error("Erro ao buscar estoque");
+      message.error(t('errors.errorFetchingStock'));
     }
   }
 
@@ -74,26 +79,26 @@ export default function EstoquePage() {
 
   const handleAdd = async () => {
     if (!drink || quantity <= 0) {
-      message.error("Informe o nome da bebida e quantidade válida");
+      message.error(t('errors.drinkAndQuantityRequired'));
       return;
     }
 
     const priceValue = valuePrice ? parseFloat(valuePrice.replace(/[^\d,.-]/g, "").replace(",", ".")) : null;
     if (priceValue !== null && (isNaN(priceValue) || priceValue < 0)) {
-      message.error("Informe um valor válido");
+      message.error(t('errors.invalidValue'));
       return;
     }
 
     loading$.set(true);
     try {
       await addOrUpdateEstoque(drink.trim(), quantity, priceValue);
-      message.success("Estoque atualizado!");
+      message.success(t('stock.stockUpdated'));
       drink$.set("");
       quantity$.set(1);
       valuePrice$.set("");
       await fetchStock();
     } catch {
-      message.error("Erro ao atualizar estoque");
+      message.error(t('errors.errorUpdatingStock'));
     } finally {
       loading$.set(false);
     }
@@ -183,14 +188,14 @@ export default function EstoquePage() {
               >
                 {drink
                   ? drinksOptions.find((option) => option.value === drink)?.label
-                  : "Selecione uma bebida"}
+                  : t('form.selectDrink')}
                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
               <div className="p-2">
                 <Input
-                  placeholder="Buscar bebida..."
+                  placeholder={t('form.searchDrink')}
                   value={drinkSearch}
                   onChange={(e) => drinkSearch$.set(e.target.value)}
                   className="mb-2"
@@ -199,7 +204,7 @@ export default function EstoquePage() {
               <div className="max-h-[300px] overflow-auto">
                 {filteredDrinksOptions.length === 0 ? (
                   <div className="p-4 text-center text-sm text-muted-foreground">
-                    Nenhuma bebida encontrada
+                    {t('form.noDrinksFound')}
                   </div>
                 ) : (
                   filteredDrinksOptions.map((option) => (
@@ -265,7 +270,7 @@ export default function EstoquePage() {
       {/* Campo de busca */}
       <div className="mb-4">
         <Input
-          placeholder="Buscar bebida no estoque"
+          placeholder={t('search.placeholder')}
           value={search}
           onChange={(e) => search$.set(e.target.value)}
         />
@@ -294,7 +299,7 @@ export default function EstoquePage() {
             {paginatedStock.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={2} className="text-center text-muted-foreground">
-                  Nenhum item encontrado
+                  {t('table.noItemsFound')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -319,7 +324,11 @@ export default function EstoquePage() {
       {sortedStock.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-muted-foreground">
-            Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, sortedStock.length)} de {sortedStock.length} itens
+            {t('pagination.showing', { 
+              start: ((currentPage - 1) * pageSize) + 1, 
+              end: Math.min(currentPage * pageSize, sortedStock.length), 
+              total: sortedStock.length 
+            })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -328,7 +337,7 @@ export default function EstoquePage() {
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              Anterior
+              {t('pagination.previous')}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -368,7 +377,7 @@ export default function EstoquePage() {
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
-              Próxima
+              {t('pagination.next')}
             </Button>
           </div>
         </div>

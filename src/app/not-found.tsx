@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useDeviceSizes } from '@/utils/mediaQueries'
 
 export default function NotFoundPage() {
-    const { isMobile } = useDeviceSizes()
+  const { isMobile } = useDeviceSizes()
   return (
     <div
       className={`
@@ -13,7 +13,7 @@ export default function NotFoundPage() {
     >
       <Image
         src="/images/gentlemenmc.png"
-        alt="Página não encontrada"
+        alt="Page not found"
         width={200}
         height={200}
         style={{
@@ -21,9 +21,9 @@ export default function NotFoundPage() {
         }}
       />
       <div>
-        <h1 className="text-3xl font-bold m-0">404 - Página não existe</h1>
+        <h1 className="text-3xl font-bold m-0">404 - Page does not exist</h1>
         <p className="text-sm text-gray-600">
-          A página que você tentou acessar não existe.
+          The page you tried to access does not exist.
         </p>
       </div>
     </div>

@@ -3,6 +3,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
 import {
   Form,
   FormControl,
@@ -15,18 +17,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
-import { useRouter } from "next/navigation";
 import Image from 'next/image';
 
-const loginSchema = z.object({
-  email: z.string().email("Email inválido").min(1, "Por favor, insira seu email!"),
-  password: z.string().min(1, "Por favor, insira sua senha!"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
 export const LoginForm: React.FC = () => {
+  const t = useTranslations();
   const router = useRouter();
+  
+  const loginSchema = z.object({
+    email: z.string().email(t('auth.validation.invalidEmail')).min(1, t('auth.validation.emailRequired')),
+    password: z.string().min(1, t('auth.validation.passwordRequired')),
+  });
+
+  type LoginFormValues = z.infer<typeof loginSchema>;
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -41,7 +44,7 @@ export const LoginForm: React.FC = () => {
 
     if (error) {
       notification.error({
-        message: "Erro ao fazer login",
+        message: t('auth.login.errorTitle'),
         description: error.message,
       });
       console.error("Erro ao fazer login:", error.message);
@@ -56,17 +59,19 @@ export const LoginForm: React.FC = () => {
     if (authToken) {
       // Se for o usuário especial, usar cookie sem expiração
       if (userEmail === "barmc@gentlemenmc.com.br") {
+        // eslint-disable-next-line react-hooks/immutability
         document.cookie = `authToken=${authToken}; path=/; Secure; SameSite=Lax`;
       } else {
         // Para outros usuários, cookie com expiração padrão de 1 dia
+        // eslint-disable-next-line react-hooks/immutability
         document.cookie = `authToken=${authToken}; path=/; max-age=86400; Secure; SameSite=Lax`;
       }
       // Redirecionar para a página privada
       router.push("/comandas");
     } else {
       notification.error({
-        message: "Erro ao recuperar token",
-        description: "Não foi possível recuperar o token de autenticação.",
+        message: t('auth.login.tokenError'),
+        description: t('auth.login.tokenErrorDescription'),
       });
     }
   };
@@ -87,7 +92,7 @@ export const LoginForm: React.FC = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('auth.login.emailLabel')}</FormLabel>
                 <FormControl>
                   <Input type="email" {...field} />
                 </FormControl>
@@ -100,7 +105,7 @@ export const LoginForm: React.FC = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Senha</FormLabel>
+                <FormLabel>{t('auth.login.passwordLabel')}</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -109,11 +114,11 @@ export const LoginForm: React.FC = () => {
             )}
           />
           <Button type="submit" className="w-full">
-            Entrar
+            {t('auth.login.submitButton')}
           </Button>
         </form>
       </Form>
-      <span className="text-xs text-gray-500">Para acesso ao sistema, entre em contato com o administrador</span>
+      <span className="text-xs text-gray-500">{t('auth.login.contactAdmin')}</span>
     </section>
   );
 };

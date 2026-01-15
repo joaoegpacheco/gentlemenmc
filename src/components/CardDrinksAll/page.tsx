@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase.js";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { useTranslations } from 'next-intl';
 
 interface Props {}
 
 export const CardCommandAll = forwardRef((_: Props, ref) => {
+  const t = useTranslations('cardDrinksAll');
   const totalSum$ = useObservable(0);
   const debtData$ = useObservable<Array<{ name: string; sumPrice: number }>>([]);
   const members$ = useObservable<Array<{ user_name: string; phone: string; user_email?: string }>>([]);
@@ -94,7 +96,7 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   const handleCharge = async (name: string, amount: number) => {
     const member = members.find((m) => m.user_name === name);
     if (!member) {
-      message.error("Telefone do membro não encontrado.");
+      message.error(t('memberPhoneNotFound'));
       return;
     }
 
@@ -142,10 +144,10 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   return (
     <div>
       <div className="mb-4 text-lg font-semibold">
-        Total não pago: {formatCurrency(totalSum)}
+        {t('unpaidTotal')} {formatCurrency(totalSum)}
       </div>
       {debtData.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8">Nenhuma dívida.</div>
+        <div className="text-center text-muted-foreground py-8">{t('noDebts')}</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {debtData.map((item) => (
@@ -154,14 +156,14 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
                 <CardTitle>{item.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm">Valor: {formatCurrency(item.sumPrice)}</p>
+                <p className="text-sm">{t('value')} {formatCurrency(item.sumPrice)}</p>
               </CardContent>
               <CardFooter>
                 <Button
                   className="w-full"
                   onClick={() => handleCharge(item.name, item.sumPrice)}
                 >
-                  Cobrar via WhatsApp
+                  {t('chargeViaWhatsApp')}
                 </Button>
               </CardFooter>
             </Card>

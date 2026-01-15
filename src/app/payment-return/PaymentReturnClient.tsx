@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { supabase } from "@/hooks/use-supabase";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export default function PaymentReturnClient({ searchParams }: Props) {
+  const t = useTranslations('paymentReturn');
   const status$ = useObservable<"loading" | "success" | "failed">("loading");
   const name$ = useObservable<string | null>(null);
 
@@ -94,7 +96,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center">
         <Spinner className="h-12 w-12" />
-        <p className="mt-4 text-lg">Verificando pagamento...</p>
+        <p className="mt-4 text-lg">{t('verifyingPayment')}</p>
       </div>
     );
   }
@@ -141,16 +143,16 @@ export default function PaymentReturnClient({ searchParams }: Props) {
       <Card className="max-w-md">
         <CardHeader className="text-center">
           <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <CardTitle>{`Obrigado, ${name || "irmão"}!`}</CardTitle>
-          <CardDescription>Seu pagamento foi confirmado com sucesso.</CardDescription>
+          <CardTitle>{t('thankYou', { name: name || t('defaultName') })}</CardTitle>
+          <CardDescription>{t('paymentConfirmedSuccessfully')}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center gap-4">
           <Link href="/comandas">
-            <Button>Voltar ao início</Button>
+            <Button>{t('backToHome')}</Button>
           </Link>
           {searchParams?.receipt_url && (
             <a href={searchParams.receipt_url} target="_blank" rel="noreferrer">
-              <Button variant="outline">Ver recibo</Button>
+              <Button variant="outline">{t('viewReceipt')}</Button>
             </a>
           )}
         </CardContent>

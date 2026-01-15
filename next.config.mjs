@@ -1,8 +1,17 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-      domains: ["cuqvbjobsgfbfahjrzeq.supabase.co"], // Adicione seu domínio Supabase aqui
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: "cuqvbjobsgfbfahjrzeq.supabase.co",
+        },
+      ],
     },
   };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

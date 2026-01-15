@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useTranslations, useLocale } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { message } from "@/lib/message";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,11 @@ import {
 } from "@/services/dashboardService";
 
 export function DashboardTab() {
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
+  const tDashboardService = useTranslations('dashboardService');
+  const currentLocale = useLocale();
+  const locale = currentLocale === 'en' ? 'en-US' : 'pt-BR';
   const loading$ = useObservable(true);
   const refreshing$ = useObservable(false);
 
@@ -80,14 +86,14 @@ export function DashboardTab() {
         drinkAnalysisData,
       ] = await Promise.all([
         getDashboardStats(),
-        getMonthlyRevenue(12),
-        getTopDrinks(5),
-        getTopMembers(5),
-        getRecentPaidOrders(10),
-        getMembersWithHighestDebt(5),
+        getMonthlyRevenue(12, locale),
+        getTopDrinks(5, tDashboardService('fallback.noName')),
+        getTopMembers(5, tDashboardService('fallback.unknown')),
+        getRecentPaidOrders(10, tDashboardService('fallback.noName')),
+        getMembersWithHighestDebt(5, tDashboardService('fallback.unknown')),
         getRecentStockMovements(10),
-        getConsumptionTrend(6),
-        getDrinkAnalysisByPeriod(analysisPeriod$.get()),
+        getConsumptionTrend(6, locale),
+        getDrinkAnalysisByPeriod(analysisPeriod$.get(), tDashboardService('fallback.noName')),
       ]);
 
       stats$.set(statsData);
@@ -101,7 +107,7 @@ export function DashboardTab() {
       drinkAnalysis$.set(drinkAnalysisData);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
-      message.error("Erro ao carregar dados do dashboard");
+      message.error(t('errorLoadingData'));
     } finally {
       loading$.set(false);
     }
@@ -111,9 +117,9 @@ export function DashboardTab() {
     refreshing$.set(true);
     try {
       await loadDashboardData();
-      message.success("Dashboard atualizado com sucesso!");
+      message.success(t('dashboardUpdatedSuccessfully'));
     } catch (error) {
-      message.error("Erro ao atualizar dashboard");
+      message.error(t('errorUpdatingDashboard'));
     } finally {
       refreshing$.set(false);
     }
@@ -122,11 +128,11 @@ export function DashboardTab() {
   const handlePeriodChange = async (period: "week" | "month" | "year") => {
     analysisPeriod$.set(period);
     try {
-      const drinkAnalysisData = await getDrinkAnalysisByPeriod(period);
+      const drinkAnalysisData = await getDrinkAnalysisByPeriod(period, tDashboardService('fallback.noName'));
       drinkAnalysis$.set(drinkAnalysisData);
     } catch (error) {
       console.error("Erro ao atualizar análise de bebidas:", error);
-      message.error("Erro ao atualizar análise de bebidas");
+      message.error(t('errorUpdatingDrinkAnalysis'));
     }
   };
 
@@ -137,10 +143,10 @@ export function DashboardTab() {
         <div>
           <div className="flex items-center gap-3">
             <LayoutDashboard className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Dashboard Administrativo</h1>
+            <h1 className="text-3xl font-bold">{t('administrativeDashboard')}</h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Visão geral das métricas e estatísticas do clube
+            {t('overviewDescription')}
           </p>
         </div>
         <Button
@@ -149,26 +155,26 @@ export function DashboardTab() {
           className="gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          Atualizar
+          {tCommon('refresh')}
         </Button>
       </div>
 
       {/* Stats Cards */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Resumo Geral</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('generalSummary')}</h2>
         {stats ? (
           <StatsCards stats={stats} loading={loading} />
         ) : (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Carregando estatísticas...</p>
+            <p className="text-muted-foreground">{t('loadingStats')}</p>
           </div>
         )}
       </section>
 
       {/* Charts */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Gráficos e Análises</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('chartsAndAnalysis')}</h2>
         <Charts
           monthlyRevenue={monthlyRevenue}
           topDrinks={topDrinks}
@@ -183,7 +189,7 @@ export function DashboardTab() {
 
       {/* Quick Tables */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Atividades Recentes</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('recentActivities')}</h2>
         <QuickTables
           recentPaidOrders={recentPaidOrders}
           membersWithHighestDebt={membersWithHighestDebt}
@@ -195,7 +201,7 @@ export function DashboardTab() {
       {/* Footer Info */}
       <div className="text-center text-sm text-muted-foreground pt-4 border-t">
         <p>
-          Última atualização:{" "}
+          {t('lastUpdate')}{" "}
           {new Date().toLocaleString("pt-BR", {
             day: "2-digit",
             month: "long",

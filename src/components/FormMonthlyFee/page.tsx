@@ -17,6 +17,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase.js";
+import { useTranslations } from 'next-intl';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -24,17 +25,20 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const monthlyFeeSchema = z.object({
-  name: z.string().min(1, "Selecione ao menos um nome!"),
-  date: z.date().optional(),
-});
-
 type Member = {
   user_id: string;
   user_name: string;
 };
 
 export function FormMonthlyFee() {
+  const t = useTranslations('formMonthlyFee');
+  const tPlaceholders = useTranslations('placeholders');
+  
+  const monthlyFeeSchema = z.object({
+    name: z.string().min(1, t('nameRequired')),
+    date: z.date().optional(),
+  });
+
   const form = useForm<z.infer<typeof monthlyFeeSchema>>({
     resolver: zodResolver(monthlyFeeSchema),
     defaultValues: {
@@ -98,11 +102,11 @@ export function FormMonthlyFee() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome</FormLabel>
+              <FormLabel>{t('nameLabel')}</FormLabel>
               <FormControl>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione um membro" />
+                    <SelectValue placeholder={tPlaceholders('selectMember')} />
                   </SelectTrigger>
                   <SelectContent>
                     {members.map(({ user_id, user_name }) => (
@@ -123,7 +127,7 @@ export function FormMonthlyFee() {
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Data Limite</FormLabel>
+              <FormLabel>{t('dateLimit')}</FormLabel>
               <FormControl>
                 <div className="border rounded-lg p-3">
                   <Calendar
@@ -143,7 +147,7 @@ export function FormMonthlyFee() {
           className="w-full"
           disabled={form.formState.isSubmitting}
         >
-          {form.formState.isSubmitting ? "Atualizando..." : "Atualizar"}
+          {form.formState.isSubmitting ? t('updating') : t('update')}
         </Button>
       </form>
     </Form>

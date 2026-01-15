@@ -6,8 +6,10 @@ import { InputNumber } from "@/components/ui/input-number";
 import { Button } from "@/components/ui/button";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
+import { useTranslations } from 'next-intl';
 
 export function CreditManager() {
+  const t = useTranslations('creditManager');
   const members$ = useObservable<{ user_id: string; user_name: string; user_email?: string }[]>([]);
   const selectedUser$ = useObservable<string>("");
   const amount$ = useObservable<number>(0);
@@ -20,7 +22,7 @@ export function CreditManager() {
     async function fetchMembers() {
       const { data, error } = await supabase.from("membros").select("user_id, user_name, user_email").order("user_name", { ascending: true });
       if (error) {
-        notification.error({ message: "Erro ao carregar membros" });
+        notification.error({ message: t('errorLoadingMembers') });
       }
       members$.set(data || []);
     }
@@ -30,7 +32,7 @@ export function CreditManager() {
 
   const handleAddCredit = async () => {
     if (!selectedUser || amount <= 0) {
-      notification.error({ message: "Selecione um usuário e valor válido" });
+      notification.error({ message: t('selectUserAndValidValue') });
       return;
     }
 
@@ -43,7 +45,7 @@ export function CreditManager() {
         .single();
 
       if (!memberData) {
-        notification.error({ message: "Usuário não encontrado" });
+        notification.error({ message: t('userNotFound') });
         return;
       }
 
@@ -56,7 +58,7 @@ export function CreditManager() {
 
       if (drinksError) {
         notification.error({ 
-          message: "Erro ao verificar dívidas", 
+          message: t('errorCheckingDebts'), 
           description: drinksError.message 
         });
         return;
@@ -87,7 +89,7 @@ export function CreditManager() {
 
           if (updateError) {
             notification.error({ 
-              message: "Erro ao atualizar dívidas", 
+              message: t('errorUpdatingDebts'), 
               description: updateError.message 
             });
             return;
@@ -142,7 +144,7 @@ export function CreditManager() {
 
         if (creditError) {
           notification.error({ 
-            message: "Erro ao adicionar crédito", 
+            message: t('errorAddingCredit'), 
             description: creditError.message 
           });
           return;
@@ -180,7 +182,7 @@ export function CreditManager() {
       selectedUser$.set("");
     } catch (error: any) {
       notification.error({ 
-        message: "Erro ao processar crédito", 
+        message: t('errorProcessingCredit'), 
         description: error.message 
       });
     }
@@ -202,7 +204,7 @@ export function CreditManager() {
       </Select>
       <div className="flex gap-3">
         <InputNumber
-          placeholder="Valor (R$)"
+          placeholder={t('valuePlaceholder')}
           value={amount}
           onChange={(val) => amount$.set(val ?? 0)}
           min={0}
@@ -210,7 +212,7 @@ export function CreditManager() {
           className="w-full"
         />
         <Button onClick={handleAddCredit}>
-          Adicionar Crédito
+          {t('addCredit')}
         </Button>
       </div>
     </div>

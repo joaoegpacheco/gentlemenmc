@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ interface AdminData {
 }
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
+  const t = useTranslations('openComandas');
   const comandas$ = useObservable<any[]>([]);
   const loading$ = useObservable(false);
   const selectedComanda$ = useObservable<any | null>(null);
@@ -66,7 +68,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const fetchAdmins = async () => {
     const { data, error } = await supabase.from("admins").select("id, email");
     if (error) {
-      message.error("Erro ao buscar administradores");
+      message.error(t('errorFetchingAdmins'));
     } else {
       adminsList$.set(data);
     }
@@ -74,7 +76,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   const handleConfirmPay = async () => {
     if (!selectedAdmin || !adminPassword) {
-      message.warning("Selecione um admin e digite a senha");
+      message.warning(t('selectAdminAndPassword'));
       return;
     }
 
@@ -85,7 +87,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     });
 
     if (loginError) {
-      message.error("Usuário ou senha incorretos");
+      message.error(t('incorrectUserOrPassword'));
       return;
     }
 
@@ -97,7 +99,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       .single();
 
     if (fetchError || !comandaData) {
-      message.error("Erro ao buscar dados da comanda");
+      message.error(t('errorFetchingComandaData'));
       return;
     }
 
@@ -117,9 +119,9 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       .eq("id", payingComandaId);
 
     if (error) {
-      message.error("Erro ao pagar comanda");
+      message.error(t('errorPayingComanda'));
     } else {
-      message.success("Comanda paga com sucesso");
+      message.success(t('comandaPaidSuccessfully'));
       fetchComandas();
     }
 
@@ -140,7 +142,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      message.error("Erro ao buscar comandas");
+      message.error(t('errorFetchingComandas'));
     } else {
       comandas$.set(data);
     }
@@ -203,7 +205,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       items: mappedItems,
     });
 
-    message.success("Bebida adicionada");
+    message.success(t('drinkAdded'));
     selectedComanda$.set(null);
     newDrink$.set("");
     quantity$.set(1);
@@ -217,7 +219,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Comandas Abertas</h1>
+      <h1 className="text-xl font-bold mb-4">{t('openComandas')}</h1>
       {loading ? (
         <div className="flex justify-center py-8">
           <Spinner />
@@ -227,19 +229,19 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Integrante</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Ações</TableHead>
+                <TableHead>{t('name')}</TableHead>
+                <TableHead>{t('member')}</TableHead>
+                <TableHead>{t('phone')}</TableHead>
+                <TableHead>{t('items')}</TableHead>
+                <TableHead>{t('total')}</TableHead>
+                <TableHead>{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {comandasWithTotals.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma comanda aberta
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    {t('noOpenComandas')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -261,14 +263,14 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                             itemsModalOpen$.set(true);
                           }}
                         >
-                          {totalQtd} bebida(s)
+                          {totalQtd} {t('drinks')}
                         </Button>
                       </TableCell>
                       <TableCell>R$ {record.total.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
-                            Adicionar bebida
+                            {t('addDrink')}
                           </Button>
                           {!isBarMC && (
                             <Button
@@ -279,7 +281,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                                 payModalVisible$.set(true);
                               }}
                             >
-                              Marcar como paga
+                              {t('markAsPaid')}
                             </Button>
                           )}
                         </div>
@@ -295,7 +297,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && selectedComanda$.set(null)}>
         <DialogContent className="max-w-6xl">
           <DialogHeader>
-            <DialogTitle>Adicionar bebida à comanda de {selectedComanda?.nome_convidado}</DialogTitle>
+            <DialogTitle>{t('addDrinkToComanda', { name: selectedComanda?.nome_convidado })}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -315,15 +317,15 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
               min={1}
               value={quantity}
               onChange={(val) => quantity$.set(val ?? 1)}
-              placeholder="Quantidade"
+              placeholder={t('quantity')}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => selectedComanda$.set(null)}>
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button onClick={handleAddDrink}>
-              Adicionar
+              {t('add')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -332,7 +334,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       <Dialog open={itemsModalOpen} onOpenChange={itemsModalOpen$.set}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Itens da comanda de {selectedItemsRecord?.nome_convidado}</DialogTitle>
+            <DialogTitle>{t('comandaItems', { name: selectedItemsRecord?.nome_convidado })}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-2 mt-2">
             {selectedItemsRecord?.comanda_itens.map((item: any, idx: number) => (
@@ -348,7 +350,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             ))}
           </div>
           <DialogFooter>
-            <Button onClick={() => itemsModalOpen$.set(false)}>Fechar</Button>
+            <Button onClick={() => itemsModalOpen$.set(false)}>{t('close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -363,12 +365,12 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar pagamento da comanda</DialogTitle>
+            <DialogTitle>{t('confirmPayment')}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <Select value={selectedAdmin || ""} onValueChange={(value) => selectedAdmin$.set(value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o administrador" />
+                <SelectValue placeholder={t('selectAdministrator')} />
               </SelectTrigger>
               <SelectContent>
                 {adminsList.map((admin) => (
@@ -382,7 +384,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
               type="password"
               value={adminPassword}
               onChange={(e) => adminPassword$.set(e.target.value)}
-              placeholder="Senha do admin"
+              placeholder={t('adminPassword')}
             />
           </div>
           <DialogFooter>
@@ -392,10 +394,10 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
               adminPassword$.set("");
               payingComandaId$.set(null);
             }}>
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button onClick={handleConfirmPay}>
-              Confirmar
+              {t('confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
