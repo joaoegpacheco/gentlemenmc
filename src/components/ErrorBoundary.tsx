@@ -10,7 +10,6 @@ interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
-<<<<<<< HEAD
   translations?: {
     somethingWentWrong: string;
     unexpectedError: string;
@@ -20,8 +19,6 @@ interface Props {
     tryAgain: string;
     goToHome: string;
   };
-=======
->>>>>>> main
 }
 
 interface State {
@@ -133,11 +130,7 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
               {process.env.NODE_ENV === 'production' && (
                 <p className="text-sm text-muted-foreground">
-<<<<<<< HEAD
                   {t.pleaseReloadOrGoHome}
-=======
-                  Por favor, tente recarregar a página ou voltar para a página inicial.
->>>>>>> main
                 </p>
               )}
             </CardContent>
