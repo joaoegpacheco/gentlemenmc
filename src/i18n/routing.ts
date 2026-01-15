@@ -6,10 +6,21 @@ export const routing = defineRouting({
   locales: ['pt', 'en'],
 
   // Used when no locale matches or browser language doesn't match supported locales
-  defaultLocale: 'en',
+  // This is only used as a fallback - user's explicit choice (via cookie/URL) takes priority
+  defaultLocale: 'pt',
 
   // Enable automatic locale detection based on browser/system language
-  localeDetection: true
+  // This respects user's explicit choice stored in cookie first, then detects from browser
+  localeDetection: true,
+
+  // Configure cookie to persist user's locale preference
+  // This ensures that when user chooses a language, it's remembered
+  localeCookie: {
+    name: 'NEXT_LOCALE',
+    maxAge: 60 * 60 * 24 * 365, // 1 year - persist user's choice
+    sameSite: 'lax' as const,
+    path: '/'
+  }
 });
 
 // Lightweight wrappers around Next.js' navigation APIs

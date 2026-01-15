@@ -41,7 +41,8 @@
     "noMembersFound": "Nenhum membro encontrado",
     "showing": "Mostrando",
     "of": "de",
-    "items": "itens"
+    "items": "itens",
+    "selectFile": "Selecionar Arquivo"
   },
   "auth": {
     "login": {
@@ -295,6 +296,7 @@
     "editMember": "Editar Membro",
     "addNewMember": "Adicionar Novo Membro",
     "fullName": "Nome completo",
+    "status": "Status",
     "minimumChars": "Mínimo 6 caracteres",
     "selectStatus": "Selecione o status",
     "internalNotes": "Notas internas sobre o membro...",
