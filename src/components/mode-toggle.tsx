@@ -17,6 +17,21 @@ export function ModeToggle() {
   const { setTheme } = useTheme()
   const t = useTranslations('common')
 
+  const handleThemeChange = (theme: "light" | "dark" | "system") => {
+    if (theme === "system") {
+      // Se escolher "system", remove do localStorage primeiro
+      // para que o next-themes não persista essa escolha
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('theme-preference')
+      }
+      // Depois define o tema como system
+      setTheme(theme)
+    } else {
+      // Para "light" ou "dark", salva normalmente
+      setTheme(theme)
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -27,13 +42,13 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("light")}>
           {t('light')}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
           {t('dark')}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("system")}>
           {t('system')}
         </DropdownMenuItem>
       </DropdownMenuContent>

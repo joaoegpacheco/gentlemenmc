@@ -8,7 +8,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
 import { routing } from '@/i18n/routing';
 import "../globals.css";
 
@@ -58,14 +57,10 @@ export default async function LocaleLayout({
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
         >
           <NextIntlClientProvider messages={messages}>
             <AuthListener />
             <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
-              <LanguageToggle />
               <ModeToggle />
             </header>
             <main className="flex-1 p-6">{children}</main>
