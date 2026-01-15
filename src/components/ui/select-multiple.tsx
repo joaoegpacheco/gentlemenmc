@@ -69,4 +69,3 @@ export function SelectMultiple({ options, value, onChange, placeholder = "Seleci
     </Popover>
   )
 }
-

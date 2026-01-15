@@ -186,7 +186,7 @@ export const InvoiceForm = () => {
                     options={members.map(m => ({ value: m.user_id, label: m.user_name }))}
                     value={field.value || []}
                     onChange={field.onChange}
-                    placeholder="Selecione os membros"
+                    placeholder={tPlaceholders('selectMembers')}
                   />
                 </FormControl>
                 <FormMessage />

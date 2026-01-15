@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 
 export function CreditManager() {
   const t = useTranslations('creditManager');
+  const tPlaceholders = useTranslations('placeholders');
   const members$ = useObservable<{ user_id: string; user_name: string; user_email?: string }[]>([]);
   const selectedUser$ = useObservable<string>("");
   const amount$ = useObservable<number>(0);
@@ -23,6 +24,7 @@ export function CreditManager() {
       const { data, error } = await supabase.from("membros").select("user_id, user_name, user_email").order("user_name", { ascending: true });
       if (error) {
         notification.error({ message: t('errorLoadingMembers') });
+        notification.error({ message: t('errorLoadingMembers') });
       }
       members$.set(data || []);
     }
@@ -32,6 +34,7 @@ export function CreditManager() {
 
   const handleAddCredit = async () => {
     if (!selectedUser || amount <= 0) {
+      notification.error({ message: t('selectUserAndValidValue') });
       notification.error({ message: t('selectUserAndValidValue') });
       return;
     }
@@ -45,6 +48,7 @@ export function CreditManager() {
         .single();
 
       if (!memberData) {
+        notification.error({ message: t('userNotFound') });
         notification.error({ message: t('userNotFound') });
         return;
       }
@@ -192,7 +196,7 @@ export function CreditManager() {
     <div className="flex flex-col gap-3">
       <Select value={selectedUser || ""} onValueChange={selectedUser$.set}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Selecione um membro" />
+          <SelectValue placeholder={tPlaceholders('selectMember')} />
         </SelectTrigger>
         <SelectContent>
           {members.map((m) => (
@@ -212,6 +216,7 @@ export function CreditManager() {
           className="w-full"
         />
         <Button onClick={handleAddCredit}>
+          {t('addCredit')}
           {t('addCredit')}
         </Button>
       </div>

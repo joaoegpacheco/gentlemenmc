@@ -353,6 +353,7 @@
   },
   "placeholders": {
     "selectMember": "Selecione um membro",
+    "selectMembers": "Selecione os membros",
     "selectCategory": "Selecione uma categoria",
     "selectDrink": "Selecione uma bebida",
     "selectAdmin": "Selecione o administrador",
