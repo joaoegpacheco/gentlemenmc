@@ -1,9 +1,11 @@
 "use client"
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useDeviceSizes } from '@/utils/mediaQueries'
 
 export default function NotFoundPage() {
-    const { isMobile } = useDeviceSizes()
+  const t = useTranslations('notFound');
+  const { isMobile } = useDeviceSizes()
   return (
     <div
       className={`
@@ -13,7 +15,7 @@ export default function NotFoundPage() {
     >
       <Image
         src="/images/gentlemenmc.png"
-        alt="Página não encontrada"
+        alt={t('pageNotFound')}
         width={200}
         height={200}
         style={{
@@ -21,9 +23,9 @@ export default function NotFoundPage() {
         }}
       />
       <div>
-        <h1 className="text-3xl font-bold m-0">404 - Página não existe</h1>
+        <h1 className="text-3xl font-bold m-0">{t('title')}</h1>
         <p className="text-sm text-gray-600">
-          A página que você tentou acessar não existe.
+          {t('description')}
         </p>
       </div>
     </div>

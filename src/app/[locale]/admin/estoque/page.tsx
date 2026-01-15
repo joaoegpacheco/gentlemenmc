@@ -33,7 +33,9 @@ type EstoqueType = {
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
-  const t = useTranslations();
+  const t = useTranslations('stock');
+  const tCommon = useTranslations('common');
+  const tDashboard = useTranslations('dashboard');
   const stock$ = useObservable<EstoqueType[]>([]);
   const drink$ = useObservable("");
   const quantity$ = useObservable<number>(1);
@@ -65,7 +67,7 @@ export default function EstoquePage() {
       const data = await getEstoque();
       stock$.set(data);
     } catch {
-      message.error("Erro ao buscar estoque");
+      message.error(t('errorFetchingStock'));
     }
   }
 
@@ -76,26 +78,26 @@ export default function EstoquePage() {
 
   const handleAdd = async () => {
     if (!drink || quantity <= 0) {
-      message.error("Informe o nome da bebida e quantidade válida");
+      message.error(t('informDrinkAndQuantity'));
       return;
     }
 
     const priceValue = valuePrice ? parseFloat(valuePrice.replace(/[^\d,.-]/g, "").replace(",", ".")) : null;
     if (priceValue !== null && (isNaN(priceValue) || priceValue < 0)) {
-      message.error("Informe um valor válido");
+      message.error(t('informValidValue'));
       return;
     }
 
     loading$.set(true);
     try {
       await addOrUpdateEstoque(drink.trim(), quantity, priceValue);
-      message.success("Estoque atualizado!");
+      message.success(t('stockUpdated'));
       drink$.set("");
       quantity$.set(1);
       valuePrice$.set("");
       await fetchStock();
     } catch {
-      message.error("Erro ao atualizar estoque");
+      message.error(t('errorUpdatingStock'));
     } finally {
       loading$.set(false);
     }
@@ -185,7 +187,7 @@ export default function EstoquePage() {
               >
                 {drink
                   ? drinksOptions.find((option) => option.value === drink)?.label
-                  : "Selecione uma bebida"}
+                  : t('selectDrink')}
                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -201,7 +203,7 @@ export default function EstoquePage() {
               <div className="max-h-[300px] overflow-auto">
                 {filteredDrinksOptions.length === 0 ? (
                   <div className="p-4 text-center text-sm text-muted-foreground">
-                    Nenhuma bebida encontrada
+                    {t('noDrinksFound')}
                   </div>
                 ) : (
                   filteredDrinksOptions.map((option) => (
@@ -238,7 +240,7 @@ export default function EstoquePage() {
               quantity$.set(Math.max(0, numValue));
             }}
             className="w-full md:w-32"
-            placeholder="Quantidade"
+            placeholder={t('quantityPlaceholder')}
           />
           <Input
             type="text"
@@ -256,10 +258,10 @@ export default function EstoquePage() {
               valuePrice$.set(value);
             }}
             className="w-full md:w-32"
-            placeholder="Valor pago (R$)"
+            placeholder={t('valuePaidPlaceholder')}
           />
           <Button onClick={handleAdd} disabled={loading}>
-            {loading ? t('common.loading') : t('dashboard.addToStock')}
+            {loading ? tCommon('loading') : tDashboard('addToStock')}
           </Button>
         </div>
       </div>
@@ -267,7 +269,7 @@ export default function EstoquePage() {
       {/* Campo de busca */}
       <div className="mb-4">
         <Input
-          placeholder="Buscar bebida no estoque"
+          placeholder={t('searchStock')}
           value={search}
           onChange={(e) => search$.set(e.target.value)}
         />
@@ -296,7 +298,7 @@ export default function EstoquePage() {
             {paginatedStock.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={2} className="text-center text-muted-foreground">
-                  Nenhum item encontrado
+                  {tCommon('noItemsFound')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -370,7 +372,7 @@ export default function EstoquePage() {
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
-              Próxima
+              {tCommon('nextPage')}
             </Button>
           </div>
         </div>

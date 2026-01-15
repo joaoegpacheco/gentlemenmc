@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "@/i18n/routing";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from "@/hooks/use-supabase";
 import { message } from "@/lib/message";
 import type { SupabaseAuthUser } from "@/types/auth";
@@ -36,6 +36,9 @@ import {
 export default function DashboardPage() {
   const router = useRouter();
   const t = useTranslations('dashboard');
+  const tAdminMembros = useTranslations('adminMembros');
+  const tDashboardService = useTranslations('dashboardService');
+  const locale = useLocale();
   const isAdmin$ = useObservable<boolean | null>(null);
   const loading$ = useObservable(true);
   const refreshing$ = useObservable(false);
@@ -143,7 +146,7 @@ export default function DashboardPage() {
       drinkAnalysis$.set(drinkAnalysisData);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
-      message.error("Erro ao carregar dados do dashboard");
+      message.error(t('errorLoadingData'));
     } finally {
       loading$.set(false);
     }
@@ -164,11 +167,11 @@ export default function DashboardPage() {
   const handlePeriodChange = async (period: "week" | "month" | "year") => {
     analysisPeriod$.set(period);
     try {
-      const drinkAnalysisData = await getDrinkAnalysisByPeriod(period);
+      const drinkAnalysisData = await getDrinkAnalysisByPeriod(period, tDashboardService('fallback.noName'));
       drinkAnalysis$.set(drinkAnalysisData);
     } catch (error) {
       console.error("Erro ao atualizar análise de bebidas:", error);
-      message.error("Erro ao atualizar análise de bebidas");
+      message.error(t('errorUpdatingDrinkAnalysis'));
     }
   };
 
@@ -177,7 +180,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Verificando permissões...</p>
+          <p className="text-muted-foreground">{t('checkingPermissions')}</p>
         </div>
       </div>
     );
@@ -208,7 +211,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Resumo Geral</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('generalSummary')}</h2>
         {stats ? (
           <StatsCards stats={stats} loading={loading} />
         ) : (
@@ -221,7 +224,7 @@ export default function DashboardPage() {
 
       {/* Charts */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Gráficos e Análises</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('chartsAndAnalysis')}</h2>
         <Charts
           monthlyRevenue={monthlyRevenue}
           topDrinks={topDrinks}
@@ -236,7 +239,7 @@ export default function DashboardPage() {
 
       {/* Quick Tables */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Atividades Recentes</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('recentActivities')}</h2>
         <QuickTables
           recentPaidOrders={recentPaidOrders}
           membersWithHighestDebt={membersWithHighestDebt}
@@ -248,7 +251,7 @@ export default function DashboardPage() {
       {/* Footer Info */}
       <div className="text-center text-sm text-muted-foreground pt-4 border-t">
         <p>
-          Última atualização:{" "}
+          {t('lastUpdate')}{" "}
           {new Date().toLocaleString("pt-BR", {
             day: "2-digit",
             month: "long",

@@ -45,7 +45,8 @@ interface Member {
 }
 
 export default function MembrosPage() {
-  const t = useTranslations();
+  const t = useTranslations('common');
+  const tMembers = useTranslations('members');
   const members$ = useObservable<Member[]>([]);
   const loading$ = useObservable(false);
   const search$ = useObservable("");
@@ -83,7 +84,7 @@ export default function MembrosPage() {
       isAdmin$.set(adminStatus);
 
       if (!adminStatus && user.email !== "barmc@gentlemenmc.com.br") {
-        message.error("Acesso negado. Apenas administradores podem acessar esta página.");
+        message.error(tMembers('accessDenied'));
         router.push("/comandas");
         return;
       }
@@ -151,13 +152,13 @@ export default function MembrosPage() {
   const getStatusBadge = (status?: MemberStatus) => {
     switch (status) {
       case "ativo":
-        return <Badge className="bg-green-500">Ativo</Badge>;
+        return <Badge className="bg-green-500">{tMembers('statusActive')}</Badge>;
       case "inativo":
-        return <Badge variant="secondary">Inativo</Badge>;
+        return <Badge variant="secondary">{tMembers('statusInactive')}</Badge>;
       case "suspenso":
-        return <Badge variant="destructive">Suspenso</Badge>;
+        return <Badge variant="destructive">{tMembers('statusSuspended')}</Badge>;
       default:
-        return <Badge className="bg-green-500">Ativo</Badge>;
+        return <Badge className="bg-green-500">{tMembers('statusActive')}</Badge>;
     }
   };
 
@@ -169,14 +170,14 @@ export default function MembrosPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">👥 Gestão de Membros</h1>
+          <h1 className="text-3xl font-bold">{tMembers('memberManagement')}</h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie informações, status e histórico dos membros
+            {tMembers('memberManagementDescription')}
           </p>
         </div>
         <Button onClick={handleAddMember} className="gap-2">
           <UserPlus className="h-4 w-4" />
-          Adicionar Membro
+          {tMembers('addMember')}
         </Button>
       </div>
 
@@ -198,12 +199,12 @@ export default function MembrosPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Data de Cadastro</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead>{tCommon('name')}</TableHead>
+              <TableHead>{tCommon('email')}</TableHead>
+              <TableHead>{tCommon('phone')}</TableHead>
+              <TableHead>{tCommon('status')}</TableHead>
+              <TableHead>{tCommon('registrationDate')}</TableHead>
+              <TableHead className="text-right">{tCommon('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -260,7 +261,7 @@ export default function MembrosPage() {
                         className="gap-1"
                       >
                         <Eye className="h-4 w-4" />
-                        Ver
+                        {tCommon('view')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -269,7 +270,7 @@ export default function MembrosPage() {
                         className="gap-1"
                       >
                         <Edit className="h-4 w-4" />
-                        Editar
+                        {tCommon('edit')}
                       </Button>
                     </div>
                   </TableCell>
@@ -304,7 +305,7 @@ export default function MembrosPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {selectedMember ? "Editar Membro" : "Adicionar Novo Membro"}
+              {selectedMember ? tMembers('editMember') : tMembers('addNewMember')}
             </DialogTitle>
           </DialogHeader>
           <MemberForm

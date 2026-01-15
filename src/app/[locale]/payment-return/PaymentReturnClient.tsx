@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { supabase } from "@/hooks/use-supabase";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export default function PaymentReturnClient({ searchParams }: Props) {
+  const t = useTranslations('paymentReturn');
   const status$ = useObservable<"loading" | "success" | "failed">("loading");
   const name$ = useObservable<string | null>(null);
 
@@ -54,7 +56,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         const normalizedTransactionId = transaction_nsu || transaction_id || nsu || null;
 
         // Verifica se o pagamento falhou
-        if (warning || !normalizedOrderNsu || !normalizedTransactionId) throw new Error(warning || "Dados inválidos");
+        if (warning || !normalizedOrderNsu || !normalizedTransactionId) throw new Error(warning || t('invalidData'));
 
         // Atualiza cobrança
         const { error: updateError } = await supabase
@@ -113,14 +115,14 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         <Card className="max-w-md">
           <CardHeader className="text-center">
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <CardTitle>Erro ao confirmar seu pagamento</CardTitle>
+            <CardTitle>{t('errorConfirmingPayment')}</CardTitle>
             <CardDescription>
-              Não foi possível confirmar sua transação. Fale diretamente com o diretor financeiro.
+              {t('errorDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
             <Link href="/comandas">
-              <Button>Voltar ao início</Button>
+              <Button>{t('backToHome')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -141,16 +143,16 @@ export default function PaymentReturnClient({ searchParams }: Props) {
       <Card className="max-w-md">
         <CardHeader className="text-center">
           <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <CardTitle>{`Obrigado, ${name || "irmão"}!`}</CardTitle>
-          <CardDescription>Seu pagamento foi confirmado com sucesso.</CardDescription>
+          <CardTitle>{t('thankYou', { name: name || t('defaultName') })}</CardTitle>
+          <CardDescription>{t('paymentConfirmedSuccessfully')}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center gap-4">
           <Link href="/comandas">
-            <Button>Voltar ao início</Button>
+            <Button>{t('backToHome')}</Button>
           </Link>
           {searchParams?.receipt_url && (
             <a href={searchParams.receipt_url} target="_blank" rel="noreferrer">
-              <Button variant="outline">Ver recibo</Button>
+              <Button variant="outline">{t('viewReceipt')}</Button>
             </a>
           )}
         </CardContent>

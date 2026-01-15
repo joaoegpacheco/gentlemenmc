@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMediaQuery } from "react-responsive";
 
 export default function CreateComandaPage() {
+  const t = useTranslations('novaComanda');
+  const tEstoqueService = useTranslations('estoqueService');
   const items$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
   const guestName$ = useObservable<string>("");
   const memberName$ = useObservable<string>("");
@@ -46,15 +49,15 @@ export default function CreateComandaPage() {
 
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
-    cervejas: "Cervejas",
-    cervejasPremium: "Cervejas Premium",
-    refrigerantes: "Refrigerantes",
-    bebidasNaoAlcoolicas: "Bebidas Não Alcoólicas",
-    energetico: "Energético",
-    doses: "Doses",
-    vinhos: "Vinhos",
-    snacks: "Snacks",
-    cigarros: "Cigarros",
+    cervejas: t('categories.cervejas'),
+    cervejasPremium: t('categories.cervejasPremium'),
+    refrigerantes: t('categories.refrigerantes'),
+    bebidasNaoAlcoolicas: t('categories.bebidasNaoAlcoolicas'),
+    energetico: t('categories.energetico'),
+    doses: t('categories.doses'),
+    vinhos: t('categories.vinhos'),
+    snacks: t('categories.snacks'),
+    cigarros: t('categories.cigarros'),
   };
 
   // Obter lista de categorias
@@ -108,12 +111,12 @@ export default function CreateComandaPage() {
 
   const handleCreateComanda = async () => {
     if (!guestName) {
-      message.error("Informe nome do convidado");
+      message.error(t('errors.guestNameRequired'));
       return;
     }
 
     if (items.length === 0) {
-      message.error("Adicione ao menos 1 item");
+      message.error(t('errors.addAtLeastOneItem'));
       return;
     }
 
@@ -121,7 +124,7 @@ export default function CreateComandaPage() {
     for (const item of items) {
       const stock = drinkStock[item.drink] || 0;
       if (stock < item.quantity) {
-        message.error(`Estoque insuficiente para ${item.drink}. Disponível: ${stock}, Solicitado: ${item.quantity}`);
+        message.error(t('errors.insufficientStock', { drink: item.drink, available: stock, requested: item.quantity }));
         return;
       }
     }
@@ -129,7 +132,10 @@ export default function CreateComandaPage() {
     try {
       // Consome estoque
       for (const item of items) {
-        await consumirEstoque(item.drink, item.quantity);
+        await consumirEstoque(item.drink, item.quantity, {
+          invalidDrinkOrQuantity: tEstoqueService('errors.invalidDrinkOrQuantity'),
+          insufficientStock: tEstoqueService('errors.insufficientStock', { drink: item.drink }),
+        });
         // Atualiza o estoque local após consumo
         const newStock = await getEstoqueByDrink(item.drink);
         drinkStock$.set({ ...drinkStock, [item.drink]: newStock });
@@ -146,6 +152,7 @@ export default function CreateComandaPage() {
         memberName: selectedMemberName,
         guestPhone: guestPhone || undefined,
         items,
+        errorMessage: t('errors.comandaMustHaveGuestNameMemberNameAndPhone'),
       });
 
       // Se for venda direta, marca a comanda como paga
@@ -162,17 +169,17 @@ export default function CreateComandaPage() {
           .eq("id", order.id);
 
         if (updateError) {
-          message.error(`Erro ao marcar comanda como paga: ${updateError.message}`);
+          message.error(t('errors.errorMarkingAsPaid', { message: updateError.message }));
           return;
         }
 
-        message.success("Venda direta realizada com sucesso");
+        message.success(t('success.directSaleSuccess'));
       } else {
-        message.success("Comanda criada com sucesso");
+        message.success(t('success.comandaCreatedSuccess'));
 
         if (typeof window !== "undefined") {
           const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
-          printComandaHTML({ guestName: guestName || "Sem nome", items });
+          printComandaHTML({ guestName: guestName || t('fallback.noName'), items });
         }
       }
 
@@ -203,18 +210,18 @@ export default function CreateComandaPage() {
         <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="flex items-center gap-2 flex-row w-full">
             <div className="flex flex-col w-full">
-              <label className="text-sm mb-1">Nome do convidado</label>
+              <label className="text-sm mb-1">{t('labels.guestName')}</label>
               <Input
-                placeholder="Falano de tal"
+                placeholder={t('placeholders.guestName')}
                 value={guestName}
                 onChange={(e) => guestName$.set(e.target.value)}
               />
             </div>
             <div className="flex flex-col w-full">
-              <label className="text-sm mb-1">Convidado do</label>
+              <label className="text-sm mb-1">{t('labels.guestOf')}</label>
               <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione um membro" />
+                  <SelectValue placeholder={t('placeholders.selectMember')} />
                 </SelectTrigger>
                 <SelectContent>
                   {members.map((m) => (
@@ -227,9 +234,9 @@ export default function CreateComandaPage() {
             </div>
           </div>
           <div className="flex flex-col w-full">
-            <label className="text-sm mb-1">Telefone do convidado</label>
+            <label className="text-sm mb-1">{t('labels.guestPhone')}</label>
             <Input
-              placeholder="(XX) 9XXXX-XXXX"
+              placeholder={t('placeholders.guestPhone')}
               value={guestPhone}
               maxLength={15}
               onChange={(e) => {
@@ -268,7 +275,7 @@ export default function CreateComandaPage() {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecione uma categoria" />
+              <SelectValue placeholder={t('placeholders.selectCategory')} />
             </SelectTrigger>
             <SelectContent>
               {categories.map(category => (
@@ -311,11 +318,11 @@ export default function CreateComandaPage() {
                       {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                     </Button>
                     <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
-                      Estoque: {stock}
+                      {t('labels.stock', { stock })}
                     </span>
                     {quantityInCart > 0 && (
                       <span className="text-xs text-blue-600 font-medium">
-                        No carrinho: {quantityInCart}
+                        {t('labels.inCart', { quantity: quantityInCart })}
                       </span>
                     )}
                   </div>
@@ -398,9 +405,9 @@ export default function CreateComandaPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Bebida</TableHead>
-              <TableHead>Qtd</TableHead>
-              <TableHead>Preço</TableHead>
+              <TableHead>{t('labels.drink')}</TableHead>
+              <TableHead>{t('labels.quantity')}</TableHead>
+              <TableHead>{t('labels.price')}</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -408,7 +415,7 @@ export default function CreateComandaPage() {
             {items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  Nenhum item adicionado
+                  {t('labels.noItemsAdded')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -434,10 +441,10 @@ export default function CreateComandaPage() {
       </div>
 
       <div className="flex justify-between items-center">
-        <div className="m-6 text-xl font-bold">Total: R$ {total.toFixed(2)}</div>
+        <div className="m-6 text-xl font-bold">{t('labels.total', { total: total.toFixed(2) })}</div>
         <Button onClick={handleCreateComanda}>
           <Plus className="h-4 w-4 mr-2" />
-          {isDirectSale ? "Criar Venda Direta" : "Criar Comanda"}
+          {isDirectSale ? t('buttons.createDirectSale') : t('buttons.createComanda')}
         </Button>
       </div>
     </div>

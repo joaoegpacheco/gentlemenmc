@@ -11,7 +11,8 @@ export default function Comandas() {
   const isAuthenticated$ = useObservable(false);
   const isAuthenticated = useValue(isAuthenticated$);
   const router = useRouter();
-  const t = useTranslations('common');
+  const t = useTranslations('comandas');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     const token = document.cookie.includes("authToken");
@@ -22,7 +23,7 @@ export default function Comandas() {
 
       if (!hasNotified) {
         notification.error({
-          message: t('error'),
+          message: t('notLoggedIn'),
         });
 
         sessionStorage.setItem("hasNotified", "true"); // Marca que já exibiu a notificação
@@ -35,7 +36,7 @@ export default function Comandas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  if (!isAuthenticated) return <p>{t('loading')}</p>;
+  if (!isAuthenticated) return <p>{tCommon('loading')}</p>;
 
   return <TabsComponent />;
 }

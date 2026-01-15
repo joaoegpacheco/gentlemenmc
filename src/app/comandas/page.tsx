@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
 import { notification } from "@/lib/notification";
 import TabsComponent from "@/components/Tabs/page";
 
 export default function Comandas() {
+  const t = useTranslations('comandas');
   const isAuthenticated$ = useObservable(false);
   const isAuthenticated = useValue(isAuthenticated$);
   const router = useRouter();
@@ -33,7 +35,7 @@ export default function Comandas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  if (!isAuthenticated) return <p>Carregando...</p>;
+  if (!isAuthenticated) return <p>{t('loading')}</p>;
 
   return <TabsComponent />;
 }

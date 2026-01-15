@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ type LogType = {
 };
 
 export default function HistoricoEstoquePage() {
+  const t = useTranslations();
   const logs$ = useObservable<LogType[]>([]);
   const startDate$ = useObservable<Date | undefined>(undefined);
   const endDate$ = useObservable<Date | undefined>(undefined);
@@ -51,7 +53,7 @@ export default function HistoricoEstoquePage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      message.error("Erro ao buscar logs");
+      message.error(t('errors.errorFetchingLogs'));
       return;
     }
 
@@ -93,14 +95,15 @@ export default function HistoricoEstoquePage() {
     const doc = new jsPDF();
 
     doc.setFontSize(16);
-    doc.text("Histórico de Estoque", 14, 20);
+    doc.text(t('export.pdfTitle'), 14, 20);
 
     if (startDate || endDate || drinkFilter) {
       doc.setFontSize(10);
+      const periodStart = startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : t('export.periodStart');
+      const periodEnd = endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : t('export.periodEnd');
+      const drinkFilterText = drinkFilter ? t('export.drinkFilter', { drink: drinkFilter }) : "";
       doc.text(
-        `Período: ${startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "Início"} até ${
-          endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : "Hoje"
-        }${drinkFilter ? ` | Bebida: ${drinkFilter}` : ""}`,
+        t('export.period', { start: periodStart, end: periodEnd, drink: drinkFilterText }),
         14,
         27
       );
@@ -108,25 +111,25 @@ export default function HistoricoEstoquePage() {
 
     autoTable(doc, {
       startY: 35,
-      head: [["Data", "Bebida", "Tipo", "Quantidade", "Usuário"]],
+      head: [[t('table.date'), t('table.drink'), t('table.type'), t('table.quantity'), t('table.user')]],
       body: filteredLogs.map((log) => [
         dayjs(log.created_at).format("DD/MM/YYYY HH:mm"),
         log.drink,
-        log.type === "entrada" ? "Entrada" : "Saída",
+        log.type === "entrada" ? t('types.entrada') : t('types.saida'),
         log.quantity.toString(),
         log.user || "—",
       ]),
     });
 
-    doc.save("historico_estoque.pdf");
+    doc.save(t('export.fileNamePDF'));
   };
 
   const exportarCSV = () => {
-    const headers = ["Data", "Bebida", "Tipo", "Quantidade", "Usuário"];
+    const headers = [t('table.date'), t('table.drink'), t('table.type'), t('table.quantity'), t('table.user')];
     const rows = filteredLogs.map((log) => [
       dayjs(log.created_at).format("DD/MM/YYYY HH:mm"),
       log.drink,
-      log.type === "entrada" ? "Entrada" : "Saída",
+      log.type === "entrada" ? t('types.entrada') : t('types.saida'),
       log.quantity,
       log.user || "—",
     ]);
@@ -149,7 +152,7 @@ export default function HistoricoEstoquePage() {
     });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", "historico_estoque.csv");
+    link.setAttribute("download", t('export.fileNameCSV'));
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -157,13 +160,13 @@ export default function HistoricoEstoquePage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">📊 Histórico de Estoque</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('title')}</h2>
 
       <div className="flex flex-wrap gap-4 mb-6">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline">
-              {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "Data inicial"}
+              {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : t('filters.startDate')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
@@ -178,7 +181,7 @@ export default function HistoricoEstoquePage() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline">
-              {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : "Data final"}
+              {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : t('filters.endDate')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
@@ -191,18 +194,18 @@ export default function HistoricoEstoquePage() {
           </PopoverContent>
         </Popover>
         <Input
-          placeholder="Filtrar por bebida"
+          placeholder={t('filters.filterByDrink')}
           value={drinkFilter}
           onChange={(e) => drinkFilter$.set(e.target.value)}
           className="max-w-xs"
         />
         <Button onClick={gerarPDF}>
           <FileText className="mr-2 h-4 w-4" />
-          PDF
+          {t('buttons.pdf')}
         </Button>
         <Button onClick={exportarCSV}>
           <Download className="mr-2 h-4 w-4" />
-          CSV
+          {t('buttons.csv')}
         </Button>
       </div>
 
@@ -210,18 +213,18 @@ export default function HistoricoEstoquePage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Data</TableHead>
-              <TableHead>Bebida</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Quantidade</TableHead>
-              <TableHead>Usuário</TableHead>
+              <TableHead>{t('table.date')}</TableHead>
+              <TableHead>{t('table.drink')}</TableHead>
+              <TableHead>{t('table.type')}</TableHead>
+              <TableHead>{t('table.quantity')}</TableHead>
+              <TableHead>{t('table.user')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredLogs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  Nenhum log encontrado
+                  {t('table.noLogsFound')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -231,9 +234,9 @@ export default function HistoricoEstoquePage() {
                   <TableCell>{log.drink}</TableCell>
                   <TableCell>
                     {log.type === "entrada" && log.quantity > 0 ? (
-                      <Badge variant="default" className="bg-green-500">Entrada</Badge>
+                      <Badge variant="default" className="bg-green-500">{t('types.entrada')}</Badge>
                     ) : (
-                      <Badge variant="destructive">Saída</Badge>
+                      <Badge variant="destructive">{t('types.saida')}</Badge>
                     )}
                   </TableCell>
                   <TableCell>{log.quantity}</TableCell>
@@ -245,11 +248,11 @@ export default function HistoricoEstoquePage() {
         </Table>
       </div>
 
-      <h4 className="text-lg font-semibold mb-4">📦 Saldo final por bebida:</h4>
+      <h4 className="text-lg font-semibold mb-4">{t('balance.finalBalanceByDrink')}</h4>
       <ul className="list-disc ml-6">
         {Object.entries(finalBalanceByDrink).map(([drink, balance]) => (
           <li key={drink}>
-            <strong>{drink}:</strong> {balance} unidade{balance !== 1 ? "s" : ""}
+            <strong>{drink}:</strong> {balance} {balance !== 1 ? t('balance.units') : t('balance.unit')}
           </li>
         ))}
       </ul>
