@@ -24,7 +24,24 @@
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "system": "System",
+    "portuguese": "Português",
+    "english": "English",
+    "logout": "Logout",
+    "view": "View",
+    "name": "Name",
+    "phone": "Phone",
+    "status": "Status",
+    "registrationDate": "Registration Date",
+    "update": "Update",
+    "refresh": "Refresh",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "noItemsFound": "No items found",
+    "noMembersFound": "No members found",
+    "showing": "Showing",
+    "of": "of",
+    "items": "items"
   },
   "auth": {
     "login": {
@@ -62,6 +79,776 @@
     "loadingMembers": "Loading members...",
     "loadingProfile": "Loading profile...",
     "searching": "Searching...",
-    "noResults": "No results found."
+    "noResults": "No results found.",
+    "errorLoadingData": "Error loading dashboard data",
+    "dashboardUpdatedSuccessfully": "Dashboard updated successfully!",
+    "errorUpdatingDashboard": "Error updating dashboard",
+    "errorUpdatingDrinkAnalysis": "Error updating drink analysis",
+    "administrativeDashboard": "Administrative Dashboard",
+    "overviewDescription": "Overview of club metrics and statistics",
+    "generalSummary": "General Summary",
+    "chartsAndAnalysis": "Charts and Analysis",
+    "recentActivities": "Recent Activities",
+    "lastUpdate": "Last update:",
+    "checkingPermissions": "Checking permissions...",
+    "refresh": "Refresh",
+    "errorLoadingDashboard": "Error loading dashboard"
+  },
+  "charts": {
+    "monthlyRevenue": "Monthly Revenue",
+    "allMonths": "All months",
+    "top5BestSellingDrinks": "Top 5 Best Selling Drinks",
+    "sales": "sales",
+    "top5ConsumingMembers": "Top 5 Consuming Members",
+    "drinks": "drinks",
+    "consumptionTrend": "Consumption Trend (Last 6 Months)",
+    "quantity": "Quantity",
+    "revenue": "Revenue",
+    "units": "units",
+    "drinkInvestmentAnalysis": "Drink Investment Analysis",
+    "investmentAnalysisDescription": "Comparison between total revenue and sales volume per drink",
+    "lastWeek": "Last Week",
+    "thisMonth": "This Month",
+    "thisYear": "This Year",
+    "quantitySold": "Quantity Sold",
+    "totalRevenue": "Total Revenue",
+    "unitsLabel": "units",
+    "drink": "Drink",
+    "quantitySoldHeader": "Qty. Sold",
+    "totalRevenueHeader": "Total Revenue",
+    "averagePrice": "Average Price",
+    "potential": "Potential",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "investmentInsights": "💡 Investment Insights",
+    "bestInvestment": "Best Investment:",
+    "inRevenue": "in revenue",
+    "mostSold": "Most Sold:",
+    "unitsLabel2": "units",
+    "highestUnitValue": "Highest Unit Value:",
+    "perUnit": "per unit"
+  },
+  "quickTables": {
+    "recentPaidOrders": "Recent Paid Orders",
+    "noRecentPaidOrders": "No recent paid orders",
+    "paidOn": "Paid on",
+    "highestDebts": "Highest Debts",
+    "noPendingDebts": "No pending debts! 🎉",
+    "pendingDebt": "Pending debt",
+    "stockMovements": "Stock Movements",
+    "noRecentMovements": "No recent movements",
+    "system": "System"
+  },
+  "statsCards": {
+    "totalDebts": "Total Debts",
+    "pendingPayment": "Pending payment",
+    "monthRevenue": "Month Revenue",
+    "currentMonth": "Current month",
+    "openOrders": "Open Orders",
+    "awaitingPayment": "Awaiting payment",
+    "lowStock": "Low Stock",
+    "lessThan5Units": "Less than 5 units",
+    "activeMembers": "Active Members",
+    "activeStatus": "Active status",
+    "inactiveMembers": "Inactive Members",
+    "inactiveSuspended": "Inactive/Suspended",
+    "upcomingBirthdays": "Upcoming Birthdays (next 7 days)",
+    "noUpcomingBirthdays": "No birthdays in the next 7 days",
+    "more": "more"
+  },
+  "formMonthlyFee": {
+    "nameRequired": "Please select at least one name!",
+    "accountPaidSuccessfully": "{name}'s account has been paid successfully!",
+    "errorPayingAccount": "Error paying account: {message}",
+    "nameLabel": "Name",
+    "selectMember": "Select a member",
+    "dateLimit": "Date Limit",
+    "updating": "Updating...",
+    "update": "Update"
+  },
+  "invoiceForm": {
+    "totalAmountMustBeGreaterThanZero": "Total amount must be greater than zero",
+    "selectAtLeastOneMember": "Please select at least one member",
+    "selectEventDate": "Please select the event date",
+    "errorLoadingMembers": "Error loading members",
+    "selectInvoiceFile": "Please select an invoice file.",
+    "userNotAuthenticated": "User not authenticated.",
+    "bucketNotFound": "Bucket \"notas_fiscais\" not found. Check Supabase.",
+    "errorUploadingFile": "Error uploading file: {message}",
+    "errorSavingInvoice": "Error saving invoice",
+    "invoiceSavedSuccessfully": "Invoice saved successfully",
+    "totalAmount": "Total Amount",
+    "members": "Members",
+    "selectMembers": "Select members",
+    "eventDate": "Event Date",
+    "selectDate": "Select date",
+    "visitors": "Visitors",
+    "visitorQuantity": "Number of visitors",
+    "noVisitors": "No visitors",
+    "visitor": "visitor",
+    "visitorsPlural": "visitors",
+    "visitorName": "Visitor {number} name",
+    "pixForPayment": "PIX for payment",
+    "invoice": "Invoice",
+    "selectInvoice": "Select Invoice",
+    "memberVisitor": "Member/Visitor",
+    "value": "Value",
+    "visitorDefault": "Visitor {number}",
+    "saving": "Saving...",
+    "saveInvoice": "Save Invoice"
+  },
+  "adminLayout": {
+    "main": "Main",
+    "management": "Management",
+    "financial": "Financial",
+    "administration": "Administration",
+    "dashboard": "Dashboard",
+    "members": "Members",
+    "orders": "Orders",
+    "stock": "Stock",
+    "products": "Products",
+    "history": "History",
+    "debts": "Debts",
+    "credits": "Credits",
+    "reports": "Reports",
+    "notifications": "Notifications",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "invoiceTable": {
+    "userNotAuthenticated": "User not authenticated",
+    "errorAuthenticating": "Error authenticating. Redirecting to login.",
+    "errorLoadingInvoices": "Error loading invoices",
+    "errorLoadingMembers": "Error loading members",
+    "errorUploadingReceipt": "Error uploading receipt.",
+    "errorGettingPublicUrl": "Error getting public URL of receipt.",
+    "errorRegisteringPayment": "Error registering payment.",
+    "paymentRegisteredSuccessfully": "Payment registered successfully!",
+    "copiedToClipboard": "Copied to clipboard!",
+    "failedToCopy": "Failed to copy.",
+    "eventDate": "Event Date",
+    "eventDateLabel": "Event Date:",
+    "names": "Names:",
+    "totalInvoiceValue": "Total Invoice Value",
+    "totalInvoiceValueLabel": "Total Invoice Value:",
+    "valuePerPerson": "Value per Person",
+    "valuePerPersonLabel": "Value per Person:",
+    "pix": "PIX",
+    "pixForPayment": "PIX for Payment",
+    "invoice": "Invoice",
+    "pay": "Pay",
+    "name": "Name",
+    "actions": "Actions",
+    "noImage": "No image",
+    "sendReceipt": "Send Receipt",
+    "selectReceipt": "Select Receipt",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "confirmPayment": "Confirm Payment"
+  },
+  "tabs": {
+    "mark": "Mark",
+    "viewMarks": "View marks",
+    "events": "Events",
+    "statute": "Statute",
+    "members": "Members",
+    "dashboard": "Dashboard",
+    "confirmPayment": "Confirm payment",
+    "allDebts": "All debts",
+    "openOrders": "Open Orders",
+    "orderHistory": "Order History",
+    "stock": "Stock",
+    "stockHistory": "Stock History",
+    "myProfile": "My Profile",
+    "guestOrder": "Guest Order",
+    "birthdaysOfMonth": "Birthdays of the month:"
+  },
+  "form": {
+    "name": "Name",
+    "item": "Item",
+    "quantity": "Quantity",
+    "add": "Add",
+    "adding": "Adding...",
+    "update": "Update",
+    "updating": "Updating...",
+    "guestName": "Guest name",
+    "selectMember": "Please select at least one name!",
+    "selectItem": "Please select at least one item!",
+    "loadingMembers": "Loading members...",
+    "stockExceeded": "Requested quantity ({amount}) exceeds available stock!",
+    "selectValidUserAndDrink": "Please select valid user and drink.",
+    "errorRegisteringDrink": "Error registering drink",
+    "errorDebitingCredit": "Error debiting credit",
+    "drinkAddedSuccessfully": "Drink added successfully!",
+    "errorRegisteringDrinkCheckStock": "There was an error registering your drink. Please check if there is stock!",
+    "errorFetchingMembers": "Error fetching members:",
+    "currentCredit": "Current credit:",
+    "availableStockOf": "Available stock of",
+    "currentDateTime": "Current date and time:",
+    "stockLabel": "Stock:",
+    "outOfStock": "(Out of stock)",
+    "inStock": "(Stock: {stock})"
+  },
+  "members": {
+    "addMember": "Add Member",
+    "editMember": "Edit Member",
+    "addNewMember": "Add New Member",
+    "fullName": "Full name",
+    "minimumChars": "Minimum 6 characters",
+    "selectStatus": "Select status",
+    "internalNotes": "Internal notes about the member...",
+    "filterByUser": "Filter by user",
+    "nameRequired": "Name is required",
+    "passwordMinChars": "Password must have at least 6 characters",
+    "errorCheckingBuckets": "Error checking buckets: {message}",
+    "bucketNotFound": "Bucket \"membros_fotos\" not found. Please create the bucket in Supabase Dashboard: Storage → Create Bucket → Name: \"membros_fotos\" → Public: Yes",
+    "errorUploadingPhoto": "Error uploading photo: {message}",
+    "errorFilePathNotReturned": "Error: file path not returned by upload",
+    "errorPublicUrlNotGenerated": "Error: public URL was not generated",
+    "errorUploading": "Error uploading: {message}",
+    "userNotAuthenticated": "User not authenticated",
+    "onlyAdminsCanManage": "Only administrators can manage members",
+    "errorUploadingPhotoTryAgain": "Error uploading photo. Please try again.",
+    "rlsPermissionError": "Permission error. Check RLS policies in Supabase. See documentation in RLS_POLICIES.md",
+    "memberUpdatedSuccessfully": "Member updated successfully!",
+    "emailRequiredForNewMember": "Email is required to create a new member",
+    "passwordRequiredMinChars": "Password is required and must have at least 6 characters",
+    "errorCreatingUser": "Error creating user in authentication",
+    "memberAddedSuccessfully": "Member added successfully!",
+    "errorCreatingUserUnknown": "Error creating user: {message}",
+    "errorSavingMember": "Error saving member: {message}",
+    "imageMaxSize": "Image must be at most 5MB",
+    "nameLabel": "Name *",
+    "fullNamePlaceholder": "Full name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "email@example.com",
+    "passwordLabel": "Password *",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "(00) 00000-0000",
+    "observationsLabel": "Observations",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "statusSuspended": "Suspended",
+    "memberProfile": "Member Profile",
+    "memberManagement": "👥 Member Management",
+    "memberManagementDescription": "Manage member information, status and history",
+    "searchByNameEmailPhone": "Search by name, email or phone...",
+    "accessDenied": "Access denied. Only administrators can access this page.",
+    "errorLoadingMembers": "Error loading members",
+    "errorFetchingMembers": "Error fetching members"
+  },
+  "categories": {
+    "beers": "Beers",
+    "premiumBeers": "Premium Beers",
+    "softDrinks": "Soft Drinks",
+    "nonAlcoholic": "Non-Alcoholic Beverages",
+    "energy": "Energy Drink",
+    "shots": "Shots",
+    "wines": "Wines",
+    "snacks": "Snacks",
+    "cigars": "Cigars"
+  },
+  "placeholders": {
+    "selectMember": "Select a member",
+    "selectCategory": "Select a category",
+    "selectDrink": "Select a drink",
+    "selectAdmin": "Select administrator",
+    "adminPassword": "Admin password",
+    "search": "Type to search...",
+    "memberMessage": "Type message for the member..."
+  },
+  "stock": {
+    "errorFetchingStock": "Error fetching stock",
+    "informDrinkAndQuantity": "Please provide drink name and valid quantity",
+    "informValidValue": "Please provide a valid value",
+    "stockUpdated": "Stock updated!",
+    "errorUpdatingStock": "Error updating stock",
+    "stockControl": "📦 Stock Control",
+    "addOrUpdateDrink": "Add or update drink",
+    "selectDrink": "Select a drink",
+    "searchDrink": "Search drink...",
+    "noDrinksFound": "No drinks found",
+    "quantityPlaceholder": "Quantity",
+    "valuePaidPlaceholder": "Amount paid ($)",
+    "searchStock": "Search drink in stock",
+    "drinkColumn": "Drink",
+    "quantityColumn": "Quantity",
+    "showingItems": "Showing {start} - {end} of {total} items"
+  },
+  "logout": {
+    "logoutSuccess": "Logout successful!",
+    "logoutFailed": "Logout failed",
+    "tryAgain": "Please try again."
+  },
+  "cardDrinks": {
+    "filterByUser": "Filter by user",
+    "markedDrinksToday": "Drinks marked today ({date})",
+    "unpaidTotal": "Unpaid total: {amount}",
+    "noDrinksMarked": "No drinks marked",
+    "date": "Date",
+    "quantity": "Quantity",
+    "value": "Value",
+    "paid": "Paid",
+    "markedBy": "Marked by: {user}"
+  },
+  "cardDrinksAll": {
+    "memberPhoneNotFound": "Member phone not found.",
+    "unpaidTotal": "Unpaid total:",
+    "noDebts": "No debts.",
+    "value": "Value:",
+    "chargeViaWhatsApp": "Charge via WhatsApp",
+    "whatsappMessage": "Hello {name}, here is the link to pay for *Gentlemen Drinks* in the amount of *{amount}*:\n\n{url}\n\nYou can pay via PIX or card."
+  },
+  "cardMonthlyFee": {
+    "nameNotFound": "Name not found",
+    "noMonthlyFeesPaid": "No Monthly Fees paid.",
+    "month": "Month:",
+    "paid": "Paid?"
+  },
+  "changePassword": {
+    "newPasswordRequired": "Please enter your new password!",
+    "passwordChangedSuccessfully": "Your password has been changed successfully!",
+    "errorChangingPassword": "Error changing your password: {message}",
+    "newPasswordLabel": "New Password",
+    "changing": "Changing...",
+    "changePassword": "Change Password"
+  },
+  "creditManager": {
+    "errorLoadingMembers": "Error loading members",
+    "selectUserAndValidValue": "Please select a user and valid value",
+    "userNotFound": "User not found",
+    "errorCheckingDebts": "Error checking debts",
+    "errorUpdatingDebts": "Error updating debts",
+    "errorUpdatingDebt": "Error updating debt",
+    "errorAddingCredit": "Error adding credit",
+    "errorProcessingCredit": "Error processing credit",
+    "creditAddedAndDebtPaid": "Credit added and debt paid!",
+    "debtPaidSuccessfully": "Debt paid successfully!",
+    "creditAddedSuccessfully": "Credit added successfully!",
+    "newBalance": "New balance: {balance}",
+    "debtPaidAndCreditAdded": "Debt paid: {debtPaid} | Remaining credit added: {remainingCredit} | New balance: {balance}",
+    "debtPaidWithBalance": "Debt paid: {debtPaid} | New balance: {balance}",
+    "selectMember": "Select a member",
+    "valuePlaceholder": "Amount ($)",
+    "addCredit": "Add Credit"
+  },
+  "memberProfile": {
+    "userNotAuthenticated": "User not authenticated",
+    "onlyAdminsCanChangeStatus": "Only administrators can change member status",
+    "permissionError": "Permission error. Check RLS policies in Supabase. See RLS_POLICIES.md",
+    "memberActivatedSuccessfully": "Member activated successfully!",
+    "memberDeactivatedSuccessfully": "Member deactivated successfully!",
+    "errorChangingStatus": "Error changing status: {message}",
+    "valueMustBeGreaterThanZero": "Value must be greater than zero",
+    "creditsAddedSuccessfully": "Credits added successfully!",
+    "errorAddingCredits": "Error adding credits: {message}",
+    "enterMessage": "Enter a message",
+    "notificationSentSuccessfully": "Notification sent successfully!",
+    "active": "Active",
+    "inactive": "Inactive",
+    "suspended": "Suspended",
+    "registration": "Registration:",
+    "edit": "Edit",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "availableCredits": "Available Credits",
+    "addCredits": "Add Credits",
+    "addCreditsInBulk": "Add Credits in Bulk",
+    "value": "Amount ($)",
+    "add": "Add",
+    "totalOrders": "Total Orders",
+    "orders": "orders",
+    "totalPayments": "Total Payments",
+    "payments": "payments",
+    "actions": "Actions",
+    "sendNotification": "Send Notification",
+    "sendCustomNotification": "Send Custom Notification",
+    "message": "Message",
+    "enterMessageForMember": "Enter message for member...",
+    "send": "Send",
+    "observations": "Observations",
+    "orderHistory": "Order History",
+    "noOrdersFound": "No orders found",
+    "date": "Date",
+    "drink": "Drink",
+    "quantity": "Quantity",
+    "amount": "Value",
+    "status": "Status",
+    "paid": "Paid",
+    "pending": "Pending",
+    "page": "Page",
+    "of": "of",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "openComandas": {
+    "errorFetchingAdmins": "Error fetching administrators",
+    "selectAdminAndPassword": "Select an admin and enter password",
+    "incorrectUserOrPassword": "Incorrect user or password",
+    "errorFetchingComandaData": "Error fetching comanda data",
+    "errorPayingComanda": "Error paying comanda",
+    "comandaPaidSuccessfully": "Comanda paid successfully",
+    "errorFetchingComandas": "Error fetching comandas",
+    "drinkAdded": "Drink added",
+    "openComandas": "Open Comandas",
+    "name": "Name",
+    "member": "Member",
+    "phone": "Phone",
+    "items": "Items",
+    "total": "Total",
+    "actions": "Actions",
+    "noOpenComandas": "No open comandas",
+    "drinks": "drink(s)",
+    "addDrink": "Add drink",
+    "markAsPaid": "Mark as paid",
+    "addDrinkToComanda": "Add drink to {name}'s comanda",
+    "quantity": "Quantity",
+    "cancel": "Cancel",
+    "add": "Add",
+    "comandaItems": "Items from {name}'s comanda",
+    "close": "Close",
+    "confirmPayment": "Confirm comanda payment",
+    "selectAdministrator": "Select administrator",
+    "adminPassword": "Admin password",
+    "confirm": "Confirm"
+  },
+  "paidComandas": {
+    "errorFetchingPaidComandas": "Error fetching paid comandas",
+    "paidComandasHistory": "Paid Comandas History",
+    "name": "Name",
+    "phone": "Phone",
+    "items": "Items",
+    "total": "Total",
+    "paymentDate": "Payment Date",
+    "noPaidComandasFound": "No paid comandas found",
+    "drinks": "drink(s)",
+    "comandaItems": "Items from {name}'s comanda",
+    "totalLabel": "Total:",
+    "close": "Close"
+  },
+  "userProfileForm": {
+    "passwordMinChars": "Password must be at least 6 characters",
+    "errorCheckingBuckets": "Error checking buckets: {message}",
+    "bucketNotFound": "Bucket \"membros_fotos\" not found. Please create the bucket in Supabase Dashboard: Storage → Create Bucket → Name: \"membros_fotos\" → Public: Yes",
+    "errorUploadingPhoto": "Error uploading photo: {message}",
+    "errorFilePathNotReturned": "Error: file path not returned by upload",
+    "errorPublicUrlNotGenerated": "Error: public URL was not generated",
+    "errorUploading": "Error uploading: {message}",
+    "userNotAuthenticated": "User not authenticated",
+    "canOnlyUpdateOwnProfile": "You can only update your own profile",
+    "errorUploadingPhotoTryAgain": "Error uploading photo. Please try again.",
+    "errorUpdatingPhoto": "Error updating photo: {message}",
+    "errorUpdatingPassword": "Error updating password: {message}",
+    "profileUpdatedSuccessfully": "Profile updated successfully!",
+    "errorUpdatingProfile": "Error updating profile: {message}",
+    "profilePhoto": "Profile Photo",
+    "updateProfilePhoto": "Update your profile photo",
+    "imageMaxSize": "Image must be at most 5MB",
+    "changePassword": "Change Password",
+    "enterNewPasswordDescription": "Enter a new password to update your access password",
+    "newPassword": "New Password",
+    "passwordPlaceholder": "Minimum 6 characters (leave blank to not change)",
+    "updateProfile": "Update Profile"
+  },
+  "userProfileTab": {
+    "defaultUserName": "User",
+    "errorLoadingProfile": "Error loading profile data.",
+    "updatePasswordAndPhoto": "Update your password and profile photo"
+  },
+  "errorBoundary": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "Sorry, an unexpected error occurred. Our team has been notified.",
+    "error": "Error:",
+    "stackTrace": "Stack Trace:",
+    "pleaseReloadOrGoHome": "Please try reloading the page or go back to the home page.",
+    "tryAgain": "Try again",
+    "goToHome": "Go to home"
+  },
+  "paymentReturn": {
+    "invalidData": "Invalid data",
+    "verifyingPayment": "Verifying payment...",
+    "errorConfirmingPayment": "Error confirming your payment",
+    "errorDescription": "Could not confirm your transaction. Please contact the financial director directly.",
+    "backToHome": "Back to home",
+    "thankYou": "Thank you, {name}!",
+    "defaultName": "brother",
+    "paymentConfirmedSuccessfully": "Your payment has been confirmed successfully.",
+    "viewReceipt": "View receipt"
+  },
+  "globalSearch": {
+    "searchPlaceholder": "Search...",
+    "typeToSearch": "Type to search...",
+    "pages": "Pages",
+    "actions": "Actions",
+    "items": {
+      "dashboard": {
+        "title": "Dashboard",
+        "description": "System overview"
+      },
+      "membros": {
+        "title": "Members",
+        "description": "Manage club members"
+      },
+      "estoque": {
+        "title": "Stock",
+        "description": "Stock control"
+      },
+      "comandas": {
+        "title": "Orders",
+        "description": "Manage orders"
+      },
+      "novaComanda": {
+        "title": "New Order",
+        "description": "Create new order"
+      },
+      "dividas": {
+        "title": "Debts",
+        "description": "Manage debts"
+      },
+      "creditos": {
+        "title": "Credits",
+        "description": "Manage credits"
+      },
+      "notificacoes": {
+        "title": "Notifications",
+        "description": "Notification center"
+      },
+      "relatorios": {
+        "title": "Reports",
+        "description": "Reports and analytics"
+      },
+      "configuracoes": {
+        "title": "Settings",
+        "description": "System settings"
+      }
+    }
+  },
+  "novaComanda": {
+    "categories": {
+      "cervejas": "Beers",
+      "cervejasPremium": "Premium Beers",
+      "refrigerantes": "Soft Drinks",
+      "bebidasNaoAlcoolicas": "Non-Alcoholic Drinks",
+      "energetico": "Energy Drink",
+      "doses": "Shots",
+      "vinhos": "Wines",
+      "snacks": "Snacks",
+      "cigarros": "Cigarettes"
+    },
+    "errors": {
+      "guestNameRequired": "Please enter guest name",
+      "addAtLeastOneItem": "Add at least 1 item",
+      "insufficientStock": "Insufficient stock for {drink}. Available: {available}, Requested: {requested}",
+      "errorMarkingAsPaid": "Error marking order as paid: {message}",
+      "errorProcessing": "Error processing",
+      "error": "Error: {message}",
+      "comandaMustHaveGuestNameMemberNameAndPhone": "The order must have a guest name, member name and phone."
+    },
+    "success": {
+      "directSaleSuccess": "Direct sale completed successfully",
+      "comandaCreatedSuccess": "Order created successfully"
+    },
+    "labels": {
+      "guestName": "Guest name",
+      "guestOf": "Guest of",
+      "guestPhone": "Guest phone",
+      "directSale": "Direct sale (automatic payment)",
+      "stock": "Stock: {stock}",
+      "inCart": "In cart: {quantity}",
+      "drink": "Drink",
+      "quantity": "Qty",
+      "price": "Price",
+      "total": "Total: $ {total}",
+      "noItemsAdded": "No items added"
+    },
+    "placeholders": {
+      "guestName": "John Doe",
+      "selectMember": "Select a member",
+      "guestPhone": "(XX) 9XXXX-XXXX",
+      "selectCategory": "Select a category"
+    },
+    "buttons": {
+      "createDirectSale": "Create Direct Sale",
+      "createComanda": "Create Order"
+    },
+    "fallback": {
+      "noName": "No name"
+    }
+  },
+  "comandas": {
+    "notLoggedIn": "You are not logged in!",
+    "loading": "Loading..."
+  },
+  "adminMembros": {
+    "errors": {
+      "accessDenied": "Access denied. Only administrators can access this page.",
+      "errorLoadingMembers": "Error loading members",
+      "errorFetchingMembers": "Error fetching members"
+    },
+    "loading": "Loading...",
+    "title": "👥 Member Management",
+    "description": "Manage member information, status and history",
+    "buttons": {
+      "addMember": "Add Member",
+      "view": "View",
+      "edit": "Edit"
+    },
+    "placeholders": {
+      "search": "Search by name, email or phone..."
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "status": "Status",
+      "registrationDate": "Registration Date",
+      "actions": "Actions",
+      "noMembersFound": "No members found"
+    },
+    "status": {
+      "ativo": "Active",
+      "inativo": "Inactive",
+      "suspenso": "Suspended"
+    },
+    "dialogs": {
+      "memberProfile": "Member Profile",
+      "editMember": "Edit Member",
+      "addNewMember": "Add New Member"
+    }
+  },
+  "notFound": {
+    "pageNotFound": "Page not found",
+    "title": "404 - Page does not exist",
+    "description": "The page you tried to access does not exist."
+  },
+  "adminEstoque": {
+    "errors": {
+      "errorFetchingStock": "Error fetching stock",
+      "drinkAndQuantityRequired": "Please enter drink name and valid quantity",
+      "invalidValue": "Please enter a valid value",
+      "errorUpdatingStock": "Error updating stock"
+    },
+    "success": {
+      "stockUpdated": "Stock updated!"
+    },
+    "title": "📦 Stock Control",
+    "form": {
+      "addOrUpdateDrink": "Add or update drink",
+      "selectDrink": "Select a drink",
+      "searchDrink": "Search drink...",
+      "noDrinksFound": "No drinks found",
+      "quantity": "Quantity",
+      "paidValue": "Paid value (R$)",
+      "loading": "Loading...",
+      "addToStock": "Add to stock"
+    },
+    "search": {
+      "placeholder": "Search drink in stock"
+    },
+    "table": {
+      "drink": "Drink",
+      "quantity": "Quantity",
+      "noItemsFound": "No items found"
+    },
+    "pagination": {
+      "showing": "Showing {start} - {end} of {total} items",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "adminEstoqueHistorico": {
+    "errors": {
+      "errorFetchingLogs": "Error fetching logs"
+    },
+    "title": "📊 Stock History",
+    "filters": {
+      "startDate": "Start date",
+      "endDate": "End date",
+      "filterByDrink": "Filter by drink"
+    },
+    "buttons": {
+      "pdf": "PDF",
+      "csv": "CSV"
+    },
+    "table": {
+      "date": "Date",
+      "drink": "Drink",
+      "type": "Type",
+      "quantity": "Quantity",
+      "user": "User",
+      "noLogsFound": "No logs found"
+    },
+    "types": {
+      "entrada": "Entry",
+      "saida": "Exit"
+    },
+    "balance": {
+      "finalBalanceByDrink": "📦 Final balance by drink:",
+      "unit": "unit",
+      "units": "units"
+    },
+    "export": {
+      "pdfTitle": "Stock History",
+      "period": "Period: {start} to {end}{drink}",
+      "periodStart": "Start",
+      "periodEnd": "Today",
+      "drinkFilter": " | Drink: {drink}",
+      "fileNamePDF": "stock_history.pdf",
+      "fileNameCSV": "stock_history.csv"
+    }
+  },
+  "apiCreateUser": {
+    "errors": {
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "errorCreatingUser": "Error creating user in authentication",
+      "userNotCreated": "User was not created",
+      "internalServerError": "Internal server error"
+    }
+  },
+  "apiUpdatePhoto": {
+    "errors": {
+      "userIdRequired": "user_id is required",
+      "photoUrlRequired": "foto_url is required",
+      "notAuthenticated": "Not authenticated",
+      "userNotAuthenticated": "User not authenticated",
+      "canOnlyUpdateOwnProfile": "You can only update your own profile",
+      "errorUpdatingPhoto": "Error updating photo",
+      "internalServerError": "Internal server error"
+    }
+  },
+  "calendar": {
+    "buttonText": {
+      "prev": "prev",
+      "next": "next",
+      "prevYear": "prev year",
+      "nextYear": "next year",
+      "today": "Today",
+      "month": "Month",
+      "week": "Week",
+      "day": "Day"
+    },
+    "alerts": {
+      "clickedEvent": "Clicked {title}.\nWill open {url} in a new tab",
+      "eventTitle": "{title}"
+    }
+  },
+  "comandaService": {
+    "errors": {
+      "comandaMustHaveGuestNameMemberNameAndPhone": "The order must have a guest name, member name and phone."
+    }
+  },
+  "dashboardService": {
+    "fallback": {
+      "noName": "No name",
+      "unknown": "Unknown"
+    }
+  },
+  "estoqueService": {
+    "errors": {
+      "invalidDrinkOrQuantity": "Invalid drink or quantity",
+      "insufficientStock": "Insufficient stock for {drink}"
+    }
   }
 }
