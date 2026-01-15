@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -59,9 +60,21 @@ interface MemberFormProps {
 }
 
 export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
+  const t = useTranslations('form');
+  const tCommon = useTranslations('common');
+  const tMembers = useTranslations('members');
   const photoFile$ = useObservable<File | null>(null);
   const uploading$ = useObservable(false);
   const photoPreview$ = useObservable<string | null>(member?.foto_url || null);
+
+  const memberSchema = z.object({
+    user_name: z.string().min(1, tMembers('nameRequired')),
+    user_email: z.string().email(t('auth.validation.invalidEmail')).optional().or(z.literal("")),
+    password: z.string().min(6, tMembers('passwordMinChars')).optional().or(z.literal("")),
+    phone: z.string().optional(),
+    status: z.enum(["ativo", "inativo", "suspenso"]),
+    observacoes: z.string().optional(),
+  });
 
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
@@ -109,14 +122,12 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
       
       if (bucketError) {
-        message.error(`Erro ao verificar buckets: ${bucketError.message}`);
+        message.error(tMembers('errorCheckingBuckets', { message: bucketError.message }));
         return null;
       }
 
       if (!buckets?.some((b) => b.name === "membros_fotos")) {
-        message.error(
-          'Bucket "membros_fotos" não encontrado. Por favor, crie o bucket no Supabase Dashboard: Storage → Create Bucket → Nome: "membros_fotos" → Público: Sim'
-        );
+        message.error(tMembers('bucketNotFound'));
         return null;
       }
 
@@ -134,12 +145,12 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         });
 
       if (error) {
-        message.error(`Erro ao fazer upload da foto: ${error.message}`);
+        message.error(tMembers('errorUploadingPhoto', { message: error.message }));
         return null;
       }
 
       if (!uploadData?.path) {
-        message.error("Erro: caminho do arquivo não retornado pelo upload");
+        message.error(tMembers('errorFilePathNotReturned'));
         return null;
       }
 
@@ -149,14 +160,14 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       } = supabase.storage.from("membros_fotos").getPublicUrl(uploadData.path);
 
       if (!publicUrl) {
-        message.error("Erro: URL pública não foi gerada");
+        message.error(tMembers('errorPublicUrlNotGenerated'));
         return null;
       }
 
       // Salvar a URL retornada pela API do bucket no foto_url
       return publicUrl;
     } catch (error: any) {
-      message.error(`Erro ao fazer upload: ${error.message}`);
+      message.error(tMembers('errorUploading', { message: error.message }));
       return null;
     }
   };
@@ -169,7 +180,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       const user = userData?.user;
 
       if (!user) {
-        message.error("Usuário não autenticado");
+        message.error(tMembers('userNotAuthenticated'));
         uploading$.set(false);
         return;
       }
@@ -185,7 +196,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       const isBarMC = user.email === "barmc@gentlemenmc.com.br";
 
       if (!isAdmin && !isBarMC) {
-        message.error("Apenas administradores podem gerenciar membros");
+        message.error(tMembers('onlyAdminsCanManage'));
         uploading$.set(false);
         return;
       }
@@ -197,7 +208,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       if (photoFile) {
         const uploadedUrl = await uploadPhoto();
         if (!uploadedUrl) {
-          message.error("Erro ao fazer upload da foto. Tente novamente.");
+          message.error(tMembers('errorUploadingPhotoTryAgain'));
           uploading$.set(false);
           return; // Erro no upload
         }
@@ -238,26 +249,24 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         if (error) {
           // Se for erro de RLS, fornecer mensagem mais clara
           if (error.message?.includes("row-level security") || error.code === "42501") {
-            message.error(
-              "Erro de permissão. Verifique as políticas RLS no Supabase. Veja a documentação em RLS_POLICIES.md"
-            );
+            message.error(tMembers('rlsPermissionError'));
             console.error("RLS Error:", error);
           } else {
             throw error;
           }
           return;
         }
-        message.success("Membro atualizado com sucesso!");
+        message.success(tMembers('memberUpdatedSuccessfully'));
       } else {
         // Criar novo membro - primeiro criar na autenticação do Supabase
         if (!values.user_email) {
-          message.error("Email é obrigatório para criar um novo membro");
+          message.error(tMembers('emailRequiredForNewMember'));
           uploading$.set(false);
           return;
         }
 
         if (!values.password || values.password.length < 6) {
-          message.error("Senha é obrigatória e deve ter no mínimo 6 caracteres");
+          message.error(tMembers('passwordRequiredMinChars'));
           uploading$.set(false);
           return;
         }
@@ -280,7 +289,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           const createUserData = await createUserResponse.json();
 
           if (!createUserResponse.ok) {
-            message.error(createUserData.error || 'Erro ao criar usuário na autenticação');
+            message.error(createUserData.error || tMembers('errorCreatingUser'));
             uploading$.set(false);
             return;
           }
@@ -308,7 +317,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           }
           message.success("Membro adicionado com sucesso!");
         } catch (apiError: any) {
-          message.error(`Erro ao criar usuário: ${apiError.message || 'Erro desconhecido'}`);
+          message.error(tMembers('errorCreatingUserUnknown', { message: apiError.message || 'Erro desconhecido' }));
           console.error('Erro na API create-user:', apiError);
           uploading$.set(false);
           return;
@@ -317,7 +326,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
 
       onSuccess();
     } catch (error: any) {
-      message.error(`Erro ao salvar membro: ${error.message}`);
+      message.error(tMembers('errorSavingMember', { message: error.message }));
       console.error(error);
     } finally {
       uploading$.set(false);
@@ -361,9 +370,9 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           name="user_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome *</FormLabel>
+              <FormLabel>{tMembers('nameLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder="Nome completo" {...field} />
+                <Input placeholder={tMembers('fullNamePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -394,11 +403,11 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Senha *</FormLabel>
+                <FormLabel>{tMembers('passwordLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder={tMembers('minimumChars')}
                     {...field}
                   />
                 </FormControl>
@@ -413,11 +422,11 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefone</FormLabel>
+              <FormLabel>{tMembers('phoneLabel')}</FormLabel>
               <FormControl>
                 <Input
                   type="tel"
-                  placeholder="(00) 00000-0000"
+                  placeholder={tMembers('phonePlaceholder')}
                   {...field}
                 />
               </FormControl>
@@ -431,20 +440,20 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           name="status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Status</FormLabel>
+              <FormLabel>{tMembers('status')}</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o status" />
+                    <SelectValue placeholder={tMembers('selectStatus')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="ativo">Ativo</SelectItem>
-                  <SelectItem value="inativo">Inativo</SelectItem>
-                  <SelectItem value="suspenso">Suspenso</SelectItem>
+                  <SelectItem value="ativo">{tMembers('statusActive')}</SelectItem>
+                  <SelectItem value="inativo">{tMembers('statusInactive')}</SelectItem>
+                  <SelectItem value="suspenso">{tMembers('statusSuspended')}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -457,10 +466,10 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           name="observacoes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Observações</FormLabel>
+              <FormLabel>{tMembers('observationsLabel')}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Notas internas sobre o membro..."
+                  placeholder={tMembers('internalNotes')}
                   className="min-h-[100px]"
                   {...field}
                 />
@@ -472,11 +481,11 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" disabled={uploading$.get()}>
             {uploading$.get() && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {member ? "Atualizar" : "Adicionar"}
+            {member ? t('update') : t('add')}
           </Button>
         </div>
       </form>

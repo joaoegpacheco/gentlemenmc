@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,7 @@ import { supabase } from "@/hooks/use-supabase";
 interface Props {}
 
 export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
+  const t = useTranslations('paidComandas');
   const comandas$ = useObservable<any[]>([]);
   const loading$ = useObservable(false);
   const itemsModalOpen$ = useObservable(false);
@@ -44,7 +46,7 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      message.error("Erro ao buscar comandas pagas");
+      message.error(t('errorFetchingPaidComandas'));
     } else {
       comandas$.set(data);
     }
@@ -81,7 +83,7 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Histórico de Comandas Pagas</h1>
+      <h1 className="text-xl font-bold mb-4">{t('paidComandasHistory')}</h1>
       {loading ? (
         <div className="flex justify-center py-8">
           <Spinner />
@@ -102,7 +104,7 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
               {comandasWithTotals.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma comanda paga encontrada
+                    {t('noPaidComandasFound')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -140,7 +142,7 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
       <Dialog open={itemsModalOpen} onOpenChange={itemsModalOpen$.set}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Itens da comanda de {selectedItemsRecord?.nome_convidado}</DialogTitle>
+            <DialogTitle>{t('comandaItems', { name: selectedItemsRecord?.nome_convidado })}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-2 mt-2">
             {selectedItemsRecord?.comanda_itens.map((item: any, idx: number) => (
@@ -156,13 +158,13 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
             ))}
             {selectedItemsRecord && (
               <div className="flex justify-between font-bold mt-2 pt-2 border-t">
-                <span>Total:</span>
+                <span>{t('totalLabel')}</span>
                 <span>R$ {comandasWithTotals.find(c => c.id === selectedItemsRecord.id)?.total.toFixed(2) || "0.00"}</span>
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button onClick={() => itemsModalOpen$.set(false)}>Fechar</Button>
+            <Button onClick={() => itemsModalOpen$.set(false)}>{t('close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

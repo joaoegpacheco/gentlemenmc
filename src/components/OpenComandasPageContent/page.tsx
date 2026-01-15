@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ interface AdminData {
 }
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
+  const t = useTranslations('openComandas');
   const comandas$ = useObservable<any[]>([]);
   const loading$ = useObservable(false);
   const selectedComanda$ = useObservable<any | null>(null);
@@ -66,7 +68,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const fetchAdmins = async () => {
     const { data, error } = await supabase.from("admins").select("id, email");
     if (error) {
-      message.error("Erro ao buscar administradores");
+      message.error(t('errorFetchingAdmins'));
     } else {
       adminsList$.set(data);
     }
@@ -74,7 +76,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   const handleConfirmPay = async () => {
     if (!selectedAdmin || !adminPassword) {
-      message.warning("Selecione um admin e digite a senha");
+      message.warning(t('selectAdminAndPassword'));
       return;
     }
 
@@ -85,7 +87,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     });
 
     if (loginError) {
-      message.error("Usuário ou senha incorretos");
+      message.error(t('incorrectUserOrPassword'));
       return;
     }
 
@@ -97,7 +99,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       .single();
 
     if (fetchError || !comandaData) {
-      message.error("Erro ao buscar dados da comanda");
+      message.error(t('errorFetchingComandaData'));
       return;
     }
 
@@ -140,7 +142,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      message.error("Erro ao buscar comandas");
+      message.error(t('errorFetchingComandas'));
     } else {
       comandas$.set(data);
     }
@@ -203,7 +205,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       items: mappedItems,
     });
 
-    message.success("Bebida adicionada");
+    message.success(t('drinkAdded'));
     selectedComanda$.set(null);
     newDrink$.set("");
     quantity$.set(1);
@@ -217,7 +219,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Comandas Abertas</h1>
+      <h1 className="text-xl font-bold mb-4">{t('openComandas')}</h1>
       {loading ? (
         <div className="flex justify-center py-8">
           <Spinner />
@@ -238,8 +240,8 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             <TableBody>
               {comandasWithTotals.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma comanda aberta
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    {t('noOpenComandas')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -295,7 +297,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && selectedComanda$.set(null)}>
         <DialogContent className="max-w-6xl">
           <DialogHeader>
-            <DialogTitle>Adicionar bebida à comanda de {selectedComanda?.nome_convidado}</DialogTitle>
+            <DialogTitle>{t('addDrinkToComanda', { name: selectedComanda?.nome_convidado })}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

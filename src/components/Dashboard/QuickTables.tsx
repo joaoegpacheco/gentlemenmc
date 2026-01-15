@@ -14,6 +14,7 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDateTime } from "@/utils/formatDateTime";
 import Image from "next/image";
 import { ArrowUp, ArrowDown } from "lucide-react";
+import { useTranslations } from 'next-intl';
 import type {
   RecentOrder,
   MemberDebt,
@@ -33,6 +34,8 @@ export function QuickTables({
   recentStockMovements,
   loading,
 }: QuickTablesProps) {
+  const t = useTranslations('quickTables');
+  
   if (loading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -59,12 +62,12 @@ export function QuickTables({
       {/* Recent Paid Orders */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Últimas Comandas Pagas</CardTitle>
+          <CardTitle className="text-lg">{t('recentPaidOrders')}</CardTitle>
         </CardHeader>
         <CardContent>
           {recentPaidOrders.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Nenhuma comanda paga recentemente
+              {t('noRecentPaidOrders')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -89,7 +92,7 @@ export function QuickTables({
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>Pago em {formatDateTime(order.payment_date)}</span>
+                    <span>{t('paidOn')} {formatDateTime(order.payment_date)}</span>
                   </div>
                 </div>
               ))}
@@ -101,12 +104,12 @@ export function QuickTables({
       {/* Members with Highest Debt */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Maiores Dívidas</CardTitle>
+          <CardTitle className="text-lg">{t('highestDebts')}</CardTitle>
         </CardHeader>
         <CardContent>
           {membersWithHighestDebt.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Nenhuma dívida pendente! 🎉
+              {t('noPendingDebts')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -134,7 +137,7 @@ export function QuickTables({
                     <div className="flex-1">
                       <p className="font-medium text-sm">{member.user_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        Dívida pendente
+                        {t('pendingDebt')}
                       </p>
                     </div>
                     <Badge variant="destructive" className="font-semibold">
@@ -151,12 +154,12 @@ export function QuickTables({
       {/* Recent Stock Movements */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Movimentações de Estoque</CardTitle>
+          <CardTitle className="text-lg">{t('stockMovements')}</CardTitle>
         </CardHeader>
         <CardContent>
           {recentStockMovements.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Nenhuma movimentação recente
+              {t('noRecentMovements')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -175,7 +178,7 @@ export function QuickTables({
                       <div className="flex-1">
                         <p className="font-medium text-sm">{movement.drink}</p>
                         <p className="text-xs text-muted-foreground">
-                          {movement.user || "Sistema"}
+                          {movement.user || t('system')}
                         </p>
                       </div>
                     </div>

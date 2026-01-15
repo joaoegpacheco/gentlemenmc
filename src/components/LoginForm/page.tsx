@@ -59,9 +59,11 @@ export const LoginForm: React.FC = () => {
     if (authToken) {
       // Se for o usuário especial, usar cookie sem expiração
       if (userEmail === "barmc@gentlemenmc.com.br") {
+        // eslint-disable-next-line react-hooks/immutability
         document.cookie = `authToken=${authToken}; path=/; Secure; SameSite=Lax`;
       } else {
         // Para outros usuários, cookie com expiração padrão de 1 dia
+        // eslint-disable-next-line react-hooks/immutability
         document.cookie = `authToken=${authToken}; path=/; max-age=86400; Secure; SameSite=Lax`;
       }
       // Redirecionar para a página privada

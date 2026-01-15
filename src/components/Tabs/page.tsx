@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormCommand } from "@/components/Form/page";
@@ -15,13 +16,13 @@ import ByLaw from "../ByLaw/page";
 import { FormMonthlyFee } from "../FormMonthlyFee/page";
 import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
-import CreateComandaPage from "@/app/nova-comanda/page";
+import CreateComandaPage from "@/app/[locale]/nova-comanda/page";
 import { OpenComandasPageContent } from "@/components/OpenComandasPageContent/page";
 import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/page";
-import EstoquePage from "@/app/admin/estoque/page";
-import HistoricoEstoquePage from "@/app/admin/estoque/historico/page";
+import EstoquePage from "@/app/[locale]/admin/estoque/page";
+import HistoricoEstoquePage from "@/app/[locale]/admin/estoque/historico/page";
 // import { CreditManager } from "../CreditManager/page";
-import MembrosPage from "@/app/admin/membros/page";
+import MembrosPage from "@/app/[locale]/admin/membros/page";
 import { UserProfileTab } from "../UserProfileTab/page";
 import { DashboardTab } from "../Dashboard/DashboardTab";
 
@@ -36,6 +37,7 @@ interface Birthday {
 }
 
 export default function TabsComponent() {
+  const t = useTranslations('tabs');
   const admin$ = useObservable<boolean | null>(null);
   const manager$ = useObservable<boolean | null>(null);
   const isBarUser$ = useObservable<boolean>(false);
@@ -93,51 +95,51 @@ export default function TabsComponent() {
   const getCurrentTabs = () => {
     if (admin) {
       return [
-        { key: "1", label: "Marcar", children: <FormCommand /> },
-        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
-        { key: "5", label: "Eventos", children: <CalendarEvents /> },
-        { key: "6", label: "Estatuto", children: <ByLaw /> },
-        { key: "18", label: "Membros", children: <MembrosPage /> },
-        { key: "20", label: "Dashboard", children: <DashboardTab /> },
-        { key: "9", label: "Confirmar pagamento", children: <FormMonthlyFee /> },
-        { key: "10", label: "Dívidas todos", children: <CardCommandAll ref={comandAllTableRef} /> },
-        { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
-        { key: "17", label: "Histórico de Comandas", children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
-        { key: "14", label: "Estoque", children: <EstoquePage /> },
-        { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
+        { key: "1", label: t('mark'), children: <FormCommand /> },
+        { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: t('events'), children: <CalendarEvents /> },
+        { key: "6", label: t('statute'), children: <ByLaw /> },
+        { key: "18", label: t('members'), children: <MembrosPage /> },
+        { key: "20", label: t('dashboard'), children: <DashboardTab /> },
+        { key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> },
+        { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
+        { key: "13", label: t('openOrders'), children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+        { key: "17", label: t('orderHistory'), children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
+        { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         // { key: "16", label: "Créditos", children: <CreditManager /> },
-        { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
+        { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
     } else if (isBarUser) {
       return [
-        { key: "1", label: "Marcar", children: <FormCommand /> },
-        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
-        { key: "12", label: "Comanda Convidado", children: <CreateComandaPage /> },
-        { key: "13", label: "Comandas em Aberto", children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
-        { key: "14", label: "Estoque", children: <EstoquePage /> },
-        { key: "6", label: "Estatuto", children: <ByLaw /> },
+        { key: "1", label: t('mark'), children: <FormCommand /> },
+        { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "12", label: t('guestOrder'), children: <CreateComandaPage /> },
+        { key: "13", label: t('openOrders'), children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
+        { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "6", label: t('statute'), children: <ByLaw /> },
       ];
     } else if (manager) {
       return [
-        { key: "1", label: "Marcar", children: <FormCommand /> },
-        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
-        { key: "5", label: "Eventos", children: <CalendarEvents /> },
-        { key: "6", label: "Estatuto", children: <ByLaw /> },
-        { key: "14", label: "Estoque", children: <EstoquePage /> },
-        { key: "15", label: "Histórico de Estoque", children: <HistoricoEstoquePage /> },
-        { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
+        { key: "1", label: t('mark'), children: <FormCommand /> },
+        { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: t('events'), children: <CalendarEvents /> },
+        { key: "6", label: t('statute'), children: <ByLaw /> },
+        { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
+        { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
     } else {
       return [
-        { key: "1", label: "Marcar", children: <FormCommand /> },
-        { key: "2", label: "Ver marcações", children: <CardCommand ref={cardComandRef} /> },
-        { key: "5", label: "Eventos", children: <CalendarEvents /> },
-        { key: "6", label: "Estatuto", children: <ByLaw /> },
-        { key: "19", label: "Meu Perfil", children: <UserProfileTab /> },
+        { key: "1", label: t('mark'), children: <FormCommand /> },
+        { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: t('events'), children: <CalendarEvents /> },
+        { key: "6", label: t('statute'), children: <ByLaw /> },
+        { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "8", label: <LogoutButton /> },
       ];
@@ -198,18 +200,24 @@ export default function TabsComponent() {
   return (
     <div className="flex flex-col w-full">
       <div className="px-5 pb-5">
-        <p className="text-sm">Aniversariantes do mês: </p>
+        <p className="text-sm">{t('birthdaysOfMonth')} </p>
         <span className="text-sm font-semibold">
           {birthdaysString}
         </span>
       </div>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full px-5">
         <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap flex-shrink-0">
-              {typeof tab.label === "string" ? tab.label : tab.label}
-            </TabsTrigger>
-          ))}
+          {tabs.map((tab) => {
+            let labelContent = tab.label;
+            if (typeof tab.label !== "string" && React.isValidElement(tab.label) && tab.label.type === LogoutButton) {
+              labelContent = React.cloneElement(tab.label as React.ReactElement, { asChild: true });
+            }
+            return (
+              <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap flex-shrink-0">
+                {labelContent}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
         {tabs.map((tab) => (
           <TabsContent key={tab.key} value={tab.key}>

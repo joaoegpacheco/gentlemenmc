@@ -13,6 +13,7 @@ import {
 import { formatCurrency } from "@/utils/formatCurrency";
 import type { DashboardStats } from "@/services/dashboardService";
 import Image from "next/image";
+import { useTranslations } from 'next-intl';
 
 interface StatsCardsProps {
   stats: DashboardStats;
@@ -20,6 +21,8 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats, loading }: StatsCardsProps) {
+  const t = useTranslations('statsCards');
+  
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -44,7 +47,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         {/* Total Debts */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Dívidas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalDebts')}</CardTitle>
             <DollarSign className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
@@ -52,7 +55,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
               {formatCurrency(stats.totalDebts)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Pendentes de pagamento
+              {t('pendingPayment')}
             </p>
           </CardContent>
         </Card>
@@ -60,7 +63,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         {/* Month Revenue */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita do Mês</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('monthRevenue')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -68,7 +71,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
               {formatCurrency(stats.monthRevenue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Mês atual
+              {t('currentMonth')}
             </p>
           </CardContent>
         </Card>
@@ -92,7 +95,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         {/* Low Stock Items */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estoque Baixo</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('lowStock')}</CardTitle>
             <Package className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
@@ -100,7 +103,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
               {stats.lowStockItems}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Menos de 5 unidades
+              {t('lessThan5Units')}
             </p>
           </CardContent>
         </Card>
@@ -108,7 +111,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         {/* Active Members */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Membros Ativos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('activeMembers')}</CardTitle>
             <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -116,7 +119,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
               {stats.activeMembers}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Status ativo
+              {t('activeStatus')}
             </p>
           </CardContent>
         </Card>
@@ -124,7 +127,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         {/* Inactive Members */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Membros Inativos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('inactiveMembers')}</CardTitle>
             <UserX className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
@@ -132,7 +135,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
               {stats.inactiveMembers}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Inativos/Suspensos
+              {t('inactiveSuspended')}
             </p>
           </CardContent>
         </Card>
@@ -141,14 +144,14 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         <Card className="sm:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Aniversariantes (próximos 7 dias)
+              {t('upcomingBirthdays')}
             </CardTitle>
             <Cake className="h-4 w-4 text-pink-500" />
           </CardHeader>
           <CardContent>
             {stats.upcomingBirthdays.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Nenhum aniversariante nos próximos 7 dias
+                {t('noUpcomingBirthdays')}
               </p>
             ) : (
               <div className="space-y-2">
@@ -184,7 +187,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
                 ))}
                 {stats.upcomingBirthdays.length > 3 && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    + {stats.upcomingBirthdays.length - 3} mais
+                    + {stats.upcomingBirthdays.length - 3} {t('more')}
                   </p>
                 )}
               </div>

@@ -1,9 +1,14 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Slot } from "@radix-ui/react-slot";
+import { Button, ButtonProps } from "@/components/ui/button";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
+import { useTranslations } from 'next-intl';
 
-export const LogoutButton: React.FC = () => {
+export const LogoutButton: React.FC<ButtonProps> = ({ asChild, variant, size, className, ...props }) => {
+  const t = useTranslations('logout');
+  const tCommon = useTranslations('common');
+  
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -13,7 +18,7 @@ export const LogoutButton: React.FC = () => {
       document.cookie = "authToken=; path=/; max-age=0;";
 
       notification.success({
-        message: "Logout realizado com sucesso!",
+        message: t('logoutSuccess'),
       });
 
       // Redirecionar para a página inicial
@@ -21,15 +26,23 @@ export const LogoutButton: React.FC = () => {
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
       notification.error({
-        message: "Falha ao fazer logout",
-        description: (error as Error).message || "Tente novamente.",
+        message: t('logoutFailed'),
+        description: (error as Error).message || t('tryAgain'),
       });
     }
   };
 
+  if (asChild) {
+    return (
+      <Slot onClick={handleLogout} {...props}>
+        {tCommon('logout')}
+      </Slot>
+    );
+  }
+
   return (
-    <Button variant="ghost" onClick={handleLogout}>
-      Sair
+    <Button variant={variant || "ghost"} size={size} className={className} onClick={handleLogout} {...props}>
+      {tCommon('logout')}
     </Button>
   );
 };

@@ -1,10 +1,12 @@
 "use client";
 import React, { useRef, useEffect } from "react";
+import { useTranslations, useLocale } from 'next-intl';
 import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import allLocales from "@fullcalendar/core/locales-all";
 import { useTheme } from "next-themes";
+import { locale } from "dayjs";
 
 const events = [
   { title: "Primeiro Encontro Gentlemen 2025", date: "2025-01-15" },

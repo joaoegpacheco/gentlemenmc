@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/utils/formatCurrency";
 import Image from "next/image";
+import { useTranslations } from 'next-intl';
 import type {
   MonthlyRevenue,
   TopDrink,
@@ -50,6 +51,7 @@ export function Charts({
   onPeriodChange,
   currentPeriod = "month",
 }: ChartsProps) {
+  const t = useTranslations('charts');
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth()
   );
@@ -83,13 +85,13 @@ export function Charts({
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle>Receita Mensal</CardTitle>
+            <CardTitle>{t('monthlyRevenue')}</CardTitle>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
               className="px-3 py-2 border rounded-md text-sm"
             >
-              <option value={-1}>Todos os meses</option>
+              <option value={-1}>{t('allMonths')}</option>
               {monthlyRevenue.map((item, idx) => (
                 <option key={idx} value={idx}>
                   {item.month} {item.year}
@@ -128,7 +130,7 @@ export function Charts({
         {/* Top 5 Best Selling Drinks */}
         <Card>
           <CardHeader>
-            <CardTitle>Top 5 Bebidas Mais Vendidas</CardTitle>
+            <CardTitle>{t('top5BestSellingDrinks')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -159,7 +161,7 @@ export function Charts({
                 >
                   <span className="font-medium">{drink.drink}</span>
                   <span className="text-muted-foreground">
-                    {drink.quantity} vendas - {formatCurrency(drink.revenue)}
+                    {drink.quantity} {t('sales')} - {formatCurrency(drink.revenue)}
                   </span>
                 </div>
               ))}
@@ -223,7 +225,7 @@ export function Charts({
                     <p className="text-sm font-medium">{member.user_name}</p>
                     <p className="text-xs text-muted-foreground">
                       {formatCurrency(member.total_consumed)} -{" "}
-                      {member.drinks_quantity} bebidas
+                      {member.drinks_quantity} {t('drinks')}
                     </p>
                   </div>
                   <div
@@ -240,7 +242,7 @@ export function Charts({
       {/* Consumption Trend */}
       <Card>
         <CardHeader>
-          <CardTitle>Tendência de Consumo (Últimos 6 Meses)</CardTitle>
+          <CardTitle>{t('consumptionTrend')}</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -289,7 +291,7 @@ export function Charts({
                 dataKey="quantity"
                 stroke="#8884D8"
                 strokeWidth={2}
-                name="Quantidade"
+                name={t('quantity')}
               />
               <Line
                 yAxisId="right"
@@ -297,7 +299,7 @@ export function Charts({
                 dataKey="revenue"
                 stroke="#00C49F"
                 strokeWidth={2}
-                name="Receita"
+                name={t('revenue')}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -309,9 +311,9 @@ export function Charts({
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <CardTitle>Análise de Investimento em Bebidas</CardTitle>
+              <CardTitle>{t('drinkInvestmentAnalysis')}</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Comparação entre receita total e volume de vendas por bebida
+                {t('investmentAnalysisDescription')}
               </p>
             </div>
             <select
@@ -319,9 +321,9 @@ export function Charts({
               onChange={(e) => onPeriodChange?.(e.target.value as "week" | "month" | "year")}
               className="px-3 py-2 border rounded-md text-sm"
             >
-              <option value="week">Última Semana</option>
-              <option value="month">Este Mês</option>
-              <option value="year">Este Ano</option>
+              <option value="week">{t('lastWeek')}</option>
+              <option value="month">{t('thisMonth')}</option>
+              <option value="year">{t('thisYear')}</option>
             </select>
           </div>
         </CardHeader>
@@ -363,10 +365,10 @@ export function Charts({
               />
               <Tooltip
                 formatter={(value: number, name: string) => [
-                  name === "Receita Total"
+                  name === t('totalRevenue') || name === "receita_total"
                     ? formatCurrency(value)
-                    : `${value} unidades`,
-                  name,
+                    : `${value} ${t('unitsLabel')}`,
+                  name === t('totalRevenue') || name === "receita_total" ? t('totalRevenue') : t('quantitySold'),
                 ]}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
@@ -379,13 +381,13 @@ export function Charts({
                 yAxisId="left"
                 dataKey="quantidade_vendida"
                 fill="#8884D8"
-                name="Quantidade Vendida"
+                name={t('quantitySold')}
               />
               <Bar
                 yAxisId="right"
                 dataKey="receita_total"
                 fill="#00C49F"
-                name="Receita Total"
+                name={t('totalRevenue')}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -415,11 +417,11 @@ export function Charts({
                     </td>
                     <td className="text-right py-2 px-2">
                       {drink.quantity_sold > 10 && drink.average_revenue_per_unit > 10 ? (
-                        <span className="text-green-600 font-semibold">Alto</span>
+                        <span className="text-green-600 font-semibold">{t('high')}</span>
                       ) : drink.quantity_sold > 5 || drink.average_revenue_per_unit > 8 ? (
-                        <span className="text-yellow-600 font-semibold">Médio</span>
+                        <span className="text-yellow-600 font-semibold">{t('medium')}</span>
                       ) : (
-                        <span className="text-gray-600">Baixo</span>
+                        <span className="text-gray-600">{t('low')}</span>
                       )}
                     </td>
                   </tr>
@@ -431,25 +433,25 @@ export function Charts({
           {/* Insights */}
           {drinkAnalysis.length > 0 && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2 text-sm">💡 Insights de Investimento</h4>
+              <h4 className="font-semibold mb-2 text-sm">{t('investmentInsights')}</h4>
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li>
-                  <strong className="text-foreground">Melhor Investimento:</strong>{" "}
-                  {drinkAnalysis[0]?.drink} - {formatCurrency(drinkAnalysis[0]?.total_revenue)} em receita
+                  <strong className="text-foreground">{t('bestInvestment')}</strong>{" "}
+                  {drinkAnalysis[0]?.drink} - {formatCurrency(drinkAnalysis[0]?.total_revenue)} {t('inRevenue')}
                 </li>
                 <li>
-                  <strong className="text-foreground">Mais Vendido:</strong>{" "}
+                  <strong className="text-foreground">{t('mostSold')}</strong>{" "}
                   {[...drinkAnalysis].sort((a, b) => b.quantity_sold - a.quantity_sold)[0]?.drink}
                   {" - "}
-                  {[...drinkAnalysis].sort((a, b) => b.quantity_sold - a.quantity_sold)[0]?.quantity_sold} unidades
+                  {[...drinkAnalysis].sort((a, b) => b.quantity_sold - a.quantity_sold)[0]?.quantity_sold} {t('unitsLabel2')}
                 </li>
                 <li>
-                  <strong className="text-foreground">Maior Valor Unitário:</strong>{" "}
+                  <strong className="text-foreground">{t('highestUnitValue')}</strong>{" "}
                   {[...drinkAnalysis].sort((a, b) => b.average_revenue_per_unit - a.average_revenue_per_unit)[0]?.drink}
                   {" - "}
                   {formatCurrency(
                     [...drinkAnalysis].sort((a, b) => b.average_revenue_per_unit - a.average_revenue_per_unit)[0]?.average_revenue_per_unit
-                  )} por unidade
+                  )} {t('perUnit')}
                 </li>
               </ul>
             </div>

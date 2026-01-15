@@ -76,6 +76,7 @@ export function MemberProfile({
   onRefresh,
 }: MemberProfileProps) {
   const t = useTranslations('common');
+  const tProfile = useTranslations('memberProfile');
   const creditBalance$ = useObservable<number>(0);
   const drinks$ = useObservable<Drink[]>([]);
   const loading$ = useObservable(false);
@@ -153,7 +154,7 @@ export function MemberProfile({
       const isBarMC = user.email === "barmc@gentlemenmc.com.br";
 
       if (!isAdmin && !isBarMC) {
-        message.error("Apenas administradores podem alterar status de membros");
+        message.error(tProfile('onlyAdminsCanChangeStatus'));
         return;
       }
 
@@ -164,9 +165,7 @@ export function MemberProfile({
 
       if (error) {
         if (error.message?.includes("row-level security") || error.code === "42501") {
-          message.error(
-            "Erro de permissão. Verifique as políticas RLS no Supabase. Veja RLS_POLICIES.md"
-          );
+          message.error(tProfile('permissionError'));
           console.error("RLS Error:", error);
         } else {
           throw error;
@@ -175,11 +174,11 @@ export function MemberProfile({
       }
 
       message.success(
-        `Membro ${newStatus === "ativo" ? "ativado" : "desativado"} com sucesso!`
+        newStatus === "ativo" ? tProfile('memberActivatedSuccessfully') : tProfile('memberDeactivatedSuccessfully')
       );
       onRefresh();
     } catch (error: any) {
-      message.error(`Erro ao alterar status: ${error.message}`);
+      message.error(tProfile('errorChangingStatus', { message: error.message }));
     }
   };
 
@@ -199,25 +198,25 @@ export function MemberProfile({
 
       if (error) throw error;
 
-      message.success("Créditos adicionados com sucesso!");
+      message.success(tProfile('creditsAddedSuccessfully'));
       bulkCreditDialogOpen$.set(false);
       bulkCreditAmount$.set(0);
       fetchMemberData();
       onRefresh();
     } catch (error: any) {
-      message.error(`Erro ao adicionar créditos: ${error.message}`);
+      message.error(tProfile('errorAddingCredits', { message: error.message }));
     }
   };
 
   const handleSendNotification = async () => {
     if (!notificationMessage.trim()) {
-      message.error("Digite uma mensagem");
+      message.error(tProfile('enterMessage'));
       return;
     }
 
     // Aqui você pode integrar com WhatsApp ou outro serviço
     // Por enquanto, apenas mostra uma mensagem de sucesso
-    message.success("Notificação enviada com sucesso!");
+    message.success(tProfile('notificationSentSuccessfully'));
     notificationDialogOpen$.set(false);
     notificationMessage$.set("");
   };
@@ -225,13 +224,13 @@ export function MemberProfile({
   const getStatusBadge = (status?: MemberStatus) => {
     switch (status) {
       case "ativo":
-        return <Badge className="bg-green-500">Ativo</Badge>;
+        return <Badge className="bg-green-500">{tProfile('active')}</Badge>;
       case "inativo":
-        return <Badge variant="secondary">Inativo</Badge>;
+        return <Badge variant="secondary">{tProfile('inactive')}</Badge>;
       case "suspenso":
-        return <Badge variant="destructive">Suspenso</Badge>;
+        return <Badge variant="destructive">{tProfile('suspended')}</Badge>;
       default:
-        return <Badge className="bg-green-500">Ativo</Badge>;
+        return <Badge className="bg-green-500">{tProfile('active')}</Badge>;
     }
   };
 
@@ -311,7 +310,7 @@ export function MemberProfile({
         <div className="flex flex-col gap-2">
           <Button onClick={onEdit} variant="outline" className="gap-2">
             <Edit className="h-4 w-4" />
-            Editar
+            {tProfile('edit')}
           </Button>
           <Button
             onClick={handleToggleStatus}
@@ -321,12 +320,12 @@ export function MemberProfile({
             {member.status === "ativo" ? (
               <>
                 <UserX className="h-4 w-4" />
-                Desativar
+                {tProfile('deactivate')}
               </>
             ) : (
               <>
                 <UserCheck className="h-4 w-4" />
-                Ativar
+                {tProfile('activate')}
               </>
             )}
           </Button>
@@ -352,17 +351,17 @@ export function MemberProfile({
             >
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="mt-2">
-                  Adicionar Créditos
+                  {tProfile('addCredits')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Adicionar Créditos em Lote</DialogTitle>
+                  <DialogTitle>{tProfile('addCreditsInBulk')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      Valor (R$)
+                      {tProfile('value')}
                     </label>
                     <InputNumber
                       value={bulkCreditAmount}
@@ -373,7 +372,7 @@ export function MemberProfile({
                     />
                   </div>
                   <Button onClick={handleBulkAddCredit} className="w-full">
-                    Adicionar
+                    {tProfile('add')}
                   </Button>
                 </div>
               </DialogContent>
@@ -400,7 +399,7 @@ export function MemberProfile({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Total de Pagamentos
+              {tProfile('totalPayments')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -408,7 +407,7 @@ export function MemberProfile({
               {formatCurrency(totalPayments)}
             </div>
             <div className="text-sm text-muted-foreground mt-1">
-              {drinks.filter((d) => d.paid === true).length} pagamentos
+              {drinks.filter((d) => d.paid === true).length} {tProfile('payments')}
             </div>
           </CardContent>
         </Card>
@@ -461,7 +460,7 @@ export function MemberProfile({
       {member.observacoes && (
         <Card>
           <CardHeader>
-            <CardTitle>Observações</CardTitle>
+            <CardTitle>{tProfile('observations')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm whitespace-pre-wrap">
@@ -492,11 +491,11 @@ export function MemberProfile({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Bebida</TableHead>
-                      <TableHead>Quantidade</TableHead>
-                      <TableHead>Valor</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{tProfile('date')}</TableHead>
+                      <TableHead>{tProfile('drink')}</TableHead>
+                      <TableHead>{tProfile('quantity')}</TableHead>
+                      <TableHead>{tProfile('amount')}</TableHead>
+                      <TableHead>{tProfile('status')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -515,9 +514,9 @@ export function MemberProfile({
                           <TableCell>{formatCurrency(total)}</TableCell>
                           <TableCell>
                             {drink.paid ? (
-                              <Badge className="bg-green-500">Pago</Badge>
+                              <Badge className="bg-green-500">{tProfile('paid')}</Badge>
                             ) : (
-                              <Badge variant="secondary">Pendente</Badge>
+                              <Badge variant="secondary">{tProfile('pending')}</Badge>
                             )}
                           </TableCell>
                         </TableRow>
@@ -529,7 +528,7 @@ export function MemberProfile({
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">
-                    Página {currentPage} de {totalPages} ({drinks.length} pedidos)
+                    {tProfile('page')} {currentPage} {tProfile('of')} {totalPages} ({drinks.length} {tProfile('orders')})
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -538,7 +537,7 @@ export function MemberProfile({
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
                     >
-                      Anterior
+                      {tProfile('previous')}
                     </Button>
                     <Button
                       variant="outline"
@@ -546,7 +545,7 @@ export function MemberProfile({
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
                     >
-                      Próxima
+                      {tProfile('next')}
                     </Button>
                   </div>
                 </div>

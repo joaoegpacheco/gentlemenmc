@@ -23,8 +23,25 @@ export function LanguageToggle() {
     router.replace(pathname, { locale: newLocale });
   };
 
-  const getLanguageName = (loc: string) => {
-    return loc === 'pt' ? 'Português' : 'English';
+  const getSystemLocale = (): string => {
+    if (typeof window === 'undefined') return 'en';
+    const systemLang = navigator.language || (navigator as any).userLanguage;
+    // Detecta se o idioma do sistema é português (pt, pt-BR, pt-PT, etc)
+    if (systemLang.toLowerCase().startsWith('pt')) {
+      return 'pt';
+    }
+    // Para qualquer outro idioma, usa inglês como padrão
+    return 'en';
+  };
+
+  const handleSystemLocale = () => {
+    const systemLocale = getSystemLocale();
+    changeLocale(systemLocale);
+  };
+
+  const isSystemLocale = () => {
+    const systemLocale = getSystemLocale();
+    return locale === systemLocale;
   };
 
   return (
@@ -37,16 +54,22 @@ export function LanguageToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem 
-          onClick={() => changeLocale('pt')}
-          className={locale === 'pt' ? 'bg-accent' : ''}
+          onClick={handleSystemLocale}
+          className={isSystemLocale() ? 'bg-accent' : ''}
         >
-          Português
+          {t('system')}
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => changeLocale('pt')}
+          className={locale === 'pt' && !isSystemLocale() ? 'bg-accent' : ''}
+        >
+          {t('portuguese')}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => changeLocale('en')}
-          className={locale === 'en' ? 'bg-accent' : ''}
+          className={locale === 'en' && !isSystemLocale() ? 'bg-accent' : ''}
         >
-          English
+          {t('english')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
