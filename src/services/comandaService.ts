@@ -11,6 +11,7 @@ type RegisterComandaParams = {
   memberName?: string;
   guestPhone?: string;
   items: ComandaItem[];
+  errorMessage?: string; // Mensagem de erro traduzida (opcional)
 };
 
 type ComandaItemUpdate = {
@@ -31,9 +32,10 @@ export async function registerComanda({
   memberName,
   guestPhone,
   items,
+  errorMessage,
 }: RegisterComandaParams) {
   if (!guestName || !guestPhone || !memberName) {
-    throw new Error("A comanda deve ter um nome de convidado, nome do integrante e telefone.");
+    throw new Error(errorMessage || "A comanda deve ter um nome de convidado, nome do integrante e telefone.");
   }
 
   // Criação da comanda

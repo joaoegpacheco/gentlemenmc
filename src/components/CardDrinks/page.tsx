@@ -12,8 +12,10 @@ import { formatDateTime } from "@/utils/formatDateTime";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { useTranslations } from 'next-intl';
 
 interface Drink {
+  id: string;
   created_at: string;
   name: string;
   drink: string;
@@ -34,6 +36,8 @@ interface AdminData {
 }
 
 export const CardCommand = forwardRef((_, ref) => {
+  const t = useTranslations('cardDrinks');
+  const tCommon = useTranslations('common');
   const userData$ = useObservable<{ id: string; email?: string } | null>(null);
   const isAdmin$ = useObservable(false);
   const isBarMC$ = useObservable(false);
@@ -173,7 +177,7 @@ export const CardCommand = forwardRef((_, ref) => {
         <div className="mb-4">
           <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
             <SelectTrigger className="w-[300px]">
-              <SelectValue placeholder="Filtrar por usuário" />
+              <SelectValue placeholder={t('filterByUser')} />
             </SelectTrigger>
             <SelectContent>
               {members.map((m) => (
@@ -189,17 +193,19 @@ export const CardCommand = forwardRef((_, ref) => {
       {userData && (
         <div className="mb-4 text-lg font-semibold">
           {isBarMC
-            ? `Bebidas marcadas na data de hoje (${todayBR})`
-            : `Total não pago: ${formatCurrency(totalAmount)}`}
+            ? t('markedDrinksToday', { date: todayBR })
+            : t('unpaidTotal', { amount: formatCurrency(totalAmount) })}
         </div>
       )}
 
       {drinksData.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8">Nenhuma bebida marcada.</div>
+        <div className="text-center text-muted-foreground py-8">
+          {t('noDrinksMarked')}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {drinksData.map((item) => (
-            <Card key={item.created_at + item.drink}>
+            <Card key={item.id || `${item.created_at}-${item.drink}-${item.name}-${item.uuid}`}>
               <CardHeader>
                 <CardTitle>
                   {isBarMC ? (
@@ -214,12 +220,12 @@ export const CardCommand = forwardRef((_, ref) => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-sm">Data: {formatDateTime(item.created_at)}</p>
-                <p className="text-sm">Quantidade: {item.quantity}</p>
-                <p className="text-sm">Valor: {formatCurrency(item.price)}</p>
+                <p className="text-sm">{t('date')}: {formatDateTime(item.created_at)}</p>
+                <p className="text-sm">{t('quantity')}: {item.quantity}</p>
+                <p className="text-sm">{t('value')}: {formatCurrency(item.price)}</p>
                 {!isBarMC && (
                   <p className="text-sm flex items-center gap-2">
-                    Pago?{" "}
+                    {t('paid')}{" "}
                     {item.paid ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : (
@@ -228,7 +234,7 @@ export const CardCommand = forwardRef((_, ref) => {
                   </p>
                 )}
                 {!isBarMC && item.user && (
-                  <p className="text-sm">Marcado por: {item.user}</p>
+                  <p className="text-sm">{t('markedBy', { user: item.user })}</p>
                 )}
               </CardContent>
             </Card>

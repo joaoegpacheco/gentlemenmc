@@ -1,8 +1,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, usePathname } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { ChevronRight, LucideIcon } from 'lucide-react';
 import { Button } from './button';

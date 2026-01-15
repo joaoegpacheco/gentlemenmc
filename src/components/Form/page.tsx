@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,11 +23,7 @@ import { supabase } from "@/hooks/use-supabase.js";
 import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
 import { drinksPricesMembers, drinksByCategory } from "@/constants/drinks";
 
-const formCommandSchema = z.object({
-  name: z.string().min(1, "Selecione ao menos um nome!"),
-  drink: z.string().min(1, "Selecione ao menos um item!"),
-  amount: z.number().min(1).default(1),
-});
+// Schema será criado dentro do componente para ter acesso às traduções
 
 type MemberType = {
   user_id: string;
@@ -34,6 +31,17 @@ type MemberType = {
 };
 
 export function FormCommand() {
+  const t = useTranslations('form');
+  const tCategories = useTranslations('categories');
+  const tPlaceholders = useTranslations('placeholders');
+  const tEstoqueService = useTranslations('estoqueService');
+  
+  const formCommandSchema = z.object({
+    name: z.string().min(1, t('selectMember')),
+    drink: z.string().min(1, t('selectItem')),
+    amount: z.number().min(1).default(1),
+  });
+  
   const form = useForm<z.infer<typeof formCommandSchema>>({
     resolver: zodResolver(formCommandSchema) as any,
     defaultValues: {
@@ -61,15 +69,15 @@ export function FormCommand() {
 
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
-    cervejas: "Cervejas",
-    cervejasPremium: "Cervejas Premium",
-    refrigerantes: "Refrigerantes",
-    bebidasNaoAlcoolicas: "Bebidas Não Alcoólicas",
-    energetico: "Energético",
-    doses: "Doses",
-    vinhos: "Vinhos",
-    snacks: "Snacks",
-    cigarros: "Cigarros",
+    cervejas: tCategories('beers'),
+    cervejasPremium: tCategories('premiumBeers'),
+    refrigerantes: tCategories('softDrinks'),
+    bebidasNaoAlcoolicas: tCategories('nonAlcoholic'),
+    energetico: tCategories('energy'),
+    doses: tCategories('shots'),
+    vinhos: tCategories('wines'),
+    snacks: tCategories('snacks'),
+    cigarros: tCategories('cigars'),
   };
 
   // Obter lista de categorias
@@ -98,7 +106,7 @@ export function FormCommand() {
         .select("user_id, user_name")
         .order("user_name", { ascending: true });
 
-      if (error) return console.error("Erro ao buscar membros:", error);
+      if (error) return console.error(t('errorFetchingMembers'), error);
 
       const membersMap = (membersData || []).reduce((acc, member) => {
         if (member.user_id) acc[member.user_id] = member;
@@ -142,7 +150,7 @@ export function FormCommand() {
 
   const handleSubmit = async (values: z.infer<typeof formCommandSchema>) => {
     if (!userId || !userName) {
-      notification.error({ message: "Selecione usuário e bebida válidos." });
+      notification.error({ message: t('selectValidUserAndDrink') });
       return;
     }
 
@@ -151,7 +159,10 @@ export function FormCommand() {
       const amount = values.amount || 1;
       const valueDrink = calculateCustomPrice(userName, values.drink || "", drinksPricesMembers[values.drink || ""] || 0);
 
-      await consumirEstoque(values.drink!, amount);
+      await consumirEstoque(values.drink!, amount, {
+        invalidDrinkOrQuantity: tEstoqueService('errors.invalidDrinkOrQuantity'),
+        insufficientStock: tEstoqueService('errors.insufficientStock', { drink: values.drink! }),
+      });
 
       const totalPrice = valueDrink * amount;
       
@@ -172,7 +183,7 @@ export function FormCommand() {
           ]);
 
           if (drinkError) {
-            notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
+            notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
             return;
           }
 
@@ -185,7 +196,7 @@ export function FormCommand() {
           ]);
 
           if (creditError) {
-            notification.error({ message: "Erro ao debitar crédito", description: creditError.message });
+            notification.error({ message: t('errorDebitingCredit'), description: creditError.message });
             return;
           }
         } else {
@@ -206,7 +217,7 @@ export function FormCommand() {
           ]);
 
           if (drinkError) {
-            notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
+            notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
             return;
           }
 
@@ -219,7 +230,7 @@ export function FormCommand() {
           ]);
 
           if (creditError) {
-            notification.error({ message: "Erro ao debitar crédito", description: creditError.message });
+            notification.error({ message: t('errorDebitingCredit'), description: creditError.message });
             return;
           }
         }
@@ -243,7 +254,7 @@ export function FormCommand() {
         }
       }
 
-      notification.success({ message: "Bebida adicionada com sucesso!" });
+      notification.success({ message: t('drinkAddedSuccessfully') });
       form.reset();
       selectedDrink$.set("");
       selectedCategory$.set("");
@@ -257,7 +268,7 @@ export function FormCommand() {
         drinkStock$.set({ ...drinkStock, [values.drink]: newStock });
       }
     } catch (err) {
-      notification.error({ message: "Houve algum erro na hora de cadastrar sua bebida. Verifique se há estoque!" });
+      notification.error({ message: t('errorRegisteringDrinkCheckStock') });
     }
   };
 
@@ -269,7 +280,7 @@ export function FormCommand() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome</FormLabel>
+              <FormLabel>{t('name')}</FormLabel>
               {Object.keys(members).length > 0 ? (
                 isMobile ? (
                   <Select
@@ -285,7 +296,7 @@ export function FormCommand() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione um membro" />
+                      <SelectValue placeholder={tPlaceholders('selectMember')} />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.values(members).map((member) => (
@@ -317,7 +328,7 @@ export function FormCommand() {
               ) : (
                 <Select disabled>
                   <SelectTrigger>
-                    <SelectValue placeholder="Carregando membros..." />
+                    <SelectValue placeholder={t('loadingMembers')} />
                   </SelectTrigger>
                 </Select>
               )}
@@ -331,7 +342,7 @@ export function FormCommand() {
           name="drink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Item</FormLabel>
+              <FormLabel>{t('item')}</FormLabel>
               {isMobile ? (
                 <>
                   <Select
@@ -362,7 +373,7 @@ export function FormCommand() {
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma bebida" />
+                        <SelectValue placeholder={tPlaceholders('selectDrink')} />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.keys(getDrinksForCategory(selectedCategory)).map(drink => {
@@ -427,7 +438,7 @@ export function FormCommand() {
                                   {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                                 </Button>
                                 <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
-                                  Estoque: {stock}
+                                  {t('stockLabel')} {stock}
                                 </span>
                               </div>
                             );
@@ -448,7 +459,7 @@ export function FormCommand() {
           name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quantidade</FormLabel>
+              <FormLabel>{t('quantity')}</FormLabel>
               <FormControl>
                 <Select
                   value={field.value?.toString() || "1"}
@@ -481,12 +492,12 @@ export function FormCommand() {
             (selectedDrink !== "" && (drinkStock[selectedDrink] || 0) < (form.watch("amount") || 1))
           }
         >
-          {form.formState.isSubmitting ? "Adicionando..." : "Adicionar"}
+          {form.formState.isSubmitting ? t('adding') : t('add')}
         </Button>
 
         {userId && (
           <div className="mt-3">
-            Crédito atual: <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+            {t('currentCredit')} <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
           </div>
         )}
 
@@ -507,7 +518,7 @@ export function FormCommand() {
         )}
 
         <div className="text-sm">
-          Data e hora agora: <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
+          {t('currentDateTime')} <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
         </div>
       </form>
     </Form>

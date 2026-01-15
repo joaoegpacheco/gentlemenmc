@@ -1,9 +1,6 @@
-import React from "react";
-import { LoginForm } from "@/components/LoginForm/page";
+import { redirect } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 
-export default function Home() {
-
-  return (
-    <LoginForm />
-  )
+export default function RootPage() {
+  redirect(`/${routing.defaultLocale}`);
 }

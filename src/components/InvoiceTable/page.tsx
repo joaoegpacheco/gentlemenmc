@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import {
   Table,
@@ -25,7 +26,7 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 
 interface Invoice {
   id: string;
@@ -46,6 +47,8 @@ interface Payment {
 }
 
 export const InvoiceTable = () => {
+  const t = useTranslations('common');
+  const tInvoiceTable = useTranslations('invoiceTable');
   const invoices$ = useObservable<Invoice[]>([]);
   const members$ = useObservable<Record<string, string>>({});
   const loading$ = useObservable(true);
@@ -73,11 +76,11 @@ export const InvoiceTable = () => {
       try {
         const { data, error } = await supabase.auth.getUser();
         if (error || !data?.user) {
-          throw new Error("Usuário não autenticado");
+          throw new Error(tInvoiceTable('userNotAuthenticated'));
         }
         user$.set(data.user);
       } catch (err) {
-        message.error("Erro ao autenticar. Redirecionando para o login.");
+        message.error(tInvoiceTable('errorAuthenticating'));
         router.push("/login");
       }
     };
@@ -85,7 +88,7 @@ export const InvoiceTable = () => {
     const fetchInvoices = async () => {
       const { data, error } = await supabase.from("notas_fiscais").select("*");
       if (error) {
-        message.error("Erro ao carregar notas fiscais");
+        message.error(tInvoiceTable('errorLoadingInvoices'));
       } else {
         invoices$.set(data);
       }
@@ -134,7 +137,7 @@ export const InvoiceTable = () => {
       .upload(fileName, file as File);
 
     if (uploadError) {
-      message.error("Erro ao fazer upload do comprovante.");
+      message.error(tInvoiceTable('errorUploadingReceipt'));
       return;
     }
 
@@ -157,9 +160,9 @@ export const InvoiceTable = () => {
     ]);
 
     if (insertError) {
-      message.error("Erro ao registrar pagamento.");
+      message.error(tInvoiceTable('errorRegisteringPayment'));
     } else {
-      message.success("Pagamento registrado com sucesso!");
+      message.success(tInvoiceTable('paymentRegisteredSuccessfully'));
       isPayModalVisible$.set(false);
       receiptFile$.set(null);
 
@@ -188,7 +191,7 @@ export const InvoiceTable = () => {
   };
 
 
-  if (!user) return <p>Carregando...</p>;
+  if (!user) return <p>{t('loading')}</p>;
 
   return (
     <div className="max-w-6xl mx-auto w-full">
@@ -204,10 +207,10 @@ export const InvoiceTable = () => {
               className="border border-gray-300 p-4 rounded-lg space-y-2"
             >
               <p>
-                <strong>Data do Evento:</strong> {formatDate(invoice.data_evento)}
+                <strong>{tInvoiceTable('eventDateLabel')}</strong> {formatDate(invoice.data_evento)}
               </p>
               <p>
-                <strong>Nomes:</strong>{" "}
+                <strong>{tInvoiceTable('names')}</strong>{" "}
                 {[
                   ...(invoice.membros?.map((id: string) => {
                     const name: string = members[id] || id;
@@ -232,13 +235,13 @@ export const InvoiceTable = () => {
                 }, [])}
               </p>
               <p>
-                <strong>Valor total da Nota:</strong> {formatCurrency(invoice.valor_total)}
+                <strong>{tInvoiceTable('totalInvoiceValueLabel')}</strong> {formatCurrency(invoice.valor_total)}
               </p>
               <p>
-                <strong>Valor por Pessoa:</strong> {formatCurrency(invoice.valor_dividido)}
+                <strong>{tInvoiceTable('valuePerPersonLabel')}</strong> {formatCurrency(invoice.valor_dividido)}
               </p>
               <p>
-                <strong>PIX:</strong>{" "}
+                <strong>{tInvoiceTable('pix')}:</strong>{" "}
                 <span
                   className="cursor-pointer text-blue-600"
                   onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
@@ -274,13 +277,13 @@ export const InvoiceTable = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Data do Evento</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>Valor total da Nota</TableHead>
-                <TableHead>Valor por Pessoa</TableHead>
-                <TableHead>PIX para Pagamento</TableHead>
-                <TableHead>Nota Fiscal</TableHead>
-                <TableHead>Ações</TableHead>
+                <TableHead>{tInvoiceTable('eventDate')}</TableHead>
+                <TableHead>{tInvoiceTable('name')}</TableHead>
+                <TableHead>{tInvoiceTable('totalInvoiceValue')}</TableHead>
+                <TableHead>{tInvoiceTable('valuePerPerson')}</TableHead>
+                <TableHead>{tInvoiceTable('pixForPayment')}</TableHead>
+                <TableHead>{tInvoiceTable('invoice')}</TableHead>
+                <TableHead>{tInvoiceTable('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -355,7 +358,7 @@ export const InvoiceTable = () => {
       <Dialog open={isPayModalVisible} onOpenChange={isPayModalVisible$.set}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Enviar Comprovante</DialogTitle>
+            <DialogTitle>{tInvoiceTable('sendReceipt')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -376,7 +379,7 @@ export const InvoiceTable = () => {
                 onClick={() => document.getElementById("receipt-upload")?.click()}
                 className="w-full"
               >
-                {receiptFile ? receiptFile.name : "Selecionar Comprovante"}
+                {receiptFile ? receiptFile.name : tInvoiceTable('selectReceipt')}
               </Button>
               {receiptFile && (
                 <Button
@@ -386,17 +389,17 @@ export const InvoiceTable = () => {
                   onClick={() => receiptFile$.set(null)}
                   className="mt-2"
                 >
-                  Remover
+                  {tInvoiceTable('remove')}
                 </Button>
               )}
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => isPayModalVisible$.set(false)}>
-              Cancelar
+              {tInvoiceTable('cancel')}
             </Button>
             <Button onClick={handlePay} disabled={!receiptFile}>
-              Confirmar Pagamento
+              {tInvoiceTable('confirmPayment')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -406,11 +409,11 @@ export const InvoiceTable = () => {
         <Dialog open={!!selectedImage} onOpenChange={() => selectedImage$.set(null)}>
           <DialogContent className="max-w-4xl">
             <DialogHeader>
-              <DialogTitle>Nota Fiscal</DialogTitle>
+              <DialogTitle>{tInvoiceTable('invoice')}</DialogTitle>
             </DialogHeader>
             <Image
               src={selectedImage}
-              alt="Nota Fiscal"
+              alt={tInvoiceTable('invoice')}
               width={800}
               height={800}
               className="object-contain w-full"

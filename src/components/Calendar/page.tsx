@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useEffect } from "react";
+import { useTranslations, useLocale } from 'next-intl';
 import { Calendar } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -44,6 +45,11 @@ const CalendarEvents = () => {
   const calendarRef = useRef(null);
   const calendarInstanceRef = useRef<Calendar | null>(null);
   const { theme, resolvedTheme } = useTheme();
+  const locale = useLocale();
+  const t = useTranslations('calendar');
+
+  // Mapear locale do next-intl para o formato do FullCalendar
+  const fullCalendarLocale = locale === 'en' ? 'en' : 'pt-br';
 
   useEffect(() => {
     if (!calendarRef.current) return;
@@ -54,25 +60,25 @@ const CalendarEvents = () => {
       events,
       eventClick: ({ event, jsEvent }) => {
         if (event.url) {
-          alert(`Clicked ${event.title}.\nWill open ${event.url} in a new tab`);
+          alert(t('alerts.clickedEvent', { title: event.title, url: event.url }));
           window.open(event.url);
           jsEvent.preventDefault();
         } else {
-          alert(event.title);
+          alert(t('alerts.eventTitle', { title: event.title }));
         }
       },
       buttonText: {
-        prev: "ant.",
-        next: "prox.",
-        prevYear: "ant.",
-        nextYear: "próx.",
-        today: "Hoje",
-        month: "Mês",
-        week: "Semana",
-        day: "Dia",
+        prev: t('buttonText.prev'),
+        next: t('buttonText.next'),
+        prevYear: t('buttonText.prevYear'),
+        nextYear: t('buttonText.nextYear'),
+        today: t('buttonText.today'),
+        month: t('buttonText.month'),
+        week: t('buttonText.week'),
+        day: t('buttonText.day'),
       },
       locales: allLocales,
-      locale: "pt-br",
+      locale: fullCalendarLocale,
       headerToolbar: {
         // left: "prev,next",
         // center: "title",
@@ -86,7 +92,7 @@ const CalendarEvents = () => {
     return () => {
       calendar.destroy();
     };
-  }, []);
+  }, [locale, t, fullCalendarLocale]);
 
   // Re-renderiza o calendário quando o tema muda
   useEffect(() => {

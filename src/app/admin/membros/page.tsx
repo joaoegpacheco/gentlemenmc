@@ -1,6 +1,10 @@
 "use client";
 
+// Force dynamic rendering to avoid build-time prerendering errors
+export const dynamic = 'force-dynamic';
+
 import React, { useEffect, useMemo } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -44,6 +48,7 @@ interface Member {
 }
 
 export default function MembrosPage() {
+  const t = useTranslations('adminMembros');
   const members$ = useObservable<Member[]>([]);
   const loading$ = useObservable(false);
   const search$ = useObservable("");
@@ -102,13 +107,13 @@ export default function MembrosPage() {
         .order("user_name", { ascending: true });
 
       if (error) {
-        message.error("Erro ao carregar membros");
+        message.error(t('errors.errorLoadingMembers'));
         console.error(error);
       } else {
         members$.set(data || []);
       }
     } catch (err) {
-      message.error("Erro ao buscar membros");
+      message.error(t('errors.errorFetchingMembers'));
     } finally {
       loading$.set(false);
     }
@@ -149,32 +154,32 @@ export default function MembrosPage() {
   const getStatusBadge = (status?: MemberStatus) => {
     switch (status) {
       case "ativo":
-        return <Badge className="bg-green-500">Ativo</Badge>;
+        return <Badge className="bg-green-500">{t('status.ativo')}</Badge>;
       case "inativo":
-        return <Badge variant="secondary">Inativo</Badge>;
+        return <Badge variant="secondary">{t('status.inativo')}</Badge>;
       case "suspenso":
-        return <Badge variant="destructive">Suspenso</Badge>;
+        return <Badge variant="destructive">{t('status.suspenso')}</Badge>;
       default:
-        return <Badge className="bg-green-500">Ativo</Badge>;
+        return <Badge className="bg-green-500">{t('status.ativo')}</Badge>;
     }
   };
 
   if (isAdmin === null) {
-    return <div className="p-6">Carregando...</div>;
+    return <div className="p-6">{t('loading')}</div>;
   }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">👥 Gestão de Membros</h1>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie informações, status e histórico dos membros
+            {t('description')}
           </p>
         </div>
         <Button onClick={handleAddMember} className="gap-2">
           <UserPlus className="h-4 w-4" />
-          Adicionar Membro
+          {t('buttons.addMember')}
         </Button>
       </div>
 
@@ -183,7 +188,7 @@ export default function MembrosPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nome, email ou telefone..."
+            placeholder={t('placeholders.search')}
             value={search}
             onChange={(e) => search$.set(e.target.value)}
             className="pl-10"
@@ -196,25 +201,25 @@ export default function MembrosPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Data de Cadastro</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead>{t('table.name')}</TableHead>
+              <TableHead>{t('table.email')}</TableHead>
+              <TableHead>{t('table.phone')}</TableHead>
+              <TableHead>{t('table.status')}</TableHead>
+              <TableHead>{t('table.registrationDate')}</TableHead>
+              <TableHead className="text-right">{t('table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
-                  Carregando...
+                  {t('loading')}
                 </TableCell>
               </TableRow>
             ) : filteredMembers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  Nenhum membro encontrado
+                  {t('table.noMembersFound')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -258,7 +263,7 @@ export default function MembrosPage() {
                         className="gap-1"
                       >
                         <Eye className="h-4 w-4" />
-                        Ver
+                        {t('buttons.view')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -267,7 +272,7 @@ export default function MembrosPage() {
                         className="gap-1"
                       >
                         <Edit className="h-4 w-4" />
-                        Editar
+                        {t('buttons.edit')}
                       </Button>
                     </div>
                   </TableCell>
@@ -282,7 +287,7 @@ export default function MembrosPage() {
       <Dialog open={profileDialogOpen} onOpenChange={profileDialogOpen$.set}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Perfil do Membro</DialogTitle>
+            <DialogTitle>{t('dialogs.memberProfile')}</DialogTitle>
           </DialogHeader>
           {selectedMember && (
             <MemberProfile
@@ -302,7 +307,7 @@ export default function MembrosPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {selectedMember ? "Editar Membro" : "Adicionar Novo Membro"}
+              {selectedMember ? t('dialogs.editMember') : t('dialogs.addNewMember')}
             </DialogTitle>
           </DialogHeader>
           <MemberForm

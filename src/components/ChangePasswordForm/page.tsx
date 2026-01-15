@@ -14,14 +14,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase.js";
+import { useTranslations } from 'next-intl';
 
-const passwordSchema = z.object({
-  newPassword: z.string().min(1, "Por favor, insira a nova senha!"),
-});
-
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+type PasswordFormValues = {
+  newPassword: string;
+};
 
 export const ChangePasswordForm = () => {
+  const t = useTranslations('changePassword');
+  
+  const passwordSchema = z.object({
+    newPassword: z.string().min(1, t('newPasswordRequired')),
+  });
+
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -36,11 +41,11 @@ export const ChangePasswordForm = () => {
       });
 
       if (error) throw error;
-      notification.success({ message: "Sua senha foi alterada com sucesso!" });
+      notification.success({ message: t('passwordChangedSuccessfully') });
       window.location.href = "/comandas";
     } catch (error: any) {
       notification.error({
-        message: `Erro ao tentar trocar sua senha: ${error.message}`,
+        message: t('errorChangingPassword', { message: error.message }),
       });
       console.error("Error changing password:", error.message);
     }
@@ -63,7 +68,7 @@ export const ChangePasswordForm = () => {
           )}
         />
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Alterando..." : "Alterar Senha"}
+          {form.formState.isSubmitting ? t('changing') : t('changePassword')}
         </Button>
       </form>
     </Form>

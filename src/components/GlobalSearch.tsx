@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import {
   CommandDialog,
   CommandEmpty,
@@ -33,100 +34,101 @@ interface SearchResult {
   category: string;
 }
 
-// Define searchable items (moved outside component to avoid recreation)
-const searchableItems: SearchResult[] = [
-    // Pages
-    {
-      id: 'dashboard',
-      title: 'Dashboard',
-      description: 'Visão geral do sistema',
-      href: '/admin/dashboard',
-      icon: LayoutDashboard,
-      category: 'Páginas',
-    },
-    {
-      id: 'membros',
-      title: 'Membros',
-      description: 'Gerenciar membros do clube',
-      href: '/admin/membros',
-      icon: Users,
-      category: 'Páginas',
-    },
-    {
-      id: 'estoque',
-      title: 'Estoque',
-      description: 'Controle de estoque',
-      href: '/admin/estoque',
-      icon: Package,
-      category: 'Páginas',
-    },
-    {
-      id: 'comandas',
-      title: 'Comandas',
-      description: 'Gerenciar comandas',
-      href: '/comandas',
-      icon: Receipt,
-      category: 'Páginas',
-    },
-    {
-      id: 'nova-comanda',
-      title: 'Nova Comanda',
-      description: 'Criar nova comanda',
-      href: '/nova-comanda',
-      icon: Receipt,
-      category: 'Ações',
-    },
-    {
-      id: 'dividas',
-      title: 'Dívidas',
-      description: 'Gerenciar dívidas',
-      href: '/admin/dividas',
-      icon: CreditCard,
-      category: 'Páginas',
-    },
-    {
-      id: 'creditos',
-      title: 'Créditos',
-      description: 'Gerenciar créditos',
-      href: '/admin/creditos',
-      icon: Wallet,
-      category: 'Páginas',
-    },
-    {
-      id: 'notificacoes',
-      title: 'Notificações',
-      description: 'Centro de notificações',
-      href: '/admin/notificacoes',
-      icon: Bell,
-      category: 'Páginas',
-    },
-    {
-      id: 'relatorios',
-      title: 'Relatórios',
-      description: 'Relatórios e análises',
-      href: '/admin/relatorios',
-      icon: FileText,
-      category: 'Páginas',
-    },
-    {
-      id: 'configuracoes',
-      title: 'Configurações',
-      description: 'Configurações do sistema',
-      href: '/admin/configuracoes',
-      icon: Settings,
-      category: 'Páginas',
-    },
-];
-
 /**
  * Global Search Component with Cmd+K shortcut
  */
 export function GlobalSearch() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
+  const tSearch = useTranslations('globalSearch');
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Define searchable items with translations
+  const searchableItems: SearchResult[] = useMemo(() => [
+    {
+      id: 'dashboard',
+      title: tSearch('items.dashboard.title'),
+      description: tSearch('items.dashboard.description'),
+      href: '/admin/dashboard',
+      icon: LayoutDashboard,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'membros',
+      title: tSearch('items.membros.title'),
+      description: tSearch('items.membros.description'),
+      href: '/admin/membros',
+      icon: Users,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'estoque',
+      title: tSearch('items.estoque.title'),
+      description: tSearch('items.estoque.description'),
+      href: '/admin/estoque',
+      icon: Package,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'comandas',
+      title: tSearch('items.comandas.title'),
+      description: tSearch('items.comandas.description'),
+      href: '/comandas',
+      icon: Receipt,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'nova-comanda',
+      title: tSearch('items.novaComanda.title'),
+      description: tSearch('items.novaComanda.description'),
+      href: '/nova-comanda',
+      icon: Receipt,
+      category: tSearch('actions'),
+    },
+    {
+      id: 'dividas',
+      title: tSearch('items.dividas.title'),
+      description: tSearch('items.dividas.description'),
+      href: '/admin/dividas',
+      icon: CreditCard,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'creditos',
+      title: tSearch('items.creditos.title'),
+      description: tSearch('items.creditos.description'),
+      href: '/admin/creditos',
+      icon: Wallet,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'notificacoes',
+      title: tSearch('items.notificacoes.title'),
+      description: tSearch('items.notificacoes.description'),
+      href: '/admin/notificacoes',
+      icon: Bell,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'relatorios',
+      title: tSearch('items.relatorios.title'),
+      description: tSearch('items.relatorios.description'),
+      href: '/admin/relatorios',
+      icon: FileText,
+      category: tSearch('pages'),
+    },
+    {
+      id: 'configuracoes',
+      title: tSearch('items.configuracoes.title'),
+      description: tSearch('items.configuracoes.description'),
+      href: '/admin/configuracoes',
+      icon: Settings,
+      category: tSearch('pages'),
+    },
+  ], [tSearch]);
 
   // Search function
   const performSearch = useCallback((searchQuery: string) => {
@@ -145,7 +147,7 @@ export function GlobalSearch() {
     });
 
     setResults(filtered);
-  }, []);
+  }, [searchableItems]);
 
   // Handle search input change
   useEffect(() => {
@@ -193,7 +195,7 @@ export function GlobalSearch() {
         className="hidden md:flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
       >
         <Search className="h-4 w-4" />
-        <span>Buscar...</span>
+        <span>{tSearch('searchPlaceholder')}</span>
         <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
           <span className="text-xs">⌘</span>K
         </kbd>
@@ -202,13 +204,13 @@ export function GlobalSearch() {
       {/* Command Dialog */}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder="Digite para buscar..."
+          placeholder={tSearch('typeToSearch')}
           value={query}
           onValueChange={setQuery}
         />
         <CommandList>
           <CommandEmpty>
-            {isLoading ? 'Buscando...' : 'Nenhum resultado encontrado.'}
+            {isLoading ? t('searching') : t('noResults')}
           </CommandEmpty>
 
           {Object.entries(groupedResults).map(([category, items], index) => (

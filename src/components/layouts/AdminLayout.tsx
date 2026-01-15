@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Sidebar, SidebarSection } from '../ui/sidebar';
 import { Breadcrumbs } from '../ui/breadcrumbs';
 import { 
@@ -29,6 +30,7 @@ interface AdminLayoutProps {
  */
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const t = useTranslations('adminLayout');
   const user = useObservable(appStore$.user);
   const isAdmin = user.admin.get();
   const isManager = user.manager.get();
@@ -36,44 +38,44 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // Define sidebar sections based on user role
   const sidebarSections: SidebarSection[] = [
     {
-      title: 'Principal',
+      title: t('main'),
       items: [
         {
-          label: 'Dashboard',
+          label: t('dashboard'),
           href: '/admin/dashboard',
           icon: LayoutDashboard,
         },
       ],
     },
     {
-      title: 'Gestão',
+      title: t('management'),
       items: [
         ...(isAdmin || isManager
           ? [
               {
-                label: 'Membros',
+                label: t('members'),
                 href: '/admin/membros',
                 icon: Users,
               },
             ]
           : []),
         {
-          label: 'Comandas',
+          label: t('orders'),
           href: '/comandas',
           icon: Receipt,
         },
         {
-          label: 'Estoque',
+          label: t('stock'),
           href: '/admin/estoque',
           icon: Package,
           items: [
             {
-              label: 'Produtos',
+              label: t('products'),
               href: '/admin/estoque',
               icon: Package,
             },
             {
-              label: 'Histórico',
+              label: t('history'),
               href: '/admin/estoque/historico',
               icon: History,
             },
@@ -82,20 +84,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       ],
     },
     {
-      title: 'Financeiro',
+      title: t('financial'),
       items: [
         {
-          label: 'Dívidas',
+          label: t('debts'),
           href: '/admin/dividas',
           icon: CreditCard,
         },
         {
-          label: 'Créditos',
+          label: t('credits'),
           href: '/admin/creditos',
           icon: Wallet,
         },
         {
-          label: 'Relatórios',
+          label: t('reports'),
           href: '/admin/relatorios',
           icon: FileText,
         },
@@ -104,20 +106,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     ...(isAdmin
       ? [
           {
-            title: 'Administração',
+            title: t('administration'),
             items: [
               {
-                label: 'Notificações',
+                label: t('notifications'),
                 href: '/admin/notificacoes',
                 icon: Bell,
               },
               {
-                label: 'Analytics',
+                label: t('analytics'),
                 href: '/admin/analytics',
                 icon: BarChart3,
               },
               {
-                label: 'Configurações',
+                label: t('settings'),
                 href: '/admin/configuracoes',
                 icon: Settings,
               },

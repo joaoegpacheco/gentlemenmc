@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { supabase } from "@/hooks/use-supabase";
 import { UserProfileForm } from "@/components/UserProfileForm/page";
@@ -17,6 +18,8 @@ interface Member {
 }
 
 export function UserProfileTab() {
+  const t = useTranslations('dashboard');
+  const tProfileTab = useTranslations('userProfileTab');
   const loading$ = useObservable(true);
   const member$ = useObservable<Member | null>(null);
   const user$ = useObservable<any>(null);
@@ -48,7 +51,7 @@ export function UserProfileTab() {
         // Mesmo se não encontrar na tabela membros, permitir acesso com dados básicos do auth
         member$.set({
           user_id: userData.user.id,
-          user_name: userData.user.user_metadata?.user_name || userData.user.email || "Usuário",
+          user_name: userData.user.user_metadata?.user_name || userData.user.email || tProfileTab('defaultUserName'),
           user_email: userData.user.email,
           foto_url: undefined,
         });
@@ -76,7 +79,7 @@ export function UserProfileTab() {
       <div className="flex items-center justify-center py-8">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-muted-foreground">Carregando perfil...</p>
+          <p className="text-muted-foreground">{t('loadingProfile')}</p>
         </div>
       </div>
     );
@@ -98,7 +101,7 @@ export function UserProfileTab() {
         <CardHeader>
           <CardTitle>{member.user_name}</CardTitle>
           <CardDescription>
-            Atualize sua senha e foto de perfil
+            {tProfileTab('updatePasswordAndPhoto')}
           </CardDescription>
         </CardHeader>
         <CardContent>

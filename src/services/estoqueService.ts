@@ -71,9 +71,16 @@ export async function getEstoqueByDrink(drink: string) {
   return data.quantity || 0;
 }
 
-export async function consumirEstoque(drink: string, quantity: number) {
+export async function consumirEstoque(
+  drink: string, 
+  quantity: number,
+  errorMessages?: {
+    invalidDrinkOrQuantity?: string;
+    insufficientStock?: string;
+  }
+) {
   if (!drink || quantity === undefined) {
-    throw new Error("Bebida ou quantidade inválida");
+    throw new Error(errorMessages?.invalidDrinkOrQuantity || "Bebida ou quantidade inválida");
   }
 
   const { data: item, error } = await supabase
@@ -83,7 +90,10 @@ export async function consumirEstoque(drink: string, quantity: number) {
     .single();
 
   if (error || !item || item.quantity < quantity) {
-    throw new Error("Estoque insuficiente para " + drink);
+    const errorMsg = errorMessages?.insufficientStock 
+      ? errorMessages.insufficientStock.replace("{drink}", drink)
+      : "Estoque insuficiente para " + drink;
+    throw new Error(errorMsg);
   }
 
   const { data: { user } } = await supabase.auth.getUser();

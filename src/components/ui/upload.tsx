@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useObservable, useValue } from "@legendapp/state/react"
+import { useTranslations } from 'next-intl'
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Upload as UploadIcon } from "lucide-react"
@@ -15,6 +16,7 @@ export interface UploadProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 
 const Upload = React.forwardRef<HTMLInputElement, UploadProps>(
   ({ className, beforeUpload, onChange, showUploadList = true, accept, ...props }, ref) => {
+    const t = useTranslations('common')
     const file$ = useObservable<File | null>(null);
     const file = useValue(file$);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null)
@@ -62,7 +64,7 @@ const Upload = React.forwardRef<HTMLInputElement, UploadProps>(
           className="w-full"
         >
           <UploadIcon className="mr-2 h-4 w-4" />
-          Selecionar arquivo
+          {t('selectFile')}
         </Button>
         {showUploadList && file && (
           <div className="text-sm text-muted-foreground">
