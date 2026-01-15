@@ -13,7 +13,7 @@ import {
 import { formatCurrency } from "@/utils/formatCurrency";
 import type { DashboardStats } from "@/services/dashboardService";
 import Image from "next/image";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface StatsCardsProps {
   stats: DashboardStats;
@@ -22,6 +22,7 @@ interface StatsCardsProps {
 
 export function StatsCards({ stats, loading }: StatsCardsProps) {
   const t = useTranslations('statsCards');
+  const locale = useLocale();
   
   if (loading) {
     return (
@@ -79,7 +80,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
         {/* Open Orders */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Comandas em Aberto</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('openOrders')}</CardTitle>
             <Receipt className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
@@ -87,7 +88,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
               {stats.openOrders}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Aguardando pagamento
+              {t('awaitingPayment')}
             </p>
           </CardContent>
         </Card>
@@ -177,7 +178,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
                         {birthday.user_name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(birthday.data_nascimento).toLocaleDateString("pt-BR", {
+                        {new Date(birthday.data_nascimento).toLocaleDateString(locale === 'en' ? 'en-US' : 'pt-BR', {
                           day: "2-digit",
                           month: "long",
                         })}

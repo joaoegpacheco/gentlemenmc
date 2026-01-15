@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +77,7 @@ export function MemberProfile({
 }: MemberProfileProps) {
   const t = useTranslations('common');
   const tProfile = useTranslations('memberProfile');
+  const locale = useLocale();
   const creditBalance$ = useObservable<number>(0);
   const drinks$ = useObservable<Drink[]>([]);
   const loading$ = useObservable(false);
@@ -140,7 +141,7 @@ export function MemberProfile({
       const user = userData?.user;
 
       if (!user) {
-        message.error("Usuário não autenticado");
+        message.error(tProfile('userNotAuthenticated'));
         return;
       }
 
@@ -301,8 +302,8 @@ export function MemberProfile({
             {member.phone && <p>📱 {member.phone}</p>}
             {member.created_at && (
               <p>
-                📅 Cadastro:{" "}
-                {new Date(member.created_at).toLocaleDateString("pt-BR")}
+                📅 {tProfile('registration')}{" "}
+                {new Date(member.created_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'pt-BR')}
               </p>
             )}
           </div>
@@ -338,7 +339,7 @@ export function MemberProfile({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
-              Créditos Disponíveis
+              {tProfile('availableCredits')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -384,13 +385,13 @@ export function MemberProfile({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Package className="h-4 w-4" />
-              Total de Pedidos
+              {tProfile('totalOrders')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalDrinksQuantity}</div>
             <div className="text-sm text-muted-foreground mt-1">
-              {drinks.length} pedidos
+              {drinks.length} {tProfile('orders')}
             </div>
           </CardContent>
         </Card>
@@ -416,7 +417,7 @@ export function MemberProfile({
       {/* Ações Rápidas */}
       <Card>
         <CardHeader>
-          <CardTitle>Ações</CardTitle>
+          <CardTitle>{tProfile('actions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -427,27 +428,27 @@ export function MemberProfile({
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <Send className="h-4 w-4" />
-                  Enviar Notificação
+                  {tProfile('sendNotification')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Enviar Notificação Personalizada</DialogTitle>
+                  <DialogTitle>{tProfile('sendCustomNotification')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      Mensagem
+                      {tProfile('message')}
                     </label>
                     <Textarea
                       value={notificationMessage}
                       onChange={(e) => notificationMessage$.set(e.target.value)}
-                      placeholder="Digite a mensagem para o membro..."
+                      placeholder={tProfile('enterMessageForMember')}
                       className="min-h-[100px]"
                     />
                   </div>
                   <Button onClick={handleSendNotification} className="w-full">
-                    Enviar
+                    {tProfile('send')}
                   </Button>
                 </div>
               </DialogContent>
@@ -475,7 +476,7 @@ export function MemberProfile({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <History className="h-4 w-4" />
-            Histórico de Pedidos
+            {tProfile('orderHistory')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -483,7 +484,7 @@ export function MemberProfile({
             <p className="text-sm text-muted-foreground">{t('loading')}</p>
           ) : drinks.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum pedido encontrado
+              {tProfile('noOrdersFound')}
             </p>
           ) : (
             <>
@@ -507,7 +508,7 @@ export function MemberProfile({
                       return (
                         <TableRow key={drink.id}>
                           <TableCell>
-                            {new Date(drink.created_at).toLocaleString("pt-BR")}
+                            {new Date(drink.created_at).toLocaleString(locale === 'en' ? 'en-US' : 'pt-BR')}
                           </TableCell>
                           <TableCell>{drink.drink || drink.name}</TableCell>
                           <TableCell>{quantity}</TableCell>

@@ -19,6 +19,17 @@ export function LanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Get locale from URL pathname to ensure it's always in sync
+  const getLocaleFromPath = (): string => {
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length > 0 && (segments[0] === 'pt' || segments[0] === 'en')) {
+      return segments[0];
+    }
+    return locale; // Fallback to useLocale if pathname doesn't have locale
+  };
+
+  const currentLocale = getLocaleFromPath();
+
   const changeLocale = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale });
   };
@@ -41,7 +52,7 @@ export function LanguageToggle() {
 
   const isSystemLocale = () => {
     const systemLocale = getSystemLocale();
-    return locale === systemLocale;
+    return currentLocale === systemLocale;
   };
 
   return (
@@ -61,13 +72,13 @@ export function LanguageToggle() {
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => changeLocale('pt')}
-          className={locale === 'pt' && !isSystemLocale() ? 'bg-accent' : ''}
+          className={currentLocale === 'pt' && !isSystemLocale() ? 'bg-accent' : ''}
         >
           {t('portuguese')}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => changeLocale('en')}
-          className={locale === 'en' && !isSystemLocale() ? 'bg-accent' : ''}
+          className={currentLocale === 'en' && !isSystemLocale() ? 'bg-accent' : ''}
         >
           {t('english')}
         </DropdownMenuItem>

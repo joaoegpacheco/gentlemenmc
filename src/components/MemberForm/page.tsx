@@ -63,13 +63,14 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
   const t = useTranslations('form');
   const tCommon = useTranslations('common');
   const tMembers = useTranslations('members');
+  const tAuth = useTranslations('auth');
   const photoFile$ = useObservable<File | null>(null);
   const uploading$ = useObservable(false);
   const photoPreview$ = useObservable<string | null>(member?.foto_url || null);
 
   const memberSchema = z.object({
     user_name: z.string().min(1, tMembers('nameRequired')),
-    user_email: z.string().email(t('auth.validation.invalidEmail')).optional().or(z.literal("")),
+    user_email: z.string().email(tAuth('validation.invalidEmail')).optional().or(z.literal("")),
     password: z.string().min(6, tMembers('passwordMinChars')).optional().or(z.literal("")),
     phone: z.string().optional(),
     status: z.enum(["ativo", "inativo", "suspenso"]),

@@ -93,11 +93,11 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Data de Pagamento</TableHead>
+                <TableHead>{t('name')}</TableHead>
+                <TableHead>{t('phone')}</TableHead>
+                <TableHead>{t('items')}</TableHead>
+                <TableHead>{t('total')}</TableHead>
+                <TableHead>{t('paymentDate')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,7 +125,7 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
                             itemsModalOpen$.set(true);
                           }}
                         >
-                          {totalQtd} bebida(s)
+                          {totalQtd} {t('drinks')}
                         </Button>
                       </TableCell>
                       <TableCell>R$ {record.total.toFixed(2)}</TableCell>

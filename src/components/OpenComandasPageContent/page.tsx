@@ -119,9 +119,9 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       .eq("id", payingComandaId);
 
     if (error) {
-      message.error("Erro ao pagar comanda");
+      message.error(t('errorPayingComanda'));
     } else {
-      message.success("Comanda paga com sucesso");
+      message.success(t('comandaPaidSuccessfully'));
       fetchComandas();
     }
 
@@ -229,12 +229,12 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Integrante</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Ações</TableHead>
+                <TableHead>{t('name')}</TableHead>
+                <TableHead>{t('member')}</TableHead>
+                <TableHead>{t('phone')}</TableHead>
+                <TableHead>{t('items')}</TableHead>
+                <TableHead>{t('total')}</TableHead>
+                <TableHead>{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -263,14 +263,14 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                             itemsModalOpen$.set(true);
                           }}
                         >
-                          {totalQtd} bebida(s)
+                          {totalQtd} {t('drinks')}
                         </Button>
                       </TableCell>
                       <TableCell>R$ {record.total.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
-                            Adicionar bebida
+                            {t('addDrink')}
                           </Button>
                           {!isBarMC && (
                             <Button
@@ -281,7 +281,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                                 payModalVisible$.set(true);
                               }}
                             >
-                              Marcar como paga
+                              {t('markAsPaid')}
                             </Button>
                           )}
                         </div>
@@ -317,15 +317,15 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
               min={1}
               value={quantity}
               onChange={(val) => quantity$.set(val ?? 1)}
-              placeholder="Quantidade"
+              placeholder={t('quantity')}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => selectedComanda$.set(null)}>
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button onClick={handleAddDrink}>
-              Adicionar
+              {t('add')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -334,7 +334,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       <Dialog open={itemsModalOpen} onOpenChange={itemsModalOpen$.set}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Itens da comanda de {selectedItemsRecord?.nome_convidado}</DialogTitle>
+            <DialogTitle>{t('comandaItems', { name: selectedItemsRecord?.nome_convidado })}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-2 mt-2">
             {selectedItemsRecord?.comanda_itens.map((item: any, idx: number) => (
@@ -350,7 +350,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             ))}
           </div>
           <DialogFooter>
-            <Button onClick={() => itemsModalOpen$.set(false)}>Fechar</Button>
+            <Button onClick={() => itemsModalOpen$.set(false)}>{t('close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -365,12 +365,12 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar pagamento da comanda</DialogTitle>
+            <DialogTitle>{t('confirmPayment')}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <Select value={selectedAdmin || ""} onValueChange={(value) => selectedAdmin$.set(value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o administrador" />
+                <SelectValue placeholder={t('selectAdministrator')} />
               </SelectTrigger>
               <SelectContent>
                 {adminsList.map((admin) => (
@@ -384,7 +384,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
               type="password"
               value={adminPassword}
               onChange={(e) => adminPassword$.set(e.target.value)}
-              placeholder="Senha do admin"
+              placeholder={t('adminPassword')}
             />
           </div>
           <DialogFooter>
@@ -394,10 +394,10 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
               adminPassword$.set("");
               payingComandaId$.set(null);
             }}>
-              Cancelar
+              {t('cancel')}
             </Button>
             <Button onClick={handleConfirmPay}>
-              Confirmar
+              {t('confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

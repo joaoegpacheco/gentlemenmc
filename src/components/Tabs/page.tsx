@@ -141,7 +141,7 @@ export default function TabsComponent() {
         { key: "6", label: t('statute'), children: <ByLaw /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
-        { key: "8", label: <LogoutButton /> },
+        { key: "11", label: <LogoutButton /> },
       ];
     }
   };
@@ -208,18 +208,23 @@ export default function TabsComponent() {
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full px-5">
         <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
           {tabs.map((tab) => {
-            let labelContent = tab.label;
-            if (typeof tab.label !== "string" && React.isValidElement(tab.label) && tab.label.type === LogoutButton) {
-              labelContent = React.cloneElement(tab.label as React.ReactElement, { asChild: true });
+            // Se não tem children, é provavelmente o LogoutButton
+            if (!tab.children) {
+              return (
+                <div key={tab.key} className="flex-shrink-0 ml-auto">
+                  {tab.label}
+                </div>
+              );
             }
+            
             return (
               <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap flex-shrink-0">
-                {labelContent}
+                {tab.label}
               </TabsTrigger>
             );
           })}
         </TabsList>
-        {tabs.map((tab) => (
+        {tabs.filter((tab) => tab.children).map((tab) => (
           <TabsContent key={tab.key} value={tab.key}>
             {tab.children}
           </TabsContent>

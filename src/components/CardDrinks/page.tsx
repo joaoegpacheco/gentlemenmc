@@ -15,6 +15,7 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import { useTranslations } from 'next-intl';
 
 interface Drink {
+  id: string;
   created_at: string;
   name: string;
   drink: string;
@@ -204,7 +205,7 @@ export const CardCommand = forwardRef((_, ref) => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {drinksData.map((item) => (
-            <Card key={item.created_at + item.drink}>
+            <Card key={item.id || `${item.created_at}-${item.drink}-${item.name}-${item.uuid}`}>
               <CardHeader>
                 <CardTitle>
                   {isBarMC ? (

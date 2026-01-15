@@ -172,7 +172,7 @@ export function Charts({
         {/* Top 5 Members Who Consume Most */}
         <Card>
           <CardHeader>
-            <CardTitle>Top 5 Membros Consumidores</CardTitle>
+            <CardTitle>{t('top5ConsumingMembers')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -253,7 +253,7 @@ export function Charts({
                 yAxisId="left"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "Quantidade",
+                  value: t('quantity'),
                   angle: -90,
                   position: "insideLeft",
                   style: { fontSize: 12 },
@@ -265,7 +265,7 @@ export function Charts({
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => `R$ ${value}`}
                 label={{
-                  value: "Receita",
+                  value: t('revenue'),
                   angle: 90,
                   position: "insideRight",
                   style: { fontSize: 12 },
@@ -345,7 +345,7 @@ export function Charts({
                 yAxisId="left"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "Quantidade Vendida",
+                  value: t('quantitySold'),
                   angle: -90,
                   position: "insideLeft",
                   style: { fontSize: 12 },
@@ -357,7 +357,7 @@ export function Charts({
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => formatCurrency(value)}
                 label={{
-                  value: "Receita Total",
+                  value: t('totalRevenue'),
                   angle: 90,
                   position: "insideRight",
                   style: { fontSize: 12 },
@@ -397,11 +397,11 @@ export function Charts({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 px-2 font-semibold">Bebida</th>
-                  <th className="text-right py-2 px-2 font-semibold">Qtd. Vendida</th>
-                  <th className="text-right py-2 px-2 font-semibold">Receita Total</th>
-                  <th className="text-right py-2 px-2 font-semibold">Preço Médio</th>
-                  <th className="text-right py-2 px-2 font-semibold">Potencial</th>
+                  <th className="text-left py-2 px-2 font-semibold">{t('drink')}</th>
+                  <th className="text-right py-2 px-2 font-semibold">{t('quantitySoldHeader')}</th>
+                  <th className="text-right py-2 px-2 font-semibold">{t('totalRevenueHeader')}</th>
+                  <th className="text-right py-2 px-2 font-semibold">{t('averagePrice')}</th>
+                  <th className="text-right py-2 px-2 font-semibold">{t('potential')}</th>
                 </tr>
               </thead>
               <tbody>
