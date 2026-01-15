@@ -24,6 +24,7 @@ export function CreditManager() {
       const { data, error } = await supabase.from("membros").select("user_id, user_name, user_email").order("user_name", { ascending: true });
       if (error) {
         notification.error({ message: t('errorLoadingMembers') });
+        notification.error({ message: t('errorLoadingMembers') });
       }
       members$.set(data || []);
     }
@@ -33,6 +34,7 @@ export function CreditManager() {
 
   const handleAddCredit = async () => {
     if (!selectedUser || amount <= 0) {
+      notification.error({ message: t('selectUserAndValidValue') });
       notification.error({ message: t('selectUserAndValidValue') });
       return;
     }
@@ -46,6 +48,7 @@ export function CreditManager() {
         .single();
 
       if (!memberData) {
+        notification.error({ message: t('userNotFound') });
         notification.error({ message: t('userNotFound') });
         return;
       }
@@ -213,6 +216,7 @@ export function CreditManager() {
           className="w-full"
         />
         <Button onClick={handleAddCredit}>
+          {t('addCredit')}
           {t('addCredit')}
         </Button>
       </div>
