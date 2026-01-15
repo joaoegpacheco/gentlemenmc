@@ -234,7 +234,7 @@ export default function CreateComandaPage() {
             </div>
           </div>
           <div className="flex flex-col w-full">
-            <label className="text-sm mb-1">Telefone do convidado</label>
+            <label className="text-sm mb-1">{t('labels.guestPhone')}</label>
             <Input
               placeholder="(XX) 9XXXX-XXXX"
               value={guestPhone}
@@ -383,11 +383,11 @@ export default function CreateComandaPage() {
                             {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                           </Button>
                           <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
-                            Estoque: {stock}
+                            {t('labels.stock', { stock })}
                           </span>
                           {quantityInCart > 0 && (
                             <span className="text-xs text-blue-600 font-medium">
-                              No carrinho: {quantityInCart}
+                              {t('labels.inCart', { quantity: quantityInCart })}
                             </span>
                           )}
                         </div>

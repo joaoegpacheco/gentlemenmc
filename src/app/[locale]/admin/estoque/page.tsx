@@ -172,11 +172,11 @@ export default function EstoquePage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">📦 Controle de Estoque</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('stockControl')}</h2>
 
       {/* Formulário de Adição */}
       <div className="border p-4 rounded-xl shadow-sm mb-6 bg-card">
-        <h4 className="text-lg font-semibold mb-4">Adicionar ou atualizar bebida</h4>
+        <h4 className="text-lg font-semibold mb-4">{t('addOrUpdateDrink')}</h4>
         <div className="flex flex-col md:flex-row gap-4">
           <Popover open={drinkPopoverOpen} onOpenChange={drinkPopoverOpen$.set}>
             <PopoverTrigger asChild>
@@ -194,7 +194,7 @@ export default function EstoquePage() {
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
               <div className="p-2">
                 <Input
-                  placeholder="Buscar bebida..."
+                  placeholder={t('searchDrink')}
                   value={drinkSearch}
                   onChange={(e) => drinkSearch$.set(e.target.value)}
                   className="mb-2"
@@ -284,13 +284,13 @@ export default function EstoquePage() {
                 className="cursor-pointer"
                 onClick={() => handleSort("drink")}
               >
-                Bebida {sortedColumn === "drink" && (sortDirection === "asc" ? "↑" : "↓")}
+                {t('drinkColumn')} {sortedColumn === "drink" && (sortDirection === "asc" ? "↑" : "↓")}
               </TableHead>
               <TableHead 
                 className="cursor-pointer"
                 onClick={() => handleSort("quantity")}
               >
-                Quantidade {sortedColumn === "quantity" && (sortDirection === "asc" ? "↑" : "↓")}
+                {t('quantityColumn')} {sortedColumn === "quantity" && (sortDirection === "asc" ? "↑" : "↓")}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -323,7 +323,7 @@ export default function EstoquePage() {
       {sortedStock.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-muted-foreground">
-            Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, sortedStock.length)} de {sortedStock.length} itens
+            {t('showingItems', { start: ((currentPage - 1) * pageSize) + 1, end: Math.min(currentPage * pageSize, sortedStock.length), total: sortedStock.length })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -332,7 +332,7 @@ export default function EstoquePage() {
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              Anterior
+              {tCommon('previousPage')}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1)

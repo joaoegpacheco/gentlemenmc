@@ -35,7 +35,7 @@ type LogType = {
 };
 
 export default function HistoricoEstoquePage() {
-  const t = useTranslations();
+  const t = useTranslations('adminEstoqueHistorico');
   const logs$ = useObservable<LogType[]>([]);
   const startDate$ = useObservable<Date | undefined>(undefined);
   const endDate$ = useObservable<Date | undefined>(undefined);
