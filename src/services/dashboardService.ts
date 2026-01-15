@@ -175,7 +175,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 // Buscar receita mensal histórica
-export async function getMonthlyRevenue(monthsBack: number = 12): Promise<MonthlyRevenue[]> {
+export async function getMonthlyRevenue(monthsBack: number = 12, locale: string = "pt-BR"): Promise<MonthlyRevenue[]> {
   try {
     const result: MonthlyRevenue[] = [];
     const today = new Date();
@@ -211,7 +211,7 @@ export async function getMonthlyRevenue(monthsBack: number = 12): Promise<Monthl
       }, 0) || 0;
 
       result.push({
-        month: monthDate.toLocaleDateString("pt-BR", { month: "short" }),
+        month: monthDate.toLocaleDateString(locale === "en" ? "en-US" : "pt-BR", { month: "short" }),
         revenue: drinksRevenue + ordersRevenue,
         year: monthDate.getFullYear(),
       });
@@ -225,7 +225,7 @@ export async function getMonthlyRevenue(monthsBack: number = 12): Promise<Monthl
 }
 
 // Top 5 bebidas mais vendidas
-export async function getTopDrinks(limit: number = 5): Promise<TopDrink[]> {
+export async function getTopDrinks(limit: number = 5, fallbackNoName: string = "Sem nome"): Promise<TopDrink[]> {
   try {
     // Bebidas da tabela "bebidas"
     const { data: drinks } = await supabase
@@ -276,7 +276,7 @@ export async function getTopDrinks(limit: number = 5): Promise<TopDrink[]> {
 }
 
 // Top 5 membros que mais consomem
-export async function getTopMembers(limit: number = 5): Promise<TopMember[]> {
+export async function getTopMembers(limit: number = 5, fallbackUnknown: string = "Desconhecido"): Promise<TopMember[]> {
   try {
     const { data: members } = await supabase
       .from("membros")
@@ -319,7 +319,7 @@ export async function getTopMembers(limit: number = 5): Promise<TopMember[]> {
 }
 
 // Membros com maior dívida
-export async function getMembersWithHighestDebt(limit: number = 5): Promise<MemberDebt[]> {
+export async function getMembersWithHighestDebt(limit: number = 5, fallbackUnknown: string = "Desconhecido"): Promise<MemberDebt[]> {
   try {
     const { data: members } = await supabase
       .from("membros")
@@ -343,7 +343,7 @@ export async function getMembersWithHighestDebt(limit: number = 5): Promise<Memb
       .map(([user_id, debt]) => {
         const member = members?.find((m) => m.user_id === user_id);
         return {
-          user_name: member?.user_name || "Desconhecido",
+          user_name: member?.user_name || fallbackUnknown,
           foto_url: member?.foto_url,
           debt,
         };
@@ -360,7 +360,7 @@ export async function getMembersWithHighestDebt(limit: number = 5): Promise<Memb
 }
 
 // Últimas comandas pagas
-export async function getRecentPaidOrders(limit: number = 10): Promise<RecentOrder[]> {
+export async function getRecentPaidOrders(limit: number = 10, fallbackNoName: string = "Sem nome"): Promise<RecentOrder[]> {
   try {
     const { data: orders } = await supabase
       .from("comandas")
@@ -409,7 +409,7 @@ export async function getRecentStockMovements(limit: number = 10): Promise<Stock
 }
 
 // Tendência de consumo por período (últimos 6 meses)
-export async function getConsumptionTrend(monthsBack: number = 6): Promise<ConsumptionTrend[]> {
+export async function getConsumptionTrend(monthsBack: number = 6, locale: string = "pt-BR"): Promise<ConsumptionTrend[]> {
   try {
     const result: ConsumptionTrend[] = [];
     const today = new Date();
@@ -463,7 +463,8 @@ export async function getConsumptionTrend(monthsBack: number = 6): Promise<Consu
 
 // Análise de bebidas por período (semana, mês ou ano)
 export async function getDrinkAnalysisByPeriod(
-  period: "week" | "month" | "year"
+  period: "week" | "month" | "year",
+  fallbackNoName: string = "Sem nome"
 ): Promise<DrinkAnalysis[]> {
   try {
     let startDate: Date;
@@ -502,7 +503,7 @@ export async function getDrinkAnalysisByPeriod(
 
     // Processar bebidas da tabela "bebidas"
     drinks?.forEach((b) => {
-      const drink = b.drink || "Sem nome";
+      const drink = b.drink || fallbackNoName;
       const current = drinksMap.get(drink) || { quantity: 0, revenue: 0 };
       drinksMap.set(drink, {
         quantity: current.quantity + 1,
@@ -513,7 +514,7 @@ export async function getDrinkAnalysisByPeriod(
     // Processar itens de comandas
     orders?.forEach((c) => {
       (c.comanda_itens as any[])?.forEach((item) => {
-        const drink = item.bebida_nome || "Sem nome";
+        const drink = item.bebida_nome || fallbackNoName;
         const current = drinksMap.get(drink) || { quantity: 0, revenue: 0 };
         drinksMap.set(drink, {
           quantity: current.quantity + item.quantidade,
