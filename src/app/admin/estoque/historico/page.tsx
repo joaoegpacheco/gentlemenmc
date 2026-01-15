@@ -1,5 +1,8 @@
 "use client";
 
+// Force dynamic rendering to avoid build-time prerendering errors
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
