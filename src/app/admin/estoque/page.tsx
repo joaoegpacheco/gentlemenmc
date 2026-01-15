@@ -35,6 +35,7 @@ export default function EstoquePage() {
   const stock$ = useObservable<EstoqueType[]>([]);
   const drink$ = useObservable("");
   const quantity$ = useObservable<number>(1);
+  const valuePrice$ = useObservable<string>("");
   const loading$ = useObservable(false);
   const search$ = useObservable("");
   const sortedColumn$ = useObservable<"drink" | "quantity" | null>(null);
@@ -47,6 +48,7 @@ export default function EstoquePage() {
   const stock = useValue(stock$);
   const drink = useValue(drink$);
   const quantity = useValue(quantity$);
+  const valuePrice = useValue(valuePrice$);
   const loading = useValue(loading$);
   const search = useValue(search$);
   const sortedColumn = useValue(sortedColumn$);
@@ -76,12 +78,19 @@ export default function EstoquePage() {
       return;
     }
 
+    const priceValue = valuePrice ? parseFloat(valuePrice.replace(/[^\d,.-]/g, "").replace(",", ".")) : null;
+    if (priceValue !== null && (isNaN(priceValue) || priceValue < 0)) {
+      message.error("Informe um valor válido");
+      return;
+    }
+
     loading$.set(true);
     try {
-      await addOrUpdateEstoque(drink.trim(), quantity);
+      await addOrUpdateEstoque(drink.trim(), quantity, priceValue);
       message.success("Estoque atualizado!");
       drink$.set("");
       quantity$.set(1);
+      valuePrice$.set("");
       await fetchStock();
     } catch {
       message.error("Erro ao atualizar estoque");
@@ -228,6 +237,24 @@ export default function EstoquePage() {
             }}
             className="w-full md:w-32"
             placeholder="Quantidade"
+          />
+          <Input
+            type="text"
+            inputMode="decimal"
+            value={valuePrice}
+            onChange={(e) => {
+              let value = e.target.value;
+              // Remove tudo exceto números, vírgula e ponto
+              value = value.replace(/[^\d,.-]/g, "");
+              // Permite apenas uma vírgula ou ponto
+              const parts = value.split(/[,.]/);
+              if (parts.length > 2) {
+                value = parts[0] + "." + parts.slice(1).join("");
+              }
+              valuePrice$.set(value);
+            }}
+            className="w-full md:w-32"
+            placeholder="Valor pago (R$)"
           />
           <Button onClick={handleAdd} disabled={loading}>
             {loading ? "Carregando..." : "Adicionar ao estoque"}

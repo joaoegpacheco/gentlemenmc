@@ -27,7 +27,7 @@ import { updateComanda } from "@/services/comandaService";
 import { drinksPricesGuests } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
 
-interface Props {}
+interface Props { }
 
 interface AdminData {
   email: string;
@@ -39,10 +39,11 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const loading$ = useObservable(false);
   const selectedComanda$ = useObservable<any | null>(null);
   const newDrink$ = useObservable<string>("");
+  const isBarMC$ = useObservable<boolean>(false);
   const quantity$ = useObservable<number>(1);
   const payModalVisible$ = useObservable(false);
   const adminsList$ = useObservable<AdminData[]>([]);
-  const selectedAdmin$ = useObservable<string | null>(null); // email
+  const selectedAdmin$ = useObservable<string | null>(null);
   const adminPassword$ = useObservable("");
   const payingComandaId$ = useObservable<number | null>(null);
   const itemsModalOpen$ = useObservable(false);
@@ -52,6 +53,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const loading = useValue(loading$);
   const selectedComanda = useValue(selectedComanda$);
   const newDrink = useValue(newDrink$);
+  const isBarMC = useValue(isBarMC$);
   const quantity = useValue(quantity$);
   const payModalVisible = useValue(payModalVisible$);
   const adminsList = useValue(adminsList$);
@@ -108,7 +110,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     // Após autenticar, atualiza a comanda com paga: true e valor_total
     const { error } = await supabase
       .from("comandas")
-      .update({ 
+      .update({
         paga: true,
         valor_total: valorTotal
       })
@@ -130,6 +132,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   const fetchComandas = async () => {
     loading$.set(true);
+
     const { data, error } = await supabase
       .from("comandas")
       .select("*, comanda_itens!comanda_itens_comanda_id_fkey(*)")
@@ -142,6 +145,14 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       comandas$.set(data);
     }
     loading$.set(false);
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+
+    // Caso seja o email do Bar MC
+    if (user?.email === "barmc@gentlemenmc.com.br") {
+      isBarMC$.set(true);
+      return;
+    }
   };
 
   useEffect(() => {
@@ -217,6 +228,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>Integrante</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>Itens</TableHead>
                 <TableHead>Total</TableHead>
@@ -239,6 +251,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                   return (
                     <TableRow key={record.id}>
                       <TableCell>{record.nome_convidado}</TableCell>
+                      <TableCell>{record.nome_integrante}</TableCell>
                       <TableCell>{record.telefone_convidado}</TableCell>
                       <TableCell>
                         <Button
@@ -257,16 +270,18 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                           <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
                             Adicionar bebida
                           </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => {
-                              payingComandaId$.set(record.id);
-                              fetchAdmins();
-                              payModalVisible$.set(true);
-                            }}
-                          >
-                            Marcar como paga
-                          </Button>
+                          {!isBarMC && (
+                            <Button
+                              variant="destructive"
+                              onClick={() => {
+                                payingComandaId$.set(record.id);
+                                fetchAdmins();
+                                payModalVisible$.set(true);
+                              }}
+                            >
+                              Marcar como paga
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -21,7 +21,7 @@ export async function logEstoque(drink: string, quantity: number, type: "entrada
   ]);
 }
 
-export async function addOrUpdateEstoque(drink: string, quantity: number) {
+export async function addOrUpdateEstoque(drink: string, quantity: number, valuePrice: number | null = null) {
   const { data: existing } = await supabase
     .from("estoque")
     .select("*")
@@ -32,16 +32,29 @@ export async function addOrUpdateEstoque(drink: string, quantity: number) {
 
   if (existing) {
     await logEstoque(drink, quantity, "entrada", user?.email || "");
+    const updateData: { quantity: number; value_price?: number | null } = { 
+      quantity: existing.quantity + quantity 
+    };
+    if (valuePrice !== null) {
+      updateData.value_price = valuePrice;
+    }
     return await supabase
       .from("estoque")
-      .update({ quantity: existing.quantity + quantity })
+      .update(updateData)
       .eq("id", existing.id);
   }
 
   await logEstoque(drink, quantity, "entrada", user?.email || "");
+  const insertData: { drink: string; quantity: number; value_price?: number | null } = { 
+    drink, 
+    quantity 
+  };
+  if (valuePrice !== null) {
+    insertData.value_price = valuePrice;
+  }
   return await supabase
     .from("estoque")
-    .insert([{ drink, quantity }]);
+    .insert([insertData]);
 }
 
 export async function getEstoqueByDrink(drink: string) {
