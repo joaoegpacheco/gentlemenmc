@@ -213,18 +213,31 @@ export default function CreateComandaPage() {
         <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="flex items-center gap-2 flex-row w-full">
             <div className="flex flex-col w-full">
+<<<<<<< HEAD
               <label className="text-sm mb-1">{t('labels.guestName')}</label>
               <Input
                 placeholder={t('placeholders.guestName')}
+=======
+              <label className="text-sm mb-1">Nome do convidado</label>
+              <Input
+                placeholder="Falano de tal"
+>>>>>>> main
                 value={guestName}
                 onChange={(e) => guestName$.set(e.target.value)}
               />
             </div>
             <div className="flex flex-col w-full">
+<<<<<<< HEAD
               <label className="text-sm mb-1">{t('labels.guestOf')}</label>
               <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={t('placeholders.selectMember')} />
+=======
+              <label className="text-sm mb-1">Convidado do</label>
+              <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione um membro" />
+>>>>>>> main
                 </SelectTrigger>
                 <SelectContent>
                   {members.map((m) => (

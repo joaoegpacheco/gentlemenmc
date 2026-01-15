@@ -107,14 +107,6 @@ export const drinksByCategory = {
       "Goma de Mascar": 2,
     },
   },
-  cigarros: {
-    guests: {
-      "Carteira de Cigarro Cohiba": 30,
-    },
-    members: {
-      "Carteira de Cigarro Cohiba": 20,
-    },
-  },
 };
 
 // Mantendo compatibilidade com código existente
