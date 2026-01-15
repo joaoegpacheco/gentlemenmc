@@ -92,11 +92,7 @@ export default function EstoquePage() {
     loading$.set(true);
     try {
       await addOrUpdateEstoque(drink.trim(), quantity, priceValue);
-<<<<<<< HEAD
-      message.success(t('success.stockUpdated'));
-=======
-      message.success("Estoque atualizado!");
->>>>>>> main
+      message.success(t('stock.stockUpdated'));
       drink$.set("");
       quantity$.set(1);
       valuePrice$.set("");
