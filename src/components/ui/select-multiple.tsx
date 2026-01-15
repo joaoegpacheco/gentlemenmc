@@ -18,7 +18,7 @@ interface SelectMultipleProps {
   placeholder?: string
 }
 
-export function SelectMultiple({ options, value, onChange, placeholder = "Selecione..." }: SelectMultipleProps) {
+export function SelectMultiple({ options, value, onChange, placeholder = t('selectMultiple') }: SelectMultipleProps) {
   const open$ = useObservable(false);
   const open = useValue(open$);
 
@@ -69,4 +69,3 @@ export function SelectMultiple({ options, value, onChange, placeholder = "Seleci
     </Popover>
   )
 }
-

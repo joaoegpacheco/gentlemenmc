@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 
 export function CreditManager() {
   const t = useTranslations('creditManager');
+  const tPlaceholders = useTranslations('placeholders');
   const members$ = useObservable<{ user_id: string; user_name: string; user_email?: string }[]>([]);
   const selectedUser$ = useObservable<string>("");
   const amount$ = useObservable<number>(0);
@@ -192,7 +193,7 @@ export function CreditManager() {
     <div className="flex flex-col gap-3">
       <Select value={selectedUser || ""} onValueChange={selectedUser$.set}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Selecione um membro" />
+          <SelectValue placeholder={tPlaceholders('selectMember')} />
         </SelectTrigger>
         <SelectContent>
           {members.map((m) => (

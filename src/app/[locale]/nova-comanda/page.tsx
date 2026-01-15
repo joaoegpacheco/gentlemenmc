@@ -275,7 +275,7 @@ export default function CreateComandaPage() {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecione uma categoria" />
+              <SelectValue placeholder={t('selectCategory')} />
             </SelectTrigger>
             <SelectContent>
               {categories.map(category => (

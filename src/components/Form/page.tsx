@@ -354,7 +354,7 @@ export function FormCommand() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma categoria" />
+                      <SelectValue placeholder={tPlaceholders('selectCategory')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(category => (
