@@ -18,7 +18,7 @@ interface SelectMultipleProps {
   placeholder?: string
 }
 
-export function SelectMultiple({ options, value, onChange, placeholder = t('selectMultiple') }: SelectMultipleProps) {
+export function SelectMultiple({ options, value, onChange, placeholder = "Selecione..." }: SelectMultipleProps) {
   const open$ = useObservable(false);
   const open = useValue(open$);
 
