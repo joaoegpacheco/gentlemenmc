@@ -110,7 +110,7 @@ export function FormCommand() {
         .select("user_id, user_name, status")
         .order("user_name", { ascending: true });
 
-      if (error) return message.error(t('errorFetchingMembers'), error);
+      if (error) return message.error(`${t('errorFetchingMembers')}: ${error.message}`);
 
       const membersMap = (membersData || []).reduce((acc, member) => {
         if (member.user_id) {
