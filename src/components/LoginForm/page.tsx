@@ -47,7 +47,6 @@ export const LoginForm: React.FC = () => {
         message: t('auth.login.errorTitle'),
         description: error.message,
       });
-      console.error("Erro ao fazer login:", error.message);
       return;
     }
 
@@ -55,8 +54,37 @@ export const LoginForm: React.FC = () => {
     const session = await supabase.auth.getSession();
     const authToken = session.data.session?.access_token;
     const userEmail = session.data.session?.user.email;
+    const userId = session.data.session?.user.id;
 
-    if (authToken) {
+    if (authToken && userId) {
+      // Verificar se o usuário existe na tabela de membros (não foi excluído)
+      // Exceto para o usuário especial barmc@gentlemenmc.com.br
+      if (userEmail !== "barmc@gentlemenmc.com.br") {
+        const { data: memberData, error: memberError } = await supabase
+          .from("membros")
+          .select("user_id")
+          .eq("user_id", userId)
+          .single();
+
+        // Se não encontrar o membro na tabela, significa que foi excluído
+        if (memberError || !memberData) {
+          // Fazer logout do usuário
+          await supabase.auth.signOut();
+          
+          // Limpar cookie
+          // eslint-disable-next-line react-hooks/immutability
+          document.cookie = `authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=Lax`;
+          
+          // Mostrar mensagem de erro
+          notification.error({
+            message: t('auth.login.userDeleted'),
+            description: t('auth.login.userDeletedDescription'),
+          });
+          
+          return;
+        }
+      }
+
       // Se for o usuário especial, usar cookie sem expiração
       if (userEmail === "barmc@gentlemenmc.com.br") {
         // eslint-disable-next-line react-hooks/immutability
@@ -80,7 +108,7 @@ export const LoginForm: React.FC = () => {
     <section className="flex flex-col items-center justify-center gap-4 w-full">
       <Image
         src="/images/gentlemenmc.png"
-        alt="Logo Gentlemen MC"
+        alt={t('auth.login.logoAlt')}
         width={200}
         height={200}
         className="object-contain"
