@@ -47,13 +47,16 @@
   "auth": {
     "login": {
       "title": "Login",
+      "logoAlt": "Gentlemen MC Logo",
       "emailLabel": "Email",
       "passwordLabel": "Password",
       "submitButton": "Enter",
       "errorTitle": "Login error",
       "tokenError": "Token retrieval error",
       "tokenErrorDescription": "Could not retrieve authentication token.",
-      "contactAdmin": "To access the system, contact the administrator"
+      "contactAdmin": "To access the system, contact the administrator",
+      "userDeleted": "User Deleted",
+      "userDeletedDescription": "This user has been deleted from the system and cannot sign in. Contact the group treasurer for more information."
     },
     "validation": {
       "invalidEmail": "Invalid email",
@@ -289,7 +292,10 @@
     "currentDateTime": "Current date and time:",
     "stockLabel": "Stock:",
     "outOfStock": "(Out of stock)",
-    "inStock": "(Stock: {stock})"
+    "inStock": "(Stock: {stock})",
+    "memberSuspended": "Member Suspended",
+    "memberSuspendedMessage": "The user {name} is suspended/blocked and cannot mark drinks. Contact the group treasurer for more information.",
+    "cannotMarkDrinksSuspended": "Cannot mark drinks for suspended members"
   },
   "members": {
     "addMember": "Add Member",
@@ -303,6 +309,21 @@
     "filterByUser": "Filter by user",
     "nameRequired": "Name is required",
     "passwordMinChars": "Password must have at least 6 characters",
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailDomain": "Email must be from domain @gentlemenmc.com.br",
+      "phoneRequired": "Phone is required",
+      "passwordRequired": "Password is required",
+      "passwordMinChars": "Password must have at least 6 characters"
+    },
+    "photoPreviewAlt": "Photo preview",
+    "emailPlaceholderName": "name",
+    "emailHint": "Type only the name (e.g. alex). The @gentlemenmc.com.br domain will be added automatically.",
+    "rlsErrorCreateMember": "Permission error. Check RLS policies in Supabase. User was created in authentication but could not be created in members table.",
+    "rlsErrorCreateMemberWithDetails": "Error creating member in table: {message}. User was created in authentication (ID: {userId}) but could not be created in members table.",
+    "errorCreateMemberTable": "Error creating member in table. User was created in authentication but could not be created in members table. Check permissions.",
+    "unknownError": "Unknown error",
     "errorCheckingBuckets": "Error checking buckets: {message}",
     "bucketNotFound": "Bucket \"membros_fotos\" not found. Please create the bucket in Supabase Dashboard: Storage → Create Bucket → Name: \"membros_fotos\" → Public: Yes",
     "errorUploadingPhoto": "Error uploading photo: {message}",
@@ -687,7 +708,9 @@
     "errors": {
       "accessDenied": "Access denied. Only administrators can access this page.",
       "errorLoadingMembers": "Error loading members",
-      "errorFetchingMembers": "Error fetching members"
+      "errorFetchingMembers": "Error fetching members",
+      "rlsDeleteError": "Permission error. Check RLS policies in Supabase for DELETE on members table.",
+      "noRecordsDeleted": "No records were deleted. Check if the member exists and you have permission to delete."
     },
     "loading": "Loading...",
     "title": "👥 Member Management",
@@ -695,7 +718,10 @@
     "buttons": {
       "addMember": "Add Member",
       "view": "View",
-      "edit": "Edit"
+      "edit": "Edit",
+      "block": "Block",
+      "unblock": "Unblock",
+      "delete": "Delete"
     },
     "placeholders": {
       "search": "Search by name, email or phone..."
@@ -718,6 +744,20 @@
       "memberProfile": "Member Profile",
       "editMember": "Edit Member",
       "addNewMember": "Add New Member"
+    },
+    "confirmations": {
+      "blockTitle": "Block Member",
+      "blockDescription": "Are you sure you want to block {name}? The member will be marked as suspended.",
+      "unblockTitle": "Unblock Member",
+      "unblockDescription": "Are you sure you want to unblock {name}? The member will be marked as active.",
+      "deleteTitle": "Delete Member",
+      "deleteDescription": "Are you sure you want to delete {name}? This action cannot be undone.",
+      "blockSuccess": "Member blocked successfully",
+      "unblockSuccess": "Member unblocked successfully",
+      "deleteSuccess": "Member deleted successfully",
+      "blockError": "Error blocking member",
+      "unblockError": "Error unblocking member",
+      "deleteError": "Error deleting member"
     }
   },
   "notFound": {

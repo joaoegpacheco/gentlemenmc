@@ -47,13 +47,16 @@
   "auth": {
     "login": {
       "title": "Entrar",
+      "logoAlt": "Logo Gentlemen MC",
       "emailLabel": "Email",
       "passwordLabel": "Senha",
       "submitButton": "Entrar",
       "errorTitle": "Erro ao fazer login",
       "tokenError": "Erro ao recuperar token",
       "tokenErrorDescription": "Não foi possível recuperar o token de autenticação.",
-      "contactAdmin": "Para acesso ao sistema, entre em contato com o administrador"
+      "contactAdmin": "Para acesso ao sistema, entre em contato com o administrador",
+      "userDeleted": "Usuário Excluído",
+      "userDeletedDescription": "Este usuário foi excluído do sistema e não pode realizar login. Entre em contato com o tesoureiro do grupo para mais informações."
     },
     "validation": {
       "invalidEmail": "Email inválido",
@@ -289,7 +292,10 @@
     "currentDateTime": "Data e hora agora:",
     "stockLabel": "Estoque:",
     "outOfStock": "(Sem estoque)",
-    "inStock": "(Estoque: {stock})"
+    "inStock": "(Estoque: {stock})",
+    "memberSuspended": "Membro Suspenso",
+    "memberSuspendedMessage": "O usuário {name} está suspenso/bloqueado e não pode marcar bebidas. Entre em contato com o tesoureiro do grupo para mais informações.",
+    "cannotMarkDrinksSuspended": "Não é possível marcar bebidas para membros suspensos"
   },
   "members": {
     "addMember": "Adicionar Membro",
@@ -303,6 +309,21 @@
     "filterByUser": "Filtrar por usuário",
     "nameRequired": "Nome é obrigatório",
     "passwordMinChars": "Senha deve ter no mínimo 6 caracteres",
+    "validation": {
+      "nameRequired": "Nome é obrigatório",
+      "emailRequired": "Email é obrigatório",
+      "emailDomain": "Email deve ser do domínio @gentlemenmc.com.br",
+      "phoneRequired": "Telefone é obrigatório",
+      "passwordRequired": "Senha é obrigatória",
+      "passwordMinChars": "Senha deve ter no mínimo 6 caracteres"
+    },
+    "photoPreviewAlt": "Preview da foto",
+    "emailPlaceholderName": "nome",
+    "emailHint": "Digite apenas o nome (ex: alex). O domínio @gentlemenmc.com.br será adicionado automaticamente.",
+    "rlsErrorCreateMember": "Erro de permissão. Verifique as políticas RLS no Supabase. O usuário foi criado na autenticação mas não foi possível criar na tabela membros.",
+    "rlsErrorCreateMemberWithDetails": "Erro ao criar membro na tabela: {message}. O usuário foi criado na autenticação (ID: {userId}) mas não foi possível criar na tabela membros.",
+    "errorCreateMemberTable": "Erro ao criar membro na tabela. O usuário foi criado na autenticação mas não foi possível criar na tabela membros. Verifique as permissões.",
+    "unknownError": "Erro desconhecido",
     "errorCheckingBuckets": "Erro ao verificar buckets: {message}",
     "bucketNotFound": "Bucket \"membros_fotos\" não encontrado. Por favor, crie o bucket no Supabase Dashboard: Storage → Create Bucket → Nome: \"membros_fotos\" → Público: Sim",
     "errorUploadingPhoto": "Erro ao fazer upload da foto: {message}",
@@ -687,7 +708,9 @@
     "errors": {
       "accessDenied": "Acesso negado. Apenas administradores podem acessar esta página.",
       "errorLoadingMembers": "Erro ao carregar membros",
-      "errorFetchingMembers": "Erro ao buscar membros"
+      "errorFetchingMembers": "Erro ao buscar membros",
+      "rlsDeleteError": "Erro de permissão. Verifique as políticas RLS no Supabase para DELETE na tabela membros.",
+      "noRecordsDeleted": "Nenhum registro foi deletado. Verifique se o membro existe e se você tem permissão para deletar."
     },
     "loading": "Carregando...",
     "title": "👥 Gestão de Membros",
@@ -695,7 +718,10 @@
     "buttons": {
       "addMember": "Adicionar Membro",
       "view": "Ver",
-      "edit": "Editar"
+      "edit": "Editar",
+      "block": "Bloquear",
+      "unblock": "Desbloquear",
+      "delete": "Excluir"
     },
     "placeholders": {
       "search": "Buscar por nome, email ou telefone..."
@@ -718,6 +744,20 @@
       "memberProfile": "Perfil do Membro",
       "editMember": "Editar Membro",
       "addNewMember": "Adicionar Novo Membro"
+    },
+    "confirmations": {
+      "blockTitle": "Bloquear Membro",
+      "blockDescription": "Tem certeza que deseja bloquear {name}? O membro será marcado como suspenso.",
+      "unblockTitle": "Desbloquear Membro",
+      "unblockDescription": "Tem certeza que deseja desbloquear {name}? O membro será marcado como ativo.",
+      "deleteTitle": "Excluir Membro",
+      "deleteDescription": "Tem certeza que deseja excluir {name}? Esta ação não pode ser desfeita.",
+      "blockSuccess": "Membro bloqueado com sucesso",
+      "unblockSuccess": "Membro desbloqueado com sucesso",
+      "deleteSuccess": "Membro excluído com sucesso",
+      "blockError": "Erro ao bloquear membro",
+      "unblockError": "Erro ao desbloquear membro",
+      "deleteError": "Erro ao excluir membro"
     }
   },
   "notFound": {
