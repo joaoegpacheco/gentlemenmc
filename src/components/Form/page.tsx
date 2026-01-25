@@ -22,12 +22,14 @@ import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
 import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
 import { drinksPricesMembers, drinksByCategory } from "@/constants/drinks";
+import { message } from "@/lib/message";
 
 // Schema será criado dentro do componente para ter acesso às traduções
 
 type MemberType = {
   user_id: string;
   user_name: string;
+  status?: "ativo" | "inativo" | "suspenso";
 };
 
 export function FormCommand() {
@@ -58,6 +60,7 @@ export function FormCommand() {
   const members$ = useObservable<Record<string, MemberType>>({});
   const userCredit$ = useObservable<number>(0);
   const drinkStock$ = useObservable<Record<string, number>>({});
+  const memberStatus$ = useObservable<"ativo" | "inativo" | "suspenso" | null>(null);
 
   const userId = useValue(userId$);
   const userName = useValue(userName$);
@@ -66,6 +69,7 @@ export function FormCommand() {
   const members = useValue(members$);
   const userCredit = useValue(userCredit$);
   const drinkStock = useValue(drinkStock$);
+  const memberStatus = useValue(memberStatus$);
 
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
@@ -103,13 +107,19 @@ export function FormCommand() {
     async function fetchMembers() {
       const { data: membersData, error } = await supabase
         .from("membros")
-        .select("user_id, user_name")
+        .select("user_id, user_name, status")
         .order("user_name", { ascending: true });
 
-      if (error) return console.error(t('errorFetchingMembers'), error);
+      if (error) return message.error(t('errorFetchingMembers'), error);
 
       const membersMap = (membersData || []).reduce((acc, member) => {
-        if (member.user_id) acc[member.user_id] = member;
+        if (member.user_id) {
+          acc[member.user_id] = {
+            user_id: member.user_id,
+            user_name: member.user_name,
+            status: member.status || "ativo"
+          };
+        }
         return acc;
       }, {} as Record<string, MemberType>);
 
@@ -151,6 +161,15 @@ export function FormCommand() {
   const handleSubmit = async (values: z.infer<typeof formCommandSchema>) => {
     if (!userId || !userName) {
       notification.error({ message: t('selectValidUserAndDrink') });
+      return;
+    }
+
+    // Verificar se o membro está suspenso
+    if (memberStatus === "suspenso") {
+      notification.error({ 
+        message: t('memberSuspended'),
+        description: t('memberSuspendedMessage', { name: userName })
+      });
       return;
     }
 
@@ -249,7 +268,7 @@ export function FormCommand() {
         ]);
 
         if (drinkError) {
-          notification.error({ message: "Erro ao cadastrar bebida", description: drinkError.message });
+          notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
           return;
         }
       }
@@ -261,6 +280,7 @@ export function FormCommand() {
       userName$.set("");
       userId$.set("");
       userCredit$.set(0);
+      memberStatus$.set(null);
       
       // Atualiza o estoque após consumo
       if (values.drink) {
@@ -290,8 +310,17 @@ export function FormCommand() {
                       if (member) {
                         userId$.set(member.user_id);
                         userName$.set(member.user_name);
+                        memberStatus$.set(member.status || "ativo");
                         field.onChange(member.user_name);
                         fetchUserCredit(member.user_id);
+                        
+                        // Verificar se o membro está suspenso
+                        if (member.status === "suspenso") {
+                          notification.error({ 
+                            message: t('memberSuspended'),
+                            description: t('memberSuspendedMessage', { name: member.user_name })
+                          });
+                        }
                       }
                     }}
                   >
@@ -316,8 +345,17 @@ export function FormCommand() {
                         onClick={() => {
                           userId$.set(member.user_id);
                           userName$.set(member.user_name);
+                          memberStatus$.set(member.status || "ativo");
                           field.onChange(member.user_name);
                           fetchUserCredit(member.user_id);
+                          
+                          // Verificar se o membro está suspenso e mostrar alerta
+                          if (member.status === "suspenso") {
+                            notification.error({ 
+                              message: t('memberSuspended'),
+                              description: t('memberSuspendedMessage', { name: member.user_name })
+                            });
+                          }
                         }}
                       >
                         {member.user_name}
@@ -388,7 +426,7 @@ export function FormCommand() {
                               disabled={!hasStock}
                               className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
                             >
-                              {drink} - {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} {hasStock ? `(Estoque: ${stock})` : '(Sem estoque)'}
+                              {drink} - {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} {hasStock ? t('inStock', { stock }) : t('outOfStock')}
                             </SelectItem>
                           );
                         })}
@@ -489,6 +527,7 @@ export function FormCommand() {
             form.formState.isSubmitting || 
             !selectedDrink || 
             !userId || 
+            memberStatus === "suspenso" ||
             (selectedDrink !== "" && (drinkStock[selectedDrink] || 0) < (form.watch("amount") || 1))
           }
         >
@@ -497,7 +536,20 @@ export function FormCommand() {
 
         {userId && (
           <div className="mt-3">
-            {t('currentCredit')} <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+            {memberStatus === "suspenso" ? (
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                <div className="text-sm font-semibold text-red-900 dark:text-red-100">
+                  ⚠️ {t('memberSuspended')}
+                </div>
+                <div className="text-sm text-red-700 dark:text-red-300 mt-1">
+                  {t('memberSuspendedMessage', { name: userName })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                {t('currentCredit')} <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+              </div>
+            )}
           </div>
         )}
 
