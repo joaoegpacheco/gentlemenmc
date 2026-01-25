@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useForm } from "react-hook-form";
@@ -30,17 +30,6 @@ import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase";
 import { Loader2 } from "lucide-react";
 
-const memberSchema = z.object({
-  user_name: z.string().min(1, "Nome é obrigatório"),
-  user_email: z.string().email("Email inválido").optional().or(z.literal("")),
-  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres").optional().or(z.literal("")),
-  phone: z.string().optional(),
-  status: z.enum(["ativo", "inativo", "suspenso"]),
-  observacoes: z.string().optional(),
-});
-
-type MemberFormValues = z.infer<typeof memberSchema>;
-
 interface Member {
   id?: number;
   user_id: string;
@@ -63,22 +52,82 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
   const t = useTranslations('form');
   const tCommon = useTranslations('common');
   const tMembers = useTranslations('members');
-  const tAuth = useTranslations('auth');
   const photoFile$ = useObservable<File | null>(null);
   const uploading$ = useObservable(false);
   const photoPreview$ = useObservable<string | null>(member?.foto_url || null);
 
-  const memberSchema = z.object({
-    user_name: z.string().min(1, tMembers('nameRequired')),
-    user_email: z.string().email(tAuth('validation.invalidEmail')).optional().or(z.literal("")),
-    password: z.string().min(6, tMembers('passwordMinChars')).optional().or(z.literal("")),
-    phone: z.string().optional(),
+  // Função para normalizar email - adiciona @gentlemenmc.com.br se não tiver
+  const normalizeEmail = (email: string): string => {
+    if (!email) return email;
+    const trimmed = email.trim();
+    if (!trimmed) return trimmed;
+    
+    // Se já tem @, verificar se é do domínio correto
+    if (trimmed.includes('@')) {
+      if (trimmed.endsWith('@gentlemenmc.com.br')) {
+        return trimmed.toLowerCase();
+      }
+      // Se tem @ mas não é do domínio correto, retornar erro será tratado na validação
+      return trimmed.toLowerCase();
+    }
+    
+    // Se não tem @, adicionar @gentlemenmc.com.br
+    return `${trimmed.toLowerCase()}@gentlemenmc.com.br`;
+  };
+
+  // Função para capitalizar primeira letra do nome (mantém o resto como está)
+  const capitalizeFirstLetter = (name: string): string => {
+    if (!name) return name;
+    // Capitalizar apenas a primeira letra, mantendo o resto como o usuário digitou
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+
+  // Schema base - todos os campos obrigatórios têm a mesma validação
+  const baseSchema = {
+    user_name: z.string()
+      .min(1, tMembers('validation.nameRequired'))
+      .transform((val) => capitalizeFirstLetter(val)),
+    user_email: z.string()
+      .min(1, tMembers('validation.emailRequired'))
+      .transform((val) => normalizeEmail(val))
+      .refine(
+        (email) => {
+          // Email é obrigatório, então não pode ser vazio
+          if (!email || email.trim() === '') return false;
+          // Validar formato de email e domínio
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) return false;
+          return email.endsWith('@gentlemenmc.com.br');
+        },
+        { message: tMembers('validation.emailDomain') }
+      ),
+    phone: z.string()
+      .min(1, tMembers('validation.phoneRequired')),
     status: z.enum(["ativo", "inativo", "suspenso"]),
     observacoes: z.string().optional(),
-  });
+  };
+
+  // Se está criando novo membro, senha é obrigatória
+  // Se está editando, senha é opcional
+  const memberSchema = !member
+    ? z.object({
+        ...baseSchema,
+        password: z.string()
+          .min(1, tMembers('validation.passwordRequired'))
+          .min(6, tMembers('validation.passwordMinChars')),
+      })
+    : z.object({
+        ...baseSchema,
+        password: z.string()
+          .min(6, tMembers('validation.passwordMinChars'))
+          .optional()
+          .or(z.literal("")),
+      });
+
+  type MemberFormValues = z.infer<typeof memberSchema>;
 
   const form = useForm<MemberFormValues>({
-    resolver: zodResolver(memberSchema),
+    resolver: zodResolver(memberSchema) as any,
     defaultValues: {
       user_name: member?.user_name || "",
       user_email: member?.user_email || "",
@@ -216,10 +265,14 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         fotoUrl = uploadedUrl;
       }
 
+      // Garantir que email está normalizado e nome está capitalizado
+      const normalizedEmail = values.user_email ? normalizeEmail(values.user_email) : null;
+      const capitalizedName = values.user_name ? capitalizeFirstLetter(values.user_name) : values.user_name;
+
       const memberData: any = {
-        user_name: values.user_name,
-        user_email: values.user_email || null,
-        phone: values.phone || null,
+        user_name: capitalizedName,
+        user_email: normalizedEmail,
+        phone: values.phone,
         status: values.status,
         observacoes: values.observacoes || null,
       };
@@ -238,7 +291,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
 
       if (member) {
         // Atualizar membro existente
-        const { data: updateData, error } = await supabase
+        const { error } = await supabase
           .from("membros")
           .update(memberData)
           .eq("user_id", member.user_id)
@@ -251,7 +304,6 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           // Se for erro de RLS, fornecer mensagem mais clara
           if (error.message?.includes("row-level security") || error.code === "42501") {
             message.error(tMembers('rlsPermissionError'));
-            console.error("RLS Error:", error);
           } else {
             throw error;
           }
@@ -260,19 +312,9 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         message.success(tMembers('memberUpdatedSuccessfully'));
       } else {
         // Criar novo membro - primeiro criar na autenticação do Supabase
-        if (!values.user_email) {
-          message.error(tMembers('emailRequiredForNewMember'));
-          uploading$.set(false);
-          return;
-        }
-
-        if (!values.password || values.password.length < 6) {
-          message.error(tMembers('passwordRequiredMinChars'));
-          uploading$.set(false);
-          return;
-        }
 
         // Chamar API route para criar usuário na autenticação
+        let createdUserId: string | null = null;
         try {
           const createUserResponse = await fetch('/api/members/create-user', {
             method: 'POST',
@@ -295,6 +337,9 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
             return;
           }
 
+          // Guardar o user_id para possível rollback
+          createdUserId = createUserData.user_id;
+
           // Usar o user_id retornado pela API
           memberData.user_id = createUserData.user_id;
 
@@ -307,19 +352,23 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           if (error) {
             // Se for erro de RLS, fornecer mensagem mais clara
             if (error.message?.includes("row-level security") || error.code === "42501") {
-              message.error(
-                "Erro de permissão. Verifique as políticas RLS no Supabase. Veja a documentação em RLS_POLICIES.md"
-              );
-              console.error("RLS Error:", error);
+              message.error(tMembers('rlsErrorCreateMember'));
             } else {
+              message.error(
+                `Erro ao criar membro na tabela: ${error.message}. O usuário foi criado na autenticação (ID: ${createdUserId}) mas não foi possível criar na tabela membros.`
+              );
               throw error;
             }
             return;
           }
-          message.success("Membro adicionado com sucesso!");
+
+          // Verificar se o membro foi realmente criado
+          if (!insertData || insertData.length === 0) {
+            return;
+          }
+          message.success(tMembers('memberAddedSuccessfully'));
         } catch (apiError: any) {
-          message.error(tMembers('errorCreatingUserUnknown', { message: apiError.message || 'Erro desconhecido' }));
-          console.error('Erro na API create-user:', apiError);
+          message.error(tMembers('errorCreatingUserUnknown', { message: apiError.message || tMembers('unknownError') }));
           uploading$.set(false);
           return;
         }
@@ -328,7 +377,6 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       onSuccess();
     } catch (error: any) {
       message.error(tMembers('errorSavingMember', { message: error.message }));
-      console.error(error);
     } finally {
       uploading$.set(false);
     }
@@ -358,7 +406,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
             onChange={handlePhotoChange}
             beforeUpload={(file) => {
               if (file.size > 5 * 1024 * 1024) {
-                message.error("A imagem deve ter no máximo 5MB");
+                message.error(tMembers('imageMaxSize'));
                 return false;
               }
               return true;
@@ -373,7 +421,29 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
             <FormItem>
               <FormLabel>{tMembers('nameLabel')}</FormLabel>
               <FormControl>
-                <Input placeholder={tMembers('fullNamePlaceholder')} {...field} />
+                <Input 
+                  placeholder={tMembers('fullNamePlaceholder')} 
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Capitalizar primeira letra apenas se necessário
+                    if (value.length > 0 && value.charAt(0) !== value.charAt(0).toUpperCase()) {
+                      const capitalized = capitalizeFirstLetter(value);
+                      field.onChange(capitalized);
+                    } else {
+                      field.onChange(value);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Garantir capitalização ao sair do campo
+                    const value = e.target.value;
+                    if (value.length > 0) {
+                      const capitalized = capitalizeFirstLetter(value);
+                      field.onChange(capitalized);
+                    }
+                    field.onBlur();
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -385,15 +455,35 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           name="user_email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email {!member && "*"}</FormLabel>
+              <FormLabel>{tMembers('emailLabel')} *</FormLabel>
               <FormControl>
                 <Input
-                  type="email"
-                  placeholder="email@exemplo.com"
+                  type="text"
+                  placeholder={tMembers('emailPlaceholderName')}
                   {...field}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Normalizar email em tempo real (adicionar @gentlemenmc.com.br se necessário)
+                    if (value && !value.includes('@')) {
+                      // Se o usuário está digitando e não tem @, deixar digitar
+                      // A normalização será feita no blur ou submit
+                      field.onChange(value.toLowerCase());
+                    } else {
+                      field.onChange(value.toLowerCase());
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Quando sair do campo, normalizar o email
+                    const normalized = normalizeEmail(e.target.value);
+                    field.onChange(normalized);
+                    field.onBlur();
+                  }}
                 />
               </FormControl>
               <FormMessage />
+              <p className="text-xs text-muted-foreground">
+                {tMembers('emailHint')}
+              </p>
             </FormItem>
           )}
         />
@@ -410,6 +500,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
                     type="password"
                     placeholder={tMembers('minimumChars')}
                     {...field}
+                    required
                   />
                 </FormControl>
                 <FormMessage />
@@ -423,7 +514,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{tMembers('phoneLabel')}</FormLabel>
+              <FormLabel>{tMembers('phoneLabel')} *</FormLabel>
               <FormControl>
                 <Input
                   type="tel"
