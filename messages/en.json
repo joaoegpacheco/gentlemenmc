@@ -41,7 +41,8 @@
     "noMembersFound": "No members found",
     "showing": "Showing",
     "of": "of",
-    "items": "items"
+    "items": "items",
+    "selectFile": "Select File"
   },
   "auth": {
     "login": {
@@ -352,6 +353,7 @@
   },
   "placeholders": {
     "selectMember": "Select a member",
+    "selectMembers": "Select members",
     "selectCategory": "Select a category",
     "selectDrink": "Select a drink",
     "selectAdmin": "Select administrator",

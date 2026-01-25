@@ -354,7 +354,7 @@ export function FormCommand() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma categoria" />
+                      <SelectValue placeholder={tPlaceholders('selectCategory')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(category => (
@@ -504,14 +504,14 @@ export function FormCommand() {
         {selectedDrink && (
           <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-              Estoque disponível de <strong>{selectedDrink}</strong>: 
+              {t('availableStockOf')} <strong>{selectedDrink}</strong>: 
               <span className={`ml-2 text-lg font-bold ${(drinkStock[selectedDrink] || 0) > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {drinkStock[selectedDrink] || 0}
               </span>
             </div>
             {form.watch("amount") > (drinkStock[selectedDrink] || 0) && (
               <div className="mt-2 text-sm text-red-600 dark:text-red-400 font-medium">
-                ⚠️ Quantidade solicitada ({form.watch("amount")}) excede o estoque disponível!
+                ⚠️ {t('stockExceeded', { amount: form.watch("amount") })}
               </div>
             )}
           </div>
