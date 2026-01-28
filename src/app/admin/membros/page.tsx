@@ -3,7 +3,7 @@
 // Force dynamic rendering to avoid build-time prerendering errors
 export const dynamic = 'force-dynamic';
 
-import React, { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
@@ -24,11 +24,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase";
-import { Plus, Search, Edit, Eye, UserPlus } from "lucide-react";
+import { Search, Edit, Eye, UserPlus, Ban, Trash2 } from "lucide-react";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { MemberProfile } from "@/components/MemberProfile/page";
 import { MemberForm } from "@/components/MemberForm/page";
 import type { SupabaseAuthUser } from "@/types/auth";
@@ -56,6 +56,9 @@ export default function MembrosPage() {
   const profileDialogOpen$ = useObservable(false);
   const formDialogOpen$ = useObservable(false);
   const isAdmin$ = useObservable<boolean | null>(null);
+  const blockDialogOpen$ = useObservable(false);
+  const deleteDialogOpen$ = useObservable(false);
+  const actionLoading$ = useObservable(false);
 
   const members = useValue(members$);
   const loading = useValue(loading$);
@@ -64,6 +67,9 @@ export default function MembrosPage() {
   const profileDialogOpen = useValue(profileDialogOpen$);
   const formDialogOpen = useValue(formDialogOpen$);
   const isAdmin = useValue(isAdmin$);
+  const blockDialogOpen = useValue(blockDialogOpen$);
+  const deleteDialogOpen = useValue(deleteDialogOpen$);
+  const actionLoading = useValue(actionLoading$);
   const router = useRouter();
 
   useEffect(() => {
@@ -86,7 +92,7 @@ export default function MembrosPage() {
       isAdmin$.set(adminStatus);
 
       if (!adminStatus && user.email !== "barmc@gentlemenmc.com.br") {
-        message.error("Acesso negado. Apenas administradores podem acessar esta página.");
+        message.error(t('errors.accessDenied'));
         router.push("/comandas");
         return;
       }
@@ -108,7 +114,6 @@ export default function MembrosPage() {
 
       if (error) {
         message.error(t('errors.errorLoadingMembers'));
-        console.error(error);
       } else {
         members$.set(data || []);
       }
@@ -149,6 +154,134 @@ export default function MembrosPage() {
     formDialogOpen$.set(false);
     selectedMember$.set(null);
     fetchMembers();
+  };
+
+  const handleBlockMember = async () => {
+    if (!selectedMember) return;
+
+    actionLoading$.set(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user as SupabaseAuthUser | null;
+
+      if (!user) {
+        message.error(t('errors.accessDenied'));
+        return;
+      }
+
+      const { data: admins } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "admin");
+
+      const isAdmin = !!(admins && admins.length > 0);
+      const isBarMC = user.email === "barmc@gentlemenmc.com.br";
+
+      if (!isAdmin && !isBarMC) {
+        message.error(t('errors.accessDenied'));
+        return;
+      }
+
+      const newStatus: MemberStatus = selectedMember.status === "suspenso" ? "ativo" : "suspenso";
+      
+      const { error } = await supabase
+        .from("membros")
+        .update({ status: newStatus })
+        .eq("user_id", selectedMember.user_id);
+
+      if (error) {
+        throw error;
+      }
+
+      message.success(
+        newStatus === "suspenso" 
+          ? t('confirmations.blockSuccess')
+          : t('confirmations.unblockSuccess')
+      );
+      blockDialogOpen$.set(false);
+      fetchMembers();
+    } catch (error: any) {
+      message.error(
+        selectedMember.status === "suspenso"
+          ? t('confirmations.unblockError')
+          : t('confirmations.blockError')
+      );
+    } finally {
+      actionLoading$.set(false);
+    }
+  };
+
+  const handleDeleteMember = async () => {
+    if (!selectedMember) return;
+
+    actionLoading$.set(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user as SupabaseAuthUser | null;
+
+      if (!user) {
+        message.error(t('errors.accessDenied'));
+        return;
+      }
+
+      const { data: admins } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "admin");
+
+      const isAdmin = !!(admins && admins.length > 0);
+      const isBarMC = user.email === "barmc@gentlemenmc.com.br";
+
+      if (!isAdmin && !isBarMC) {
+        message.error(t('errors.accessDenied'));
+        return;
+      }
+
+      // Tentar deletar usando user_id primeiro
+      let deleteResult = await supabase
+        .from("membros")
+        .delete()
+        .eq("user_id", selectedMember.user_id)
+        .select();
+
+      // Se não funcionar e tiver id, tentar deletar usando id
+      if (deleteResult.error && selectedMember.id) {
+        deleteResult = await supabase
+          .from("membros")
+          .delete()
+          .eq("id", selectedMember.id)
+          .select();
+      }
+
+      if (deleteResult.error) {
+        if (deleteResult.error.message?.includes("row-level security") || deleteResult.error.code === "42501") {
+          message.error(t('errors.rlsDeleteError'));
+        } else {
+          throw deleteResult.error;
+        }
+        return;
+      }
+
+      // Verificar se algum registro foi realmente deletado
+      if (!deleteResult.data || deleteResult.data.length === 0) {
+        message.error(t('errors.noRecordsDeleted'));
+        return;
+      }
+
+      message.success(t('confirmations.deleteSuccess'));
+      deleteDialogOpen$.set(false);
+      fetchMembers();
+    } catch (error: any) {
+      message.error(
+        error?.message 
+          ? `${t('confirmations.deleteError')}: ${error.message}` 
+          : t('confirmations.deleteError')
+      );
+    } finally {
+      actionLoading$.set(false);
+    }
   };
 
   const getStatusBadge = (status?: MemberStatus) => {
@@ -274,6 +407,30 @@ export default function MembrosPage() {
                         <Edit className="h-4 w-4" />
                         {t('buttons.edit')}
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          selectedMember$.set(member);
+                          blockDialogOpen$.set(true);
+                        }}
+                        className="gap-1"
+                      >
+                        <Ban className="h-4 w-4" />
+                        {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          selectedMember$.set(member);
+                          deleteDialogOpen$.set(true);
+                        }}
+                        className="gap-1 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {t('buttons.delete')}
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -320,6 +477,36 @@ export default function MembrosPage() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Confirmação - Bloquear/Desbloquear */}
+      <ConfirmationDialog
+        open={blockDialogOpen}
+        onOpenChange={blockDialogOpen$.set}
+        onConfirm={handleBlockMember}
+        title={
+          selectedMember?.status === "suspenso"
+            ? t('confirmations.unblockTitle')
+            : t('confirmations.blockTitle')
+        }
+        description={
+          selectedMember?.status === "suspenso"
+            ? t('confirmations.unblockDescription', { name: selectedMember?.user_name || '' })
+            : t('confirmations.blockDescription', { name: selectedMember?.user_name || '' })
+        }
+        variant={selectedMember?.status === "suspenso" ? "default" : "warning"}
+        isLoading={actionLoading}
+      />
+
+      {/* Dialog de Confirmação - Excluir */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={deleteDialogOpen$.set}
+        onConfirm={handleDeleteMember}
+        title={t('confirmations.deleteTitle')}
+        description={t('confirmations.deleteDescription', { name: selectedMember?.user_name || '' })}
+        variant="destructive"
+        isLoading={actionLoading}
+      />
     </div>
   );
 }

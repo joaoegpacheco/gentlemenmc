@@ -7,7 +7,7 @@ export const message = {
       variant: "default",
     })
   },
-  error: (content: string) => {
+  error: (content: string, _error?: unknown) => {
     toast({
       description: content,
       variant: "destructive",
