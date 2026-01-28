@@ -29,6 +29,8 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { MemberProfile } from "@/components/MemberProfile/page";
 import { MemberForm } from "@/components/MemberForm/page";
 import type { SupabaseAuthUser } from "@/types/auth";
+import { useDeviceSizes } from "@/utils/mediaQueries";
+import { Card, CardContent } from "@/components/ui/card";
 
 type MemberStatus = "ativo" | "inativo" | "suspenso";
 
@@ -69,6 +71,7 @@ export default function MembrosPage() {
   const deleteDialogOpen = useValue(deleteDialogOpen$);
   const actionLoading = useValue(actionLoading$);
   const router = useRouter();
+  const { isMobile } = useDeviceSizes();
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -337,116 +340,226 @@ export default function MembrosPage() {
         </div>
       </div>
 
-      {/* Tabela de membros */}
-      <div className="border rounded-lg bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('table.name')}</TableHead>
-              <TableHead>{t('table.email')}</TableHead>
-              <TableHead>{t('table.phone')}</TableHead>
-              <TableHead>{t('table.status')}</TableHead>
-              <TableHead>{t('table.registrationDate')}</TableHead>
-              <TableHead className="text-right">{t('table.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  {t('loading')}
-                </TableCell>
-              </TableRow>
-            ) : filteredMembers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  {t('table.noMembersFound')}
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredMembers.map((member) => (
-                <TableRow key={member.user_id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-3">
-                      {member.foto_url ? (
-                        <Image
-                          src={member.foto_url}
-                          alt={member.user_name}
-                          width={40}
-                          height={40}
-                          className="object-cover rounded-full w-10 h-10" 
-                          priority
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                          <span className="text-lg">
-                            {member.user_name?.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                      {member.user_name}
+      {/* Mobile-first: Cards de membros */}
+      <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
+        {loading ? (
+          <div className="text-center py-8">
+            {t('loading')}
+          </div>
+        ) : filteredMembers.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {t('table.noMembersFound')}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {filteredMembers.map((member) => (
+              <Card key={member.user_id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    {member.foto_url ? (
+                      <Image
+                        src={member.foto_url}
+                        alt={member.user_name}
+                        width={48}
+                        height={48}
+                        className="object-cover rounded-full w-12 h-12" 
+                        priority
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <span className="text-lg font-medium">
+                          {member.user_name?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate">{member.user_name}</h3>
+                      <div className="mt-1">{getStatusBadge(member.status)}</div>
                     </div>
-                  </TableCell>
-                  <TableCell>{member.user_email || "-"}</TableCell>
-                  <TableCell>{member.user_phone || "-"}</TableCell>
-                  <TableCell>{getStatusBadge(member.status)}</TableCell>
-                  <TableCell>
-                    {member.created_at
-                      ? new Date(member.created_at).toLocaleDateString("pt-BR")
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewProfile(member)}
-                        className="gap-1"
-                      >
-                        <Eye className="h-4 w-4" />
-                        {t('buttons.view')}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditMember(member)}
-                        className="gap-1"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t('buttons.edit')}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          selectedMember$.set(member);
-                          blockDialogOpen$.set(true);
-                        }}
-                        className="gap-1"
-                      >
-                        <Ban className="h-4 w-4" />
-                        {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          selectedMember$.set(member);
-                          deleteDialogOpen$.set(true);
-                        }}
-                        className="gap-1 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t('buttons.delete')}
-                      </Button>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">{t('table.email')}</p>
+                      <p className="truncate">{member.user_email || "-"}</p>
                     </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.phone')}</p>
+                      <p>{member.user_phone || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.registrationDate')}</p>
+                      <p>
+                        {member.created_at
+                          ? new Date(member.created_at).toLocaleDateString("pt-BR")
+                          : "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewProfile(member)}
+                      className="flex-1 min-w-[80px]"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      {t('buttons.view')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditMember(member)}
+                      className="flex-1 min-w-[80px]"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      {t('buttons.edit')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        selectedMember$.set(member);
+                        blockDialogOpen$.set(true);
+                      }}
+                      className="flex-1 min-w-[80px]"
+                    >
+                      <Ban className="h-4 w-4 mr-1" />
+                      {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        selectedMember$.set(member);
+                        deleteDialogOpen$.set(true);
+                      }}
+                      className="flex-1 min-w-[80px] text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      {t('buttons.delete')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tabela para telas grandes */}
+      {!isMobile && (
+        <div className="hidden lg:block border rounded-lg bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('table.name')}</TableHead>
+                <TableHead>{t('table.email')}</TableHead>
+                <TableHead>{t('table.phone')}</TableHead>
+                <TableHead>{t('table.status')}</TableHead>
+                <TableHead>{t('table.registrationDate')}</TableHead>
+                <TableHead className="text-right">{t('table.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    {t('loading')}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : filteredMembers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    {t('table.noMembersFound')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredMembers.map((member) => (
+                  <TableRow key={member.user_id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        {member.foto_url ? (
+                          <Image
+                            src={member.foto_url}
+                            alt={member.user_name}
+                            width={40}
+                            height={40}
+                            className="object-cover rounded-full w-10 h-10" 
+                            priority
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-lg">
+                              {member.user_name?.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        {member.user_name}
+                      </div>
+                    </TableCell>
+                    <TableCell>{member.user_email || "-"}</TableCell>
+                    <TableCell>{member.user_phone || "-"}</TableCell>
+                    <TableCell>{getStatusBadge(member.status)}</TableCell>
+                    <TableCell>
+                      {member.created_at
+                        ? new Date(member.created_at).toLocaleDateString("pt-BR")
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewProfile(member)}
+                          className="gap-1"
+                        >
+                          <Eye className="h-4 w-4" />
+                          {t('buttons.view')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditMember(member)}
+                          className="gap-1"
+                        >
+                          <Edit className="h-4 w-4" />
+                          {t('buttons.edit')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            selectedMember$.set(member);
+                            blockDialogOpen$.set(true);
+                          }}
+                          className="gap-1"
+                        >
+                          <Ban className="h-4 w-4" />
+                          {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            selectedMember$.set(member);
+                            deleteDialogOpen$.set(true);
+                          }}
+                          className="gap-1 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {t('buttons.delete')}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* Dialog de Perfil */}
       <Dialog open={profileDialogOpen} onOpenChange={profileDialogOpen$.set}>

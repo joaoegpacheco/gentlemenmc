@@ -199,160 +199,200 @@ export const InvoiceTable = () => {
         <div className="flex justify-center py-8">
           <Spinner />
         </div>
-      ) : isMobile ? (
-        <div className="space-y-4">
-          {invoices.map((invoice) => (
-            <div
-              key={invoice.id}
-              className="border border-gray-300 p-4 rounded-lg space-y-2"
-            >
-              <p>
-                <strong>{tInvoiceTable('eventDateLabel')}</strong> {formatDate(invoice.data_evento)}
-              </p>
-              <p>
-                <strong>{tInvoiceTable('names')}</strong>{" "}
-                {[
-                  ...(invoice.membros?.map((id: string) => {
-                    const name: string = members[id] || id;
-                    const isPaid: boolean = userPagou(invoice.id, id);
-                    return (
-                      <span
-                        key={id}
-                        className={isPaid ? "line-through" : ""}
-                      >
-                        {name}
-                      </span>
-                    );
-                  }) || []),
-                  ...(invoice.visitantes?.map((visitor: string, i: number) => (
-                    <span key={`v-${i}`}>{visitor}</span>
-                  )) || []),
-                ].reduce<JSX.Element[]>((acc, curr, idx, arr) => {
-                  acc.push(curr);
-                  if (idx < arr.length - 1)
-                    acc.push(<span key={`sep-${idx}`}>, </span>);
-                  return acc;
-                }, [])}
-              </p>
-              <p>
-                <strong>{tInvoiceTable('totalInvoiceValueLabel')}</strong> {formatCurrency(invoice.valor_total)}
-              </p>
-              <p>
-                <strong>{tInvoiceTable('valuePerPersonLabel')}</strong> {formatCurrency(invoice.valor_dividido)}
-              </p>
-              <p>
-                <strong>{tInvoiceTable('pix')}:</strong>{" "}
-                <span
-                  className="cursor-pointer text-blue-600"
-                  onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
-                >
-                  {invoice.pix || "-"}
-                </span>
-              </p>
-              {invoice.arquivo_url && (
-                <Image
-                  src={invoice.arquivo_url}
-                  alt="Nota Fiscal"
-                  width={100}
-                  height={100}
-                  className="object-cover cursor-pointer"
-                  onClick={() => selectedImage$.set(invoice.arquivo_url)}
-                />
-              )}
-              <div className="text-center">
-                <Button
-                  onClick={() => {
-                    payingInvoice$.set(invoice);
-                    isPayModalVisible$.set(true);
-                  }}
-                >
-                  Pagar
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
       ) : (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{tInvoiceTable('eventDate')}</TableHead>
-                <TableHead>{tInvoiceTable('name')}</TableHead>
-                <TableHead>{tInvoiceTable('totalInvoiceValue')}</TableHead>
-                <TableHead>{tInvoiceTable('valuePerPerson')}</TableHead>
-                <TableHead>{tInvoiceTable('pixForPayment')}</TableHead>
-                <TableHead>{tInvoiceTable('invoice')}</TableHead>
-                <TableHead>{tInvoiceTable('actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell>{formatDate(invoice.data_evento)}</TableCell>
-                  <TableCell>
-                    {[
-                      ...(invoice.membros?.map((id: string) => {
-                        const name: string = members[id] || id;
-                        const isPaid: boolean = userPagou(invoice.id, id);
-                        return (
-                          <span
-                            key={id}
-                            className={isPaid ? "line-through" : ""}
-                          >
-                            {name}
-                          </span>
-                        );
-                      }) || []),
-                      ...(invoice.visitantes?.map((visitor: string, i: number) => (
-                        <span key={`v-${i}`}>{visitor}</span>
-                      )) || []),
-                    ].reduce<JSX.Element[]>((acc, curr, idx, arr) => {
-                      acc.push(curr);
-                      if (idx < arr.length - 1)
-                        acc.push(<span key={`sep-${idx}`}>, </span>);
-                      return acc;
-                    }, [])}
-                  </TableCell>
-                  <TableCell>{formatCurrency(invoice.valor_total)}</TableCell>
-                  <TableCell>{formatCurrency(invoice.valor_dividido)}</TableCell>
-                  <TableCell>
-                    <span
-                      className="cursor-pointer text-blue-600"
-                      onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
-                    >
-                      {invoice.pix || "-"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {invoice.arquivo_url ? (
-                      <Image
-                        src={invoice.arquivo_url}
-                        alt="Nota Fiscal"
-                        width={100}
-                        height={100}
-                        className="object-cover cursor-pointer"
-                        onClick={() => selectedImage$.set(invoice.arquivo_url)}
-                      />
-                    ) : (
-                      "Sem imagem"
+        <>
+          {/* Mobile-first: Cards sempre, tabela apenas em telas grandes */}
+          <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
+            <div className="space-y-4">
+              {invoices.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  {tInvoiceTable('noInvoices') || 'Nenhuma nota fiscal encontrada'}
+                </div>
+              ) : (
+                invoices.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className="border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-shadow space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {tInvoiceTable('eventDateLabel')}
+                        </p>
+                        <p className="font-medium">{formatDate(invoice.data_evento)}</p>
+                      </div>
+                      {invoice.arquivo_url && (
+                        <Image
+                          src={invoice.arquivo_url}
+                          alt="Nota Fiscal"
+                          width={60}
+                          height={60}
+                          className="object-cover rounded cursor-pointer border"
+                          onClick={() => selectedImage$.set(invoice.arquivo_url)}
+                        />
+                      )}
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        {tInvoiceTable('names')}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          ...(invoice.membros?.map((id: string) => {
+                            const name: string = members[id] || id;
+                            const isPaid: boolean = userPagou(invoice.id, id);
+                            return (
+                              <span
+                                key={id}
+                                className={`text-sm ${isPaid ? "line-through text-muted-foreground" : ""}`}
+                              >
+                                {name}
+                              </span>
+                            );
+                          }) || []),
+                          ...(invoice.visitantes?.map((visitor: string, i: number) => (
+                            <span key={`v-${i}`} className="text-sm">{visitor}</span>
+                          )) || []),
+                        ].reduce<JSX.Element[]>((acc, curr, idx, arr) => {
+                          acc.push(curr);
+                          if (idx < arr.length - 1)
+                            acc.push(<span key={`sep-${idx}`} className="text-sm">, </span>);
+                          return acc;
+                        }, [])}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {tInvoiceTable('totalInvoiceValueLabel')}
+                        </p>
+                        <p className="font-semibold text-lg">{formatCurrency(invoice.valor_total)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {tInvoiceTable('valuePerPersonLabel')}
+                        </p>
+                        <p className="font-semibold">{formatCurrency(invoice.valor_dividido)}</p>
+                      </div>
+                    </div>
+
+                    {invoice.pix && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {tInvoiceTable('pix')}
+                        </p>
+                        <p
+                          className="text-sm text-blue-600 dark:text-blue-400 break-all cursor-pointer hover:underline"
+                          onClick={() => copyToClipboard(invoice.pix)}
+                        >
+                          {invoice.pix}
+                        </p>
+                      </div>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      onClick={() => {
-                        payingInvoice$.set(invoice);
-                        isPayModalVisible$.set(true);
-                      }}
-                    >
-                      Pagar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+
+                    <div className="pt-2">
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          payingInvoice$.set(invoice);
+                          isPayModalVisible$.set(true);
+                        }}
+                      >
+                        {tInvoiceTable('pay') || 'Pagar'}
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Tabela para telas grandes (opcional) */}
+          {!isMobile && (
+            <div className="hidden lg:block border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{tInvoiceTable('eventDate')}</TableHead>
+                    <TableHead>{tInvoiceTable('name')}</TableHead>
+                    <TableHead>{tInvoiceTable('totalInvoiceValue')}</TableHead>
+                    <TableHead>{tInvoiceTable('valuePerPerson')}</TableHead>
+                    <TableHead>{tInvoiceTable('pixForPayment')}</TableHead>
+                    <TableHead>{tInvoiceTable('invoice')}</TableHead>
+                    <TableHead>{tInvoiceTable('actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell>{formatDate(invoice.data_evento)}</TableCell>
+                      <TableCell>
+                        {[
+                          ...(invoice.membros?.map((id: string) => {
+                            const name: string = members[id] || id;
+                            const isPaid: boolean = userPagou(invoice.id, id);
+                            return (
+                              <span
+                                key={id}
+                                className={isPaid ? "line-through" : ""}
+                              >
+                                {name}
+                              </span>
+                            );
+                          }) || []),
+                          ...(invoice.visitantes?.map((visitor: string, i: number) => (
+                            <span key={`v-${i}`}>{visitor}</span>
+                          )) || []),
+                        ].reduce<JSX.Element[]>((acc, curr, idx, arr) => {
+                          acc.push(curr);
+                          if (idx < arr.length - 1)
+                            acc.push(<span key={`sep-${idx}`}>, </span>);
+                          return acc;
+                        }, [])}
+                      </TableCell>
+                      <TableCell>{formatCurrency(invoice.valor_total)}</TableCell>
+                      <TableCell>{formatCurrency(invoice.valor_dividido)}</TableCell>
+                      <TableCell>
+                        <span
+                          className="cursor-pointer text-blue-600"
+                          onClick={() => invoice.pix && copyToClipboard(invoice.pix)}
+                        >
+                          {invoice.pix || "-"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {invoice.arquivo_url ? (
+                          <Image
+                            src={invoice.arquivo_url}
+                            alt="Nota Fiscal"
+                            width={100}
+                            height={100}
+                            className="object-cover cursor-pointer"
+                            onClick={() => selectedImage$.set(invoice.arquivo_url)}
+                          />
+                        ) : (
+                          "Sem imagem"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => {
+                            payingInvoice$.set(invoice);
+                            isPayModalVisible$.set(true);
+                          }}
+                        >
+                          Pagar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
 
       <Dialog open={isPayModalVisible} onOpenChange={isPayModalVisible$.set}>
