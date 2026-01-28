@@ -27,6 +27,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { updateComanda } from "@/services/comandaService";
 import { drinksPricesGuests } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
+import { useDeviceSizes } from "@/utils/mediaQueries";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface Props { }
 
@@ -64,6 +67,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const payingComandaId = useValue(payingComandaId$);
   const itemsModalOpen = useValue(itemsModalOpen$);
   const selectedItemsRecord = useValue(selectedItemsRecord$);
+  const { isMobile } = useDeviceSizes();
 
   const fetchAdmins = async () => {
     const { data, error } = await supabase.from("admins").select("id, email");
@@ -225,56 +229,65 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           <Spinner />
         </div>
       ) : (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('name')}</TableHead>
-                <TableHead>{t('member')}</TableHead>
-                <TableHead>{t('phone')}</TableHead>
-                <TableHead>{t('items')}</TableHead>
-                <TableHead>{t('total')}</TableHead>
-                <TableHead>{t('actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {comandasWithTotals.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    {t('noOpenComandas')}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                comandasWithTotals.map((record) => {
+        <>
+          {/* Mobile-first: Cards */}
+          <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
+            {comandasWithTotals.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t('noOpenComandas')}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {comandasWithTotals.map((record) => {
                   const totalQtd = record.comanda_itens.reduce(
                     (sum: number, i: any) => sum + i.quantidade,
                     0
                   );
                   return (
-                    <TableRow key={record.id}>
-                      <TableCell>{record.nome_convidado}</TableCell>
-                      <TableCell>{record.nome_integrante}</TableCell>
-                      <TableCell>{record.telefone_convidado}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="link"
-                          onClick={() => {
-                            selectedItemsRecord$.set(record);
-                            itemsModalOpen$.set(true);
-                          }}
-                        >
-                          {totalQtd} {t('drinks')}
-                        </Button>
-                      </TableCell>
-                      <TableCell>R$ {record.total.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
+                    <Card key={record.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{record.nome_convidado}</h3>
+                            <p className="text-sm text-muted-foreground">{record.nome_integrante}</p>
+                          </div>
+                          <Badge variant="outline" className="text-lg font-semibold">
+                            R$ {record.total.toFixed(2)}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">{t('phone')}</p>
+                            <p>{record.telefone_convidado || '-'}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">{t('items')}</p>
+                            <Button
+                              variant="link"
+                              className="h-auto p-0"
+                              onClick={() => {
+                                selectedItemsRecord$.set(record);
+                                itemsModalOpen$.set(true);
+                              }}
+                            >
+                              {totalQtd} {t('drinks')}
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => selectedComanda$.set(record)}
+                          >
                             {t('addDrink')}
                           </Button>
                           {!isBarMC && (
                             <Button
                               variant="destructive"
+                              className="flex-1"
                               onClick={() => {
                                 payingComandaId$.set(record.id);
                                 fetchAdmins();
@@ -285,14 +298,86 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                             </Button>
                           )}
                         </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Tabela para telas grandes */}
+          {!isMobile && (
+            <div className="hidden lg:block border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('name')}</TableHead>
+                    <TableHead>{t('member')}</TableHead>
+                    <TableHead>{t('phone')}</TableHead>
+                    <TableHead>{t('items')}</TableHead>
+                    <TableHead>{t('total')}</TableHead>
+                    <TableHead>{t('actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {comandasWithTotals.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground">
+                        {t('noOpenComandas')}
                       </TableCell>
                     </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                  ) : (
+                    comandasWithTotals.map((record) => {
+                      const totalQtd = record.comanda_itens.reduce(
+                        (sum: number, i: any) => sum + i.quantidade,
+                        0
+                      );
+                      return (
+                        <TableRow key={record.id}>
+                          <TableCell>{record.nome_convidado}</TableCell>
+                          <TableCell>{record.nome_integrante}</TableCell>
+                          <TableCell>{record.telefone_convidado}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="link"
+                              onClick={() => {
+                                selectedItemsRecord$.set(record);
+                                itemsModalOpen$.set(true);
+                              }}
+                            >
+                              {totalQtd} {t('drinks')}
+                            </Button>
+                          </TableCell>
+                          <TableCell>R$ {record.total.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
+                                {t('addDrink')}
+                              </Button>
+                              {!isBarMC && (
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => {
+                                    payingComandaId$.set(record.id);
+                                    fetchAdmins();
+                                    payModalVisible$.set(true);
+                                  }}
+                                >
+                                  {t('markAsPaid')}
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
       <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && selectedComanda$.set(null)}>
         <DialogContent className="max-w-6xl">

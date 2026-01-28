@@ -38,6 +38,7 @@ import { InputNumber } from "@/components/ui/input-number";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { useDeviceSizes } from "@/utils/mediaQueries";
 
 type MemberStatus = "ativo" | "inativo" | "suspenso";
 
@@ -97,6 +98,7 @@ export function MemberProfile({
   const notificationDialogOpen = useValue(notificationDialogOpen$);
   const currentPage = useValue(currentPage$);
   const pageSize = useValue(pageSize$);
+  const { isMobile } = useDeviceSizes();
 
   useEffect(() => {
     fetchMemberData();
@@ -273,7 +275,7 @@ export function MemberProfile({
   return (
     <div className="space-y-6">
       {/* Header do Perfil */}
-      <div className="flex items-start gap-6">
+      <div className="flex items-start gap-6 flex-wrap justify-center">
         <div>
           {member.foto_url ? (
             <Image
@@ -415,7 +417,7 @@ export function MemberProfile({
       </div>
 
       {/* Ações Rápidas */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>{tProfile('actions')}</CardTitle>
         </CardHeader>
@@ -455,7 +457,7 @@ export function MemberProfile({
             </Dialog>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Observações */}
       {member.observacoes && (
@@ -488,46 +490,92 @@ export function MemberProfile({
             </p>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{tProfile('date')}</TableHead>
-                      <TableHead>{tProfile('drink')}</TableHead>
-                      <TableHead>{tProfile('quantity')}</TableHead>
-                      <TableHead>{tProfile('amount')}</TableHead>
-                      <TableHead>{tProfile('status')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedDrinks.map((drink) => {
-                      const price = parseFloat(drink.price?.toString() || "0");
-                      const quantity = drink.quantity || 1;
-                      const total = price * quantity;
+              {/* Mobile-first: Cards */}
+              <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
+                <div className="space-y-3">
+                  {paginatedDrinks.map((drink) => {
+                    const price = parseFloat(drink.price?.toString() || "0");
+                    const quantity = drink.quantity || 1;
+                    const total = price * quantity;
 
-                      return (
-                        <TableRow key={drink.id}>
-                          <TableCell>
-                            {new Date(drink.created_at).toLocaleString(locale === 'en' ? 'en-US' : 'pt-BR')}
-                          </TableCell>
-                          <TableCell>{drink.drink || drink.name}</TableCell>
-                          <TableCell>{quantity}</TableCell>
-                          <TableCell>{formatCurrency(total)}</TableCell>
-                          <TableCell>
+                    return (
+                      <Card key={drink.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg">{drink.drink || drink.name}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {new Date(drink.created_at).toLocaleString(locale === 'en' ? 'en-US' : 'pt-BR')}
+                              </p>
+                            </div>
                             {drink.paid ? (
                               <Badge className="bg-green-500">{tProfile('paid')}</Badge>
                             ) : (
                               <Badge variant="secondary">{tProfile('pending')}</Badge>
                             )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+                            <div>
+                              <p className="text-sm text-muted-foreground">{tProfile('quantity')}</p>
+                              <p className="font-semibold">{quantity}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">{tProfile('amount')}</p>
+                              <p className="font-semibold text-lg">{formatCurrency(total)}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Tabela para telas grandes */}
+              {!isMobile && (
+                <div className="hidden lg:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{tProfile('date')}</TableHead>
+                        <TableHead>{tProfile('drink')}</TableHead>
+                        <TableHead>{tProfile('quantity')}</TableHead>
+                        <TableHead>{tProfile('amount')}</TableHead>
+                        <TableHead>{tProfile('status')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedDrinks.map((drink) => {
+                        const price = parseFloat(drink.price?.toString() || "0");
+                        const quantity = drink.quantity || 1;
+                        const total = price * quantity;
+
+                        return (
+                          <TableRow key={drink.id}>
+                            <TableCell>
+                              {new Date(drink.created_at).toLocaleString(locale === 'en' ? 'en-US' : 'pt-BR')}
+                            </TableCell>
+                            <TableCell>{drink.drink || drink.name}</TableCell>
+                            <TableCell>{quantity}</TableCell>
+                            <TableCell>{formatCurrency(total)}</TableCell>
+                            <TableCell>
+                              {drink.paid ? (
+                                <Badge className="bg-green-500">{tProfile('paid')}</Badge>
+                              ) : (
+                                <Badge variant="secondary">{tProfile('pending')}</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Paginação */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
                   <div className="text-sm text-muted-foreground">
                     {tProfile('page')} {currentPage} {tProfile('of')} {totalPages} ({drinks.length} {tProfile('orders')})
                   </div>

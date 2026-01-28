@@ -24,6 +24,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useDeviceSizes } from "@/utils/mediaQueries";
+import { Card, CardContent } from "@/components/ui/card";
 
 type LogType = {
   id: string;
@@ -45,6 +47,7 @@ export default function HistoricoEstoquePage() {
   const startDate = useValue(startDate$);
   const endDate = useValue(endDate$);
   const drinkFilter = useValue(drinkFilter$);
+  const { isMobile } = useDeviceSizes();
 
   async function fetchLogs() {
     const { data, error } = await supabase
@@ -209,44 +212,90 @@ export default function HistoricoEstoquePage() {
         </Button>
       </div>
 
-      <div className="border rounded-lg mb-6">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('table.date')}</TableHead>
-              <TableHead>{t('table.drink')}</TableHead>
-              <TableHead>{t('table.type')}</TableHead>
-              <TableHead>{t('table.quantity')}</TableHead>
-              <TableHead>{t('table.user')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredLogs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  {t('table.noLogsFound')}
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredLogs.slice(0, 15).map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell>{dayjs(log.created_at).format("DD/MM/YYYY HH:mm")}</TableCell>
-                  <TableCell>{log.drink}</TableCell>
-                  <TableCell>
+      {/* Mobile-first: Cards */}
+      <div className={`${isMobile ? 'block' : 'hidden lg:block'} mb-6`}>
+        {filteredLogs.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {t('table.noLogsFound')}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredLogs.slice(0, 15).map((log) => (
+              <Card key={log.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{log.drink}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {dayjs(log.created_at).format("DD/MM/YYYY HH:mm")}
+                      </p>
+                    </div>
                     {log.type === "entrada" && log.quantity > 0 ? (
-                      <Badge variant="default" className="bg-green-500">{t('types.entrada')}</Badge>
+                      <Badge variant="default" className="bg-green-500">
+                        {t('types.entrada')}
+                      </Badge>
                     ) : (
                       <Badge variant="destructive">{t('types.saida')}</Badge>
                     )}
-                  </TableCell>
-                  <TableCell>{log.quantity}</TableCell>
-                  <TableCell>{log.user || "—"}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t">
+                    <div>
+                      <p className="text-muted-foreground">{t('table.quantity')}</p>
+                      <p className="font-semibold">{log.quantity}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.user')}</p>
+                      <p>{log.user || "—"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Tabela para telas grandes */}
+      {!isMobile && (
+        <div className="hidden lg:block border rounded-lg mb-6">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('table.date')}</TableHead>
+                <TableHead>{t('table.drink')}</TableHead>
+                <TableHead>{t('table.type')}</TableHead>
+                <TableHead>{t('table.quantity')}</TableHead>
+                <TableHead>{t('table.user')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredLogs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    {t('table.noLogsFound')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredLogs.slice(0, 15).map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell>{dayjs(log.created_at).format("DD/MM/YYYY HH:mm")}</TableCell>
+                    <TableCell>{log.drink}</TableCell>
+                    <TableCell>
+                      {log.type === "entrada" && log.quantity > 0 ? (
+                        <Badge variant="default" className="bg-green-500">{t('types.entrada')}</Badge>
+                      ) : (
+                        <Badge variant="destructive">{t('types.saida')}</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>{log.quantity}</TableCell>
+                    <TableCell>{log.user || "—"}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       <h4 className="text-lg font-semibold mb-4">{t('balance.finalBalanceByDrink')}</h4>
       <ul className="list-disc ml-6">

@@ -26,6 +26,8 @@ import {
 import { message } from "@/lib/message";
 import { addOrUpdateEstoque, getEstoque } from "@/services/estoqueService";
 import { drinksPricesMembers } from "@/constants/drinks";
+import { useDeviceSizes } from "@/utils/mediaQueries";
+import { Card, CardContent } from "@/components/ui/card";
 
 type EstoqueType = {
   id: string;
@@ -62,6 +64,7 @@ export default function EstoquePage() {
   const pageSize = useValue(pageSize$);
   const drinkSearch = useValue(drinkSearch$);
   const drinkPopoverOpen = useValue(drinkPopoverOpen$);
+  const { isMobile } = useDeviceSizes();
 
   async function fetchStock() {
     try {
@@ -276,49 +279,88 @@ export default function EstoquePage() {
         />
       </div>
 
-      {/* Tabela de estoque */}
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("drink")}
-              >
-                Bebida {sortedColumn === "drink" && (sortDirection === "asc" ? "↑" : "↓")}
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort("quantity")}
-              >
-                Quantidade {sortedColumn === "quantity" && (sortDirection === "asc" ? "↑" : "↓")}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedStock.length === 0 ? (
+      {/* Mobile-first: Cards de estoque */}
+      <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
+        {paginatedStock.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {t('table.noItemsFound')}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {paginatedStock.map((item) => (
+              <Card key={item.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{item.drink}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Quantidade
+                      </p>
+                    </div>
+                    <div>
+                      {item.quantity <= LOW_STOCK_THRESHOLD ? (
+                        <Badge variant="destructive" className="text-lg px-3 py-1">
+                          {item.quantity} 🔻
+                        </Badge>
+                      ) : (
+                        <Badge variant="default" className="text-lg px-3 py-1">
+                          {item.quantity}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tabela para telas grandes */}
+      {!isMobile && (
+        <div className="hidden lg:block border rounded-lg">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground">
-                  {t('table.noItemsFound')}
-                </TableCell>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort("drink")}
+                >
+                  Bebida {sortedColumn === "drink" && (sortDirection === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort("quantity")}
+                >
+                  Quantidade {sortedColumn === "quantity" && (sortDirection === "asc" ? "↑" : "↓")}
+                </TableHead>
               </TableRow>
-            ) : (
-              paginatedStock.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.drink}</TableCell>
-                  <TableCell>
-                    {item.quantity <= LOW_STOCK_THRESHOLD ? (
-                      <Badge variant="destructive">{item.quantity} 🔻</Badge>
-                    ) : (
-                      <Badge variant="default">{item.quantity}</Badge>
-                    )}
+            </TableHeader>
+            <TableBody>
+              {paginatedStock.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center text-muted-foreground">
+                    {t('table.noItemsFound')}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : (
+                paginatedStock.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.drink}</TableCell>
+                    <TableCell>
+                      {item.quantity <= LOW_STOCK_THRESHOLD ? (
+                        <Badge variant="destructive">{item.quantity} 🔻</Badge>
+                      ) : (
+                        <Badge variant="default">{item.quantity}</Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* Paginação */}
       {sortedStock.length > 0 && (

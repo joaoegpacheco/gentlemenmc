@@ -22,6 +22,9 @@ import {
 import { message } from "@/lib/message";
 import { Spinner } from "@/components/ui/spinner";
 import { supabase } from "@/hooks/use-supabase";
+import { useDeviceSizes } from "@/utils/mediaQueries";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {}
 
@@ -36,6 +39,7 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
   const loading = useValue(loading$);
   const itemsModalOpen = useValue(itemsModalOpen$);
   const selectedItemsRecord = useValue(selectedItemsRecord$);
+  const { isMobile } = useDeviceSizes();
 
   const fetchComandas = async () => {
     loading$.set(true);
@@ -89,54 +93,112 @@ export const PaidComandasPageContent = forwardRef((_: Props, ref) => {
           <Spinner />
         </div>
       ) : (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('name')}</TableHead>
-                <TableHead>{t('phone')}</TableHead>
-                <TableHead>{t('items')}</TableHead>
-                <TableHead>{t('total')}</TableHead>
-                <TableHead>{t('paymentDate')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {comandasWithTotals.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    {t('noPaidComandasFound')}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                comandasWithTotals.map((record) => {
+        <>
+          {/* Mobile-first: Cards */}
+          <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
+            {comandasWithTotals.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t('noPaidComandasFound')}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {comandasWithTotals.map((record) => {
                   const totalQtd = record.comanda_itens.reduce(
                     (sum: number, i: any) => sum + i.quantidade,
                     0
                   );
                   return (
-                    <TableRow key={record.id}>
-                      <TableCell>{record.nome_convidado}</TableCell>
-                      <TableCell>{record.telefone_convidado}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="link"
-                          onClick={() => {
-                            selectedItemsRecord$.set(record);
-                            itemsModalOpen$.set(true);
-                          }}
-                        >
-                          {totalQtd} {t('drinks')}
-                        </Button>
-                      </TableCell>
-                      <TableCell>R$ {record.total.toFixed(2)}</TableCell>
-                      <TableCell>{formatDate(record.created_at)}</TableCell>
-                    </TableRow>
+                    <Card key={record.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{record.nome_convidado}</h3>
+                            <p className="text-sm text-muted-foreground">{record.telefone_convidado || '-'}</p>
+                          </div>
+                          <Badge variant="outline" className="text-lg font-semibold bg-green-50 text-green-700 border-green-200">
+                            R$ {record.total.toFixed(2)}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">{t('items')}</p>
+                            <Button
+                              variant="link"
+                              className="h-auto p-0"
+                              onClick={() => {
+                                selectedItemsRecord$.set(record);
+                                itemsModalOpen$.set(true);
+                              }}
+                            >
+                              {totalQtd} {t('drinks')}
+                            </Button>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">{t('paymentDate')}</p>
+                            <p className="text-xs">{formatDate(record.created_at)}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Tabela para telas grandes */}
+          {!isMobile && (
+            <div className="hidden lg:block border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('name')}</TableHead>
+                    <TableHead>{t('phone')}</TableHead>
+                    <TableHead>{t('items')}</TableHead>
+                    <TableHead>{t('total')}</TableHead>
+                    <TableHead>{t('paymentDate')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {comandasWithTotals.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        {t('noPaidComandasFound')}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    comandasWithTotals.map((record) => {
+                      const totalQtd = record.comanda_itens.reduce(
+                        (sum: number, i: any) => sum + i.quantidade,
+                        0
+                      );
+                      return (
+                        <TableRow key={record.id}>
+                          <TableCell>{record.nome_convidado}</TableCell>
+                          <TableCell>{record.telefone_convidado}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="link"
+                              onClick={() => {
+                                selectedItemsRecord$.set(record);
+                                itemsModalOpen$.set(true);
+                              }}
+                            >
+                              {totalQtd} {t('drinks')}
+                            </Button>
+                          </TableCell>
+                          <TableCell>R$ {record.total.toFixed(2)}</TableCell>
+                          <TableCell>{formatDate(record.created_at)}</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
 
       <Dialog open={itemsModalOpen} onOpenChange={itemsModalOpen$.set}>
