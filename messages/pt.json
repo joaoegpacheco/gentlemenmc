@@ -940,8 +940,8 @@
     "status": "Status"
   },
   "prospectValidation": {
-    "title": "Validação de Pontos - Prospectos",
-    "subtitle": "Sistema de validação e registro de pontos para prospectos",
+    "title": "Validação de Pontos - Prospects",
+    "subtitle": "Sistema de validação e registro de pontos para Prospects",
     "regrasSistema": "Regras do Sistema",
     "halfPatchRule": "Half Patch: 4 meses mínimo + 100 pontos mínimos",
     "fullPatchRule": "Full Patch: 6 meses como Half + 150 pontos mínimos",
@@ -991,8 +991,8 @@
     "errors": {
       "accessDenied": "Acesso negado. Apenas membros da Diretoria podem validar pontos.",
       "userNotFound": "Usuário não encontrado.",
-      "errorLoadingProspects": "Erro ao carregar prospectos",
-      "errorFetchingProspects": "Erro ao buscar prospectos",
+      "errorLoadingProspects": "Erro ao carregar Prospects",
+      "errorFetchingProspects": "Erro ao buscar Prospects",
       "errorLoadingActivities": "Erro ao carregar atividades. Verifique se a tabela foi criada.",
       "fillAllFields": "Preencha todos os campos obrigatórios",
       "invalidActivityType": "Tipo de atividade inválido",
