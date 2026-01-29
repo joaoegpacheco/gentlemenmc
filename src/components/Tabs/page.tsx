@@ -25,6 +25,8 @@ import HistoricoEstoquePage from "@/app/[locale]/admin/estoque/historico/page";
 import MembrosPage from "@/app/[locale]/admin/membros/page";
 import { UserProfileTab } from "../UserProfileTab/page";
 import { DashboardTab } from "../Dashboard/DashboardTab";
+import { ProspectsPage } from "../ProspectsPage/page";
+import ProspectValidationPage from "@/app/[locale]/admin/prospectos/validacao/page";
 
 interface AdminData {
   id: string;
@@ -41,11 +43,13 @@ export default function TabsComponent() {
   const admin$ = useObservable<boolean | null>(null);
   const manager$ = useObservable<boolean | null>(null);
   const isBarUser$ = useObservable<boolean>(false);
+  const caseType$ = useObservable<string | null>(null);
   const activeTab$ = useObservable("1");
   
   const admin = useValue(admin$);
   const manager = useValue(manager$);
   const isBarUser = useValue(isBarUser$);
+  const caseType = useValue(caseType$);
   const activeTab = useValue(activeTab$);
   
   const cardComandRef = useRef<any>(null);
@@ -74,9 +78,23 @@ export default function TabsComponent() {
           .eq("role", "admin");
 
         admin$.set(!!admins?.length);
+
+        // Buscar case_type do membro
+        const { data: memberData } = await supabase
+          .from("membros")
+          .select("case_type")
+          .eq("user_id", user.id)
+          .single();
+
+        if (memberData?.case_type) {
+          caseType$.set(memberData.case_type);
+        } else {
+          caseType$.set(null);
+        }
       } catch (error) {
         console.error("Error fetching admin data:", error);
         admin$.set(false);
+        caseType$.set(null);
       }
     };
 
@@ -93,8 +111,12 @@ export default function TabsComponent() {
   };
 
   const getCurrentTabs = () => {
+    // Verificar se o usuário pode ver a aba de prospects
+    const canSeeProspectsTab = caseType === "Half" || caseType === "Prospect";
+    const canSeeCommandValidationTab = caseType === "Diretoria";
+
     if (admin) {
-      return [
+      const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
@@ -112,6 +134,13 @@ export default function TabsComponent() {
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
+
+      // Adicionar aba de prospects apenas se for Half ou Prospect
+      if (canSeeCommandValidationTab) {
+        tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
+      }
+
+      return tabs;
     } else if (isBarUser) {
       return [
         { key: "1", label: t('mark'), children: <FormCommand /> },
@@ -134,7 +163,7 @@ export default function TabsComponent() {
         { key: "11", label: <LogoutButton /> },
       ];
     } else {
-      return [
+      const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
@@ -143,6 +172,18 @@ export default function TabsComponent() {
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
+
+      // Adicionar aba de prospects apenas se for Half ou Prospect
+      if (canSeeCommandValidationTab) {
+        tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
+      }
+
+      // Adicionar aba de prospects apenas se for Half ou Prospect
+      if (canSeeProspectsTab) {
+        tabs.splice(3, 0, { key: "21", label: t('prospects'), children: <ProspectsPage /> });
+      }
+
+      return tabs;
     }
   };
 
@@ -205,7 +246,7 @@ export default function TabsComponent() {
           {birthdaysString}
         </span>
       </div>
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full px-5">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
           {tabs.map((tab) => {
             // Se não tem children, é provavelmente o LogoutButton
