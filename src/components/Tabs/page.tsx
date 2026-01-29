@@ -246,7 +246,7 @@ export default function TabsComponent() {
           {birthdaysString}
         </span>
       </div>
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full px-5">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
           {tabs.map((tab) => {
             // Se não tem children, é provavelmente o LogoutButton

@@ -543,8 +543,7 @@ export default function ProspectValidationPage() {
   }
 
   return (
-    <AdminLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold">{tValidation('title')}</h1>
@@ -943,6 +942,5 @@ export default function ProspectValidationPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminLayout>
   );
 }

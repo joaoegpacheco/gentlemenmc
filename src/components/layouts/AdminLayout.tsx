@@ -2,7 +2,7 @@
 
 import React from 'react';
 // import { usePathname } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+// import { useTranslations } from 'next-intl';
 // import { Sidebar, SidebarSection } from '../ui/sidebar';
 // import { Breadcrumbs } from '../ui/breadcrumbs';
 // import { 
@@ -31,10 +31,10 @@ interface AdminLayoutProps {
  */
 export function AdminLayout({ children }: AdminLayoutProps) {
   // const pathname = usePathname();
-  const t = useTranslations('adminLayout');
+  // const t = useTranslations('adminLayout');
   const user = useObservable(appStore$.user);
-  const isAdmin = user.admin.get();
-  const isManager = user.manager.get();
+  // const isAdmin = user.admin.get();
+  // const isManager = user.manager.get();
 
   // Define sidebar sections based on user role
   // const sidebarSections: SidebarSection[] = [
@@ -136,7 +136,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // ];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
       {/* Sidebar */}
       {/* <Sidebar
         sections={sidebarSections}
@@ -148,18 +148,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       /> */}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* <div className="flex-1 flex flex-col"> */}
         {/* Header with Breadcrumbs */}
         {/* <header className="border-b bg-background p-4">
           <Breadcrumbs />
         </header> */}
 
         {/* Page Content - sem overflow para scroll só do navegador */}
-        <main className="flex-1 p-6">
+        {/* <main className="flex-1 p-6"> */}
           {children}
-        </main>
-      </div>
-    </div>
+        {/* </main> */}
+      {/* </div> */}
+    </>
   );
 }
 
