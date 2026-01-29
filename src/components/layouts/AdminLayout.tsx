@@ -136,7 +136,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // ];
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex min-h-screen flex-col">
       {/* Sidebar */}
       {/* <Sidebar
         sections={sidebarSections}
@@ -148,14 +148,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       /> */}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* Header with Breadcrumbs */}
         {/* <header className="border-b bg-background p-4">
           <Breadcrumbs />
         </header> */}
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Page Content - sem overflow para scroll só do navegador */}
+        <main className="flex-1 p-6">
           {children}
         </main>
       </div>

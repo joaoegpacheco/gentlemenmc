@@ -137,7 +137,7 @@ export default function TabsComponent() {
 
       // Adicionar aba de prospects apenas se for Half ou Prospect
       if (canSeeCommandValidationTab) {
-        tabs.splice(1, 0, { key: "22", label: 'Validação Prospects', children: <ProspectValidationPage /> });
+        tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
       }
 
       return tabs;
@@ -175,7 +175,7 @@ export default function TabsComponent() {
 
       // Adicionar aba de prospects apenas se for Half ou Prospect
       if (canSeeCommandValidationTab) {
-        tabs.splice(1, 0, { key: "22", label: 'Validação Prospects', children: <ProspectValidationPage /> });
+        tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
       }
 
       // Adicionar aba de prospects apenas se for Half ou Prospect

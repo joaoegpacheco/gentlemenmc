@@ -52,6 +52,7 @@ interface Member {
   foto_url?: string;
   case_type?: string;
   created_at?: string;
+  half_date?: string;
 }
 
 // Tipos de atividades serão traduzidos dinamicamente
@@ -116,7 +117,7 @@ export function ProspectsPage() {
       // Buscar dados do membro
       const { data: memberData, error: memberError } = await supabase
         .from("membros")
-        .select("user_id, user_name, user_email, foto_url, case_type, created_at")
+        .select("user_id, user_name, user_email, foto_url, case_type, created_at, half_date")
         .eq("user_id", user.id)
         .single();
 
@@ -178,36 +179,32 @@ export function ProspectsPage() {
     const halfPatchEligible = halfPatchPointsMet && halfPatchTimeMet;
 
     // Verificar requisitos Full Patch
-    // Se já é Half, calcular quando virou Half e contar desde essa data
+    // Se já é Half, usar half_date da tabela membros ou calcular a partir das atividades
     const isHalf = member.case_type === "Half";
-    
-    // Calcular quando virou Half Patch (data em que atingiu 100 pontos e 4 meses)
     let halfPatchDate: Date | null = null;
     if (isHalf) {
-      // Ordenar atividades por data (mais antigas primeiro)
-      const sortedActivities = [...activities]
-        .filter((a) => a.status === "validated")
-        .sort((a, b) => new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime());
-      
-      // Calcular pontos acumulados ao longo do tempo
-      let accumulatedPoints = 0;
-      for (const activity of sortedActivities) {
-        accumulatedPoints += activity.points;
-        const activityDate = parseISO(activity.activity_date);
-        const monthsSinceStart = differenceInMonths(activityDate, startDate);
-        
-        // Verificar se nesta data atingiu os requisitos (100 pontos E 4 meses)
-        if (accumulatedPoints >= HALF_PATCH_REQUIREMENTS.minPoints && monthsSinceStart >= HALF_PATCH_REQUIREMENTS.minMonths) {
-          halfPatchDate = activityDate;
-          break;
+      if (member.half_date) {
+        halfPatchDate = parseISO(member.half_date);
+      } else {
+        // Fallback: calcular pela lógica de atividades (100 pts + 4 meses)
+        const sortedActivities = [...activities]
+          .filter((a) => a.status === "validated")
+          .sort((a, b) => new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime());
+        let accumulatedPoints = 0;
+        for (const activity of sortedActivities) {
+          accumulatedPoints += activity.points;
+          const activityDate = parseISO(activity.activity_date);
+          const monthsSinceStart = differenceInMonths(activityDate, startDate);
+          if (accumulatedPoints >= HALF_PATCH_REQUIREMENTS.minPoints && monthsSinceStart >= HALF_PATCH_REQUIREMENTS.minMonths) {
+            halfPatchDate = activityDate;
+            break;
+          }
         }
-      }
-      
-      // Se não encontrou pela lógica de pontos, usar a data mínima (4 meses após created_at)
-      if (!halfPatchDate) {
-        const minHalfDate = new Date(startDate);
-        minHalfDate.setMonth(minHalfDate.getMonth() + HALF_PATCH_REQUIREMENTS.minMonths);
-        halfPatchDate = minHalfDate;
+        if (!halfPatchDate) {
+          const minHalfDate = new Date(startDate);
+          minHalfDate.setMonth(minHalfDate.getMonth() + HALF_PATCH_REQUIREMENTS.minMonths);
+          halfPatchDate = minHalfDate;
+        }
       }
     }
     
