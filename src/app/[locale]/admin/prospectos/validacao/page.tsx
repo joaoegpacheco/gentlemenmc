@@ -110,7 +110,7 @@ const ACTIVITY_TYPES_CONFIG = {
 
 type ActivityType = keyof typeof ACTIVITY_TYPES_CONFIG;
 
-const HALF_PATCH_REQUIREMENTS = { minMonths: 4, minPoints: 100 };
+const HALF_PATCH_REQUIREMENTS = { minMonths: 6, minPoints: 100 };
 const FULL_PATCH_REQUIREMENTS = { minMonths: 6, minPoints: 150 };
 
 interface ProspectStats {

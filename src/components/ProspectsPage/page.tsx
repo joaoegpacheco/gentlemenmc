@@ -66,19 +66,9 @@ const ACTIVITY_TYPE_KEYS = {
   "organizar_open_house": "organizarOpenHouse",
 } as const;
 
-const ACTIVITY_POINTS = {
-  "presenca_proatividade": 10,
-  "rodar_2_fds": 5,
-  "open_house_outros_mc": 5,
-  "acoes_filantropicas": 5,
-  "viajar_com_clube": 10,
-  "viajar_sem_clube": 5,
-  "organizar_open_house": 5,
-} as const;
-
 // Requisitos
 const HALF_PATCH_REQUIREMENTS = {
-  minMonths: 4,
+  minMonths: 6, // 6 meses como Prospect
   minPoints: 100,
 };
 
@@ -93,12 +83,10 @@ export function ProspectsPage() {
   const loading$ = useObservable(true);
   const member$ = useObservable<Member | null>(null);
   const activities$ = useObservable<ProspectActivity[]>([]);
-  const currentUser$ = useObservable<{ id: string } | null>(null);
 
   const loading = useValue(loading$);
   const member = useValue(member$);
   const activities = useValue(activities$);
-  const currentUser = useValue(currentUser$);
   const router = useRouter();
 
   const fetchProspectData = useCallback(async () => {
@@ -111,8 +99,6 @@ export function ProspectsPage() {
         router.push("/");
         return;
       }
-
-      currentUser$.set({ id: user.id });
 
       // Buscar dados do membro
       const { data: memberData, error: memberError } = await supabase
@@ -150,7 +136,7 @@ export function ProspectsPage() {
     } finally {
       loading$.set(false);
     }
-  }, [router, activities$, currentUser$, loading$, member$, tProspects]);
+  }, [router, activities$, loading$, member$, tProspects]);
 
   useEffect(() => {
     fetchProspectData();
@@ -186,7 +172,7 @@ export function ProspectsPage() {
       if (member.half_date) {
         halfPatchDate = parseISO(member.half_date);
       } else {
-        // Fallback: calcular pela lógica de atividades (100 pts + 4 meses)
+        // Fallback: calcular pela lógica de atividades (100 pts + 6 meses)
         const sortedActivities = [...activities]
           .filter((a) => a.status === "validated")
           .sort((a, b) => new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime());

@@ -943,7 +943,7 @@
     "title": "Validação de Pontos - Prospects",
     "subtitle": "Sistema de validação e registro de pontos para Prospects",
     "regrasSistema": "Regras do Sistema",
-    "halfPatchRule": "Half Patch: 4 meses mínimo + 100 pontos mínimos",
+    "halfPatchRule": "Half Patch: 6 meses mínimo + 100 pontos mínimos",
     "fullPatchRule": "Full Patch: 6 meses como Half + 150 pontos mínimos",
     "pontosMensais": "Pontos Mensais (comportamento):",
     "pontosAtividades": "Pontos por Atividades (eventos):",
