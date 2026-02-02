@@ -266,7 +266,9 @@
     "stockHistory": "Stock History",
     "myProfile": "My Profile",
     "guestOrder": "Guest Order",
-    "birthdaysOfMonth": "Birthdays of the month:"
+    "prospects": "My Journey",
+    "birthdaysOfMonth": "Birthdays of the month:",
+    "prospectValidation": "Prospect Validation"
   },
   "form": {
     "name": "Name",
@@ -892,6 +894,145 @@
     "errors": {
       "invalidDrinkOrQuantity": "Invalid drink or quantity",
       "insufficientStock": "Insufficient stock for {drink}"
+    }
+  },
+  "prospectsPage": {
+    "loading": "Loading your progress...",
+    "errorLoading": "Error loading prospect data.",
+    "halfPatch": "HALF PATCH",
+    "prospect": "PROSPECT",
+    "estradaDesde": "Road since:",
+    "mesesComoProspect": "{months} {months, plural, =1 {month} other {months}} as prospect ({days} {days, plural, =1 {day} other {days}})",
+    "mesesComoHalf": "{months} {months, plural, =1 {month} other {months}} as Half Patch ({days} {days, plural, =1 {day} other {days}})",
+    "pontosTotais": "total points",
+    "halfPatchTitle": "Half Patch (Half Vest)",
+    "fullPatchTitle": "Full Patch (Full Vest)",
+    "meritoPontos": "Merit (Points)",
+    "tempoCasaMeses": "Time at Club (Months)",
+    "tempoComoHalfMeses": "Time as Half (Months)",
+    "requisitoAtingido": "✓ REQUIREMENT MET",
+    "faltamPontos": "{points} points remaining",
+    "faltamMeses": "{months} months remaining",
+    "faltamMesesComoHalf": "{months} months as Half remaining",
+    "elegivelHalfPatch": "Eligible for Half Patch!",
+    "elegivelFullPatch": "Eligible for Full Patch!",
+    "continueCaminhadaHalf": "Continue your journey to reach Half Patch",
+    "continueCaminhadaHalf2": "Continue on journey to reach Half Patch.",
+    "continueCaminhadaFull": "Continue your journey to reach Full Patch",
+    "continueCaminhadaFull2": "Continue on journey to reach Full Patch.",
+    "alcanceHalfPrimeiro": "Reach Half Patch first",
+    "historicoAtividades": "Activity History",
+    "nenhumaAtividade": "No activities registered yet.",
+    "atividadesAparecerao": "Your validated activities will appear here.",
+    "evolucaoMensal": "Monthly Evolution (Last 6 Months)",
+    "pts": "pts",
+    "virouHalfEm": "Became Half on:",
+    "prospectLabel": "Prospect",
+    "atividade": "Activity",
+    "data": "Date",
+    "pontos": "Points",
+    "descricao": "Description",
+    "validadoPor": "Validated by",
+    "status": "Status",
+    "validado": "Validated",
+    "rejeitado": "Rejected",
+    "pendente": "Pending",
+    "desconhecido": "Unknown"
+  },
+  "prospectValidation": {
+    "title": "Points Validation - Prospects",
+    "subtitle": "Points validation and registration system for prospects",
+    "regrasSistema": "System Rules",
+    "halfPatchRule": "Half Patch: 6 months minimum + 100 minimum points",
+    "fullPatchRule": "Full Patch: 6 months as Half + 150 minimum points",
+    "pontosMensais": "Monthly Points (behavior):",
+    "pontosAtividades": "Activity Points (events):",
+    "presencaProatividade": "Presence + Proactivity: 10 pts (maximum 1x per month)",
+    "rodar2Fds": "Ride at least 2 weekends: 5 pts",
+    "openHouseOutrosMc": "Open House other MCs: 5 pts",
+    "acoesFilantropicas": "Philanthropic Actions: 5 pts",
+    "viajarComClube": "Travel with the club: 10 pts",
+    "viajarSemClube": "Travel/Represent without the club: 5 pts",
+    "organizarOpenHouse": "Organize/Work open house: 5 pts",
+    "buscarAtividades": "Search activities...",
+    "historicoAtividades": "Activity History",
+    "carregando": "Loading...",
+    "nenhumaAtividade": "No activities registered yet.",
+    "resumoPontos": "Points Summary by Prospect",
+    "nenhumPonto": "No points registered yet.",
+    "registrarAtividade": "Register Activity",
+    "registrarNovaAtividade": "Register New Activity",
+    "prospect": "Prospect",
+    "buscarProspect": "Search prospect...",
+    "nenhumProspectEncontrado": "No prospect found",
+    "selecionado": "Selected: {name}",
+    "tipoAtividade": "Activity Type",
+    "selecioneTipoAtividade": "Select activity type",
+    "pontosMensaisComportamento": "Monthly Points (behavior)",
+    "pontosPorAtividadesEventos": "Activity Points (events)",
+    "max1xMes": "Max 1x/month",
+    "dataAtividade": "Activity Date",
+    "descricaoOpcional": "Description (optional)",
+    "adicionarDetalhes": "Add details about the activity...",
+    "cancelar": "Cancel",
+    "registrando": "Registering...",
+    "registrarEValidar": "Register and Validate",
+    "validado": "Validated",
+    "rejeitado": "Rejected",
+    "pendente": "Pending",
+    "desconhecido": "Unknown",
+    "validadoPor": "Validated by",
+    "status": "Status",
+    "atividade": "Activity",
+    "data": "Date",
+    "pontos": "Points",
+    "descricao": "Description",
+    "pts": "pts",
+    "errors": {
+      "accessDenied": "Access denied. Only Diretoria members can validate points.",
+      "userNotFound": "User not found.",
+      "errorLoadingProspects": "Error loading prospects",
+      "errorFetchingProspects": "Error fetching prospects",
+      "errorLoadingActivities": "Error loading activities. Check if the table was created.",
+      "fillAllFields": "Fill all required fields",
+      "invalidActivityType": "Invalid activity type",
+      "activityAlreadyRegistered": "This activity type has already been registered for this prospect this month ({month})",
+      "tableNotFound": "Table not found. Please run the SQL migration first: supabase/migrations/create_prospect_activities.sql",
+      "errorRegistering": "Error registering activity: {message}",
+      "unknownError": "Unknown error"
+    },
+    "success": {
+      "activityRegistered": "Activity registered and validated successfully!"
+    },
+    "activityTypes": {
+      "presencaProatividade": {
+        "label": "Presence + Proactivity",
+        "description": "Arrived on time, helped without being asked, correct posture"
+      },
+      "rodar2Fds": {
+        "label": "Ride at least 2 weekends",
+        "description": "Rode at least 2 weekends in the month"
+      },
+      "openHouseOutrosMc": {
+        "label": "Open House other MCs (representing)",
+        "description": "Represented the club at other MCs' open house"
+      },
+      "acoesFilantropicas": {
+        "label": "Philanthropic Actions",
+        "description": "Participated in philanthropic actions"
+      },
+      "viajarComClube": {
+        "label": "Travel with the club",
+        "description": "Participated in official club trip"
+      },
+      "viajarSemClube": {
+        "label": "Travel/Represent without the club",
+        "description": "Traveled or represented the club alone"
+      },
+      "organizarOpenHouse": {
+        "label": "Organize/Work club open house",
+        "description": "Organized or worked at the club's open house"
+      }
     }
   }
 }
