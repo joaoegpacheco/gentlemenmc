@@ -266,7 +266,9 @@
     "stockHistory": "Histórico de Estoque",
     "myProfile": "Meu Perfil",
     "guestOrder": "Comanda Convidado",
-    "birthdaysOfMonth": "Aniversariantes do mês:"
+    "prospects": "Minha Caminhada",
+    "birthdaysOfMonth": "Aniversariantes do mês:",
+    "prospectValidation": "Validação Prospects"
   },
   "form": {
     "name": "Nome",
@@ -892,6 +894,145 @@
     "errors": {
       "invalidDrinkOrQuantity": "Bebida ou quantidade inválida",
       "insufficientStock": "Estoque insuficiente para {drink}"
+    }
+  },
+  "prospectsPage": {
+    "loading": "Carregando seu progresso...",
+    "errorLoading": "Erro ao carregar dados do prospect.",
+    "halfPatch": "HALF PATCH",
+    "prospect": "PROSPECT",
+    "estradaDesde": "Estrada desde:",
+    "mesesComoProspect": "{months} {months, plural, =1 {mês} other {meses}} como prospect ({days} {days, plural, =1 {dia} other {dias}})",
+    "mesesComoHalf": "{months} {months, plural, =1 {mês} other {meses}} como Half Patch ({days} {days, plural, =1 {dia} other {dias}})",
+    "pontosTotais": "pontos totais",
+    "halfPatchTitle": "Half Patch (Meio Colete)",
+    "fullPatchTitle": "Full Patch (Colete Fechado)",
+    "meritoPontos": "Mérito (Pontos)",
+    "tempoCasaMeses": "Tempo de Casa (Meses)",
+    "tempoComoHalfMeses": "Tempo como Half (Meses)",
+    "requisitoAtingido": "✓ REQUISITO ATINGIDO",
+    "faltamPontos": "Faltam {points} pontos",
+    "faltamMeses": "Faltam {months} meses",
+    "faltamMesesComoHalf": "Faltam {months} meses como Half",
+    "elegivelHalfPatch": "Elegível para Half Patch!",
+    "elegivelFullPatch": "Elegível para Full Patch!",
+    "continueCaminhadaHalf": "Continue sua caminhada para alcançar o Half Patch",
+    "continueCaminhadaHalf2": "Continua na caminhada para alcançar o Half Patch",
+    "continueCaminhadaFull": "Continue sua caminhada para alcançar o Full Patch",
+    "continueCaminhadaFull2": "Continua na caminhada para alcançar o Full Patch",
+    "alcanceHalfPrimeiro": "Alcance o Half Patch primeiro",
+    "historicoAtividades": "Histórico de Atividades",
+    "nenhumaAtividade": "Nenhuma atividade registrada ainda.",
+    "atividadesAparecerao": "Suas atividades validadas aparecerão aqui.",
+    "evolucaoMensal": "Evolução Mensal (Últimos 6 Meses)",
+    "pts": "pts",
+    "virouHalfEm": "Virou Half em:",
+    "prospectLabel": "Prospect",
+    "atividade": "Atividade",
+    "data": "Data",
+    "pontos": "Pontos",
+    "descricao": "Descrição",
+    "validado": "Validado",
+    "rejeitado": "Rejeitado",
+    "pendente": "Pendente",
+    "desconhecido": "Desconhecido",
+    "validadoPor": "Validado por",
+    "status": "Status"
+  },
+  "prospectValidation": {
+    "title": "Validação de Pontos - Prospects",
+    "subtitle": "Sistema de validação e registro de pontos para Prospects",
+    "regrasSistema": "Regras do Sistema",
+    "halfPatchRule": "Half Patch: 6 meses mínimo + 100 pontos mínimos",
+    "fullPatchRule": "Full Patch: 6 meses como Half + 150 pontos mínimos",
+    "pontosMensais": "Pontos Mensais (comportamento):",
+    "pontosAtividades": "Pontos por Atividades (eventos):",
+    "presencaProatividade": "Presença + Proatividade: 10 pts (máximo 1x por mês)",
+    "rodar2Fds": "Rodar pelo menos 2 FDS: 5 pts",
+    "openHouseOutrosMc": "Open House outros MC: 5 pts",
+    "acoesFilantropicas": "Ações Filantrópicas: 5 pts",
+    "viajarComClube": "Viajar com o clube: 10 pts",
+    "viajarSemClube": "Viajar/Representar sem o clube: 5 pts",
+    "organizarOpenHouse": "Organizar/Trabalhar open house: 5 pts",
+    "buscarAtividades": "Buscar atividades...",
+    "historicoAtividades": "Histórico de Atividades",
+    "carregando": "Carregando...",
+    "nenhumaAtividade": "Nenhuma atividade registrada ainda.",
+    "resumoPontos": "Resumo de Pontos por Prospect",
+    "nenhumPonto": "Nenhum ponto registrado ainda.",
+    "registrarAtividade": "Registrar Atividade",
+    "registrarNovaAtividade": "Registrar Nova Atividade",
+    "prospect": "Prospect",
+    "buscarProspect": "Buscar prospect...",
+    "nenhumProspectEncontrado": "Nenhum prospect encontrado",
+    "selecionado": "Selecionado: {name}",
+    "tipoAtividade": "Tipo de Atividade",
+    "selecioneTipoAtividade": "Selecione o tipo de atividade",
+    "pontosMensaisComportamento": "Pontos Mensais (comportamento)",
+    "pontosPorAtividadesEventos": "Pontos por Atividades (eventos)",
+    "max1xMes": "Máx 1x/mês",
+    "dataAtividade": "Data da Atividade",
+    "descricaoOpcional": "Descrição (opcional)",
+    "adicionarDetalhes": "Adicione detalhes sobre a atividade...",
+    "cancelar": "Cancelar",
+    "registrando": "Registrando...",
+    "registrarEValidar": "Registrar e Validar",
+    "validado": "Validado",
+    "rejeitado": "Rejeitado",
+    "pendente": "Pendente",
+    "desconhecido": "Desconhecido",
+    "validadoPor": "Validado por",
+    "status": "Status",
+    "atividade": "Atividade",
+    "data": "Data",
+    "pontos": "Pontos",
+    "descricao": "Descrição",
+    "pts": "pts",
+    "errors": {
+      "accessDenied": "Acesso negado. Apenas membros da Diretoria podem validar pontos.",
+      "userNotFound": "Usuário não encontrado.",
+      "errorLoadingProspects": "Erro ao carregar Prospects",
+      "errorFetchingProspects": "Erro ao buscar Prospects",
+      "errorLoadingActivities": "Erro ao carregar atividades. Verifique se a tabela foi criada.",
+      "fillAllFields": "Preencha todos os campos obrigatórios",
+      "invalidActivityType": "Tipo de atividade inválido",
+      "activityAlreadyRegistered": "Este tipo de atividade já foi registrado para este prospect neste mês ({month})",
+      "tableNotFound": "Tabela não encontrada. Por favor, execute a migration SQL primeiro: supabase/migrations/create_prospect_activities.sql",
+      "errorRegistering": "Erro ao registrar atividade: {message}",
+      "unknownError": "Erro desconhecido"
+    },
+    "success": {
+      "activityRegistered": "Atividade registrada e validada com sucesso!"
+    },
+    "activityTypes": {
+      "presencaProatividade": {
+        "label": "Presença + Proatividade",
+        "description": "Chegou no horário, ajudou sem ser mandado, postura correta"
+      },
+      "rodar2Fds": {
+        "label": "Rodar pelo menos 2 FDS",
+        "description": "Rodou pelo menos 2 finais de semana no mês"
+      },
+      "openHouseOutrosMc": {
+        "label": "Open House outros MC (representando)",
+        "description": "Representou o clube em open house de outros MCs"
+      },
+      "acoesFilantropicas": {
+        "label": "Ações Filantrópicas",
+        "description": "Participou de ações filantrópicas"
+      },
+      "viajarComClube": {
+        "label": "Viajar com o clube",
+        "description": "Participou de viagem oficial do clube"
+      },
+      "viajarSemClube": {
+        "label": "Viajar/Representar sem o clube",
+        "description": "Viajou ou representou o clube sozinho"
+      },
+      "organizarOpenHouse": {
+        "label": "Organizar/Trabalhar open house do clube",
+        "description": "Organizou ou trabalhou no open house do clube"
+      }
     }
   }
 }
