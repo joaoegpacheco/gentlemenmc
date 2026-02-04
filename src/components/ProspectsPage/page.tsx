@@ -27,9 +27,10 @@ import {
   Calendar,
   Target,
   Activity,
+  Scale,
 } from "lucide-react";
 import type { SupabaseAuthUser } from "@/types/auth";
-import { format, differenceInMonths, differenceInDays, parseISO } from "date-fns";
+import { format, differenceInMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface ProspectActivity {
@@ -43,6 +44,17 @@ interface ProspectActivity {
   validated_at?: string;
   status: "pending" | "validated" | "rejected";
   created_at?: string;
+}
+
+interface ProspectPenalty {
+  id?: number;
+  prospect_id: string;
+  severity: "leve" | "medio" | "grave";
+  points_deducted: number;
+  infraction_type?: string;
+  description?: string;
+  created_at?: string;
+  created_by?: string;
 }
 
 interface Member {
@@ -82,11 +94,15 @@ export function ProspectsPage() {
   const tProspects = useTranslations('prospectsPage');
   const loading$ = useObservable(true);
   const member$ = useObservable<Member | null>(null);
+  const allMembers$ = useObservable<Member[]>([]); // Todos os membros (incluindo Diretoria) para buscar nomes
   const activities$ = useObservable<ProspectActivity[]>([]);
+  const penalties$ = useObservable<ProspectPenalty[]>([]);
 
   const loading = useValue(loading$);
   const member = useValue(member$);
+  const allMembers = useValue(allMembers$);
   const activities = useValue(activities$);
+  const penalties = useValue(penalties$);
   const router = useRouter();
 
   const fetchProspectData = useCallback(async () => {
@@ -115,6 +131,16 @@ export function ProspectsPage() {
 
       member$.set(memberData);
 
+      // Buscar todos os membros (incluindo Diretoria) para buscar nomes de criadores/validadores
+      const { data: allMembersData } = await supabase
+        .from("membros")
+        .select("user_id, user_name")
+        .order("user_name", { ascending: true });
+
+      if (allMembersData) {
+        allMembers$.set(allMembersData);
+      }
+
       // Buscar atividades do prospect
       const { data: activitiesData, error: activitiesError } = await supabase
         .from("prospect_activities")
@@ -130,13 +156,29 @@ export function ProspectsPage() {
       } else {
         activities$.set(activitiesData || []);
       }
+
+      // Buscar penalidades do prospect
+      const { data: penaltiesData, error: penaltiesError } = await supabase
+        .from("prospect_penalties")
+        .select("*")
+        .eq("prospect_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (penaltiesError) {
+        if (penaltiesError.code !== "42P01" && !penaltiesError.message?.includes("does not exist")) {
+          console.error("Erro ao buscar penalidades:", penaltiesError);
+        }
+        penalties$.set([]);
+      } else {
+        penalties$.set(penaltiesData || []);
+      }
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
       message.error(tProspects('errorLoading'));
     } finally {
       loading$.set(false);
     }
-  }, [router, activities$, loading$, member$, tProspects]);
+  }, [router, activities$, loading$, member$, allMembers$, penalties$, tProspects]);
 
   useEffect(() => {
     fetchProspectData();
@@ -150,12 +192,15 @@ export function ProspectsPage() {
 
     const startDate = member.created_at ? parseISO(member.created_at) : new Date();
     const monthsAsProspect = differenceInMonths(new Date(), startDate);
-    const daysAsProspect = differenceInDays(new Date(), startDate);
 
     // Calcular pontos totais (apenas atividades validadas)
-    const totalPoints = activities
+    const activityPoints = activities
       .filter((a) => a.status === "validated")
       .reduce((sum, a) => sum + a.points, 0);
+    
+    // Subtrair penalidades
+    const penaltyDeduction = penalties.reduce((sum, p) => sum + Math.abs(p.points_deducted), 0);
+    const totalPoints = Math.max(0, activityPoints - penaltyDeduction);
 
     // Verificar requisitos Half Patch
     const halfPatchPointsProgress = Math.min((totalPoints / HALF_PATCH_REQUIREMENTS.minPoints) * 100, 100);
@@ -223,7 +268,6 @@ export function ProspectsPage() {
     return {
       startDate,
       monthsAsProspect,
-      daysAsProspect,
       totalPoints,
       halfPatchPointsProgress,
       halfPatchTimeProgress,
@@ -238,8 +282,9 @@ export function ProspectsPage() {
       activitiesByMonth,
       monthsAsHalf,
       halfPatchDate,
+      penaltyDeduction,
     };
-  }, [member, activities]);
+  }, [member, activities, penalties]);
 
   const getActivityLabel = (type: string) => {
     const key = ACTIVITY_TYPE_KEYS[type as keyof typeof ACTIVITY_TYPE_KEYS];
@@ -251,6 +296,45 @@ export function ProspectsPage() {
       }
     }
     return type;
+  };
+
+  const getCreatorName = (creatorId?: string) => {
+    if (!creatorId) return "-";
+    // Buscar em todos os membros (incluindo Diretoria) para encontrar o criador
+    const creator = allMembers.find((m) => m.user_id === creatorId);
+    return creator?.user_name || tProspects('desconhecido');
+  };
+
+  const getPenaltyCountByType = (severity: "leve" | "medio" | "grave") => {
+    return penalties.filter(p => p.severity === severity).length;
+  };
+
+  const renderPenaltyInfo = () => {
+    if (penalties.length === 0) return null;
+    
+    const grave = getPenaltyCountByType("grave");
+    const medio = getPenaltyCountByType("medio");
+    const leve = getPenaltyCountByType("leve");
+    
+    return (
+      <>
+        {grave > 0 && (
+          <span className="text-red-600">
+            {" "}({grave} {grave > 1 ? tProspects('penalidades_count') : tProspects('penalidade')} {grave > 1 ? tProspects('graves') : tProspects('grave')})
+          </span>
+        )}
+        {medio > 0 && (
+          <span className="text-orange-600">
+            {" "}({medio} {medio > 1 ? tProspects('penalidades_count') : tProspects('penalidade')} {medio > 1 ? tProspects('medias') : tProspects('media')})
+          </span>
+        )}
+        {leve > 0 && (
+          <span className="text-yellow-600">
+            {" "}({leve} {leve > 1 ? tProspects('penalidades_count') : tProspects('penalidade')} {leve > 1 ? tProspects('leves') : tProspects('leve')})
+          </span>
+        )}
+      </>
+    );
   };
 
   if (loading) {
@@ -322,10 +406,9 @@ export function ProspectsPage() {
                   <Clock className="h-4 w-4" />
                   <span>
                     {member.case_type === "Half" 
-                      ? `${stats.monthsAsProspect} ${stats.monthsAsProspect === 1 ? "mês" : "meses"} como Half Patch`
-                      : `${stats.monthsAsProspect} ${stats.monthsAsProspect === 1 ? "mês" : "meses"} como prospect`
+                      ? tProspects('mesesComoHalfPatch', { months: stats.monthsAsProspect })
+                      : tProspects('mesesComoProspect', { months: stats.monthsAsProspect })
                     }
-                    ({stats.daysAsProspect} {stats.daysAsProspect === 1 ? "dia" : "dias"})
                   </span>
                 </div>
               </div>
@@ -353,12 +436,18 @@ export function ProspectsPage() {
             {/* Pontos */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Mérito (Pontos)</span>
+                <span className="text-sm font-medium">{tProspects('meritoPontos')}</span>
                 <span className="text-sm font-bold">
                   {stats.totalPoints} / {HALF_PATCH_REQUIREMENTS.minPoints}
                 </span>
               </div>
               <Progress value={stats.halfPatchPointsProgress} className="h-3" />
+              {stats.penaltyDeduction > 0 && (
+                <div className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                  <Scale className="h-3 w-3" />
+                  {tProspects('penalidades')}: -{stats.penaltyDeduction} {tProspects('pts')}
+                </div>
+              )}
               {stats.halfPatchPointsMet ? (
                 <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
                   <CheckCircle2 className="h-4 w-4" />
@@ -367,6 +456,7 @@ export function ProspectsPage() {
               ) : (
                 <div className="text-xs text-muted-foreground mt-1">
                   {tProspects('faltamPontos', { points: HALF_PATCH_REQUIREMENTS.minPoints - stats.totalPoints })}
+                  {renderPenaltyInfo()}
                 </div>
               )}
             </div>
@@ -427,12 +517,18 @@ export function ProspectsPage() {
             {/* Pontos */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Mérito (Pontos)</span>
+                <span className="text-sm font-medium">{tProspects('meritoPontos')}</span>
                 <span className="text-sm font-bold">
                   {stats.totalPoints} / {FULL_PATCH_REQUIREMENTS.minPoints}
                 </span>
               </div>
               <Progress value={stats.fullPatchPointsProgress} className="h-3" />
+              {stats.penaltyDeduction > 0 && (
+                <div className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                  <Scale className="h-3 w-3" />
+                  {tProspects('penalidades')}: -{stats.penaltyDeduction} {tProspects('pts')}
+                </div>
+              )}
               {stats.fullPatchPointsMet ? (
                 <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
                   <CheckCircle2 className="h-4 w-4" />
@@ -441,6 +537,7 @@ export function ProspectsPage() {
               ) : (
                 <div className="text-xs text-muted-foreground mt-1">
                   {tProspects('faltamPontos', { points: FULL_PATCH_REQUIREMENTS.minPoints - stats.totalPoints })}
+                  {renderPenaltyInfo()}
                 </div>
               )}
             </div>
@@ -480,7 +577,7 @@ export function ProspectsPage() {
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground mt-1">
-                  Faltam {FULL_PATCH_REQUIREMENTS.minMonths - stats.monthsAsHalf} meses como Half
+                  {tProspects('faltamMesesComoHalf', { months: FULL_PATCH_REQUIREMENTS.minMonths - stats.monthsAsHalf })}
                 </div>
               )}
               {member.case_type === "Half" && stats.halfPatchDate && (
@@ -503,21 +600,21 @@ export function ProspectsPage() {
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                   <Target className="h-5 w-5" />
                   <span className="text-sm">
-                    Continue sua caminhada para alcançar o Full Patch
+                    {tProspects('continueCaminhadaFull')}
                   </span>
                 </div>
               ) : !stats.halfPatchEligible ? (
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                   <Target className="h-5 w-5" />
                   <span className="text-sm">
-                    Alcance o Half Patch primeiro
+                    {tProspects('alcanceHalfPrimeiro')}
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                   <Target className="h-5 w-5" />
                   <span className="text-sm">
-                    Continue sua caminhada para alcançar o Full Patch
+                    {tProspects('continueCaminhadaFull')}
                   </span>
                 </div>
               )}
@@ -577,16 +674,83 @@ export function ProspectsPage() {
                         {activity.status === "validated" ? (
                           <Badge className="bg-green-500">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Validado
+                            {tProspects('validado')}
                           </Badge>
                         ) : activity.status === "rejected" ? (
                           <Badge variant="destructive">
                             <XCircle className="h-3 w-3 mr-1" />
-                            Rejeitado
+                            {tProspects('rejeitado')}
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">Pendente</Badge>
+                          <Badge variant="secondary">{tProspects('pendente')}</Badge>
                         )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Histórico de Penalidades */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Scale className="h-5 w-5" />
+            {tProspects('historicoPenalidades')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {penalties.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Scale className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>{tProspects('nenhumaPenalidade')}</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{tProspects('data')}</TableHead>
+                      <TableHead>{tProspects('severidade')}</TableHead>
+                      <TableHead>{tProspects('pontos')}</TableHead>
+                      <TableHead>{tProspects('descricao')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                <TableBody>
+                  {penalties.map((penalty) => (
+                    <TableRow key={penalty.id}>
+                      <TableCell>
+                        {penalty.created_at
+                          ? format(parseISO(penalty.created_at), "dd/MM/yyyy", { locale: ptBR })
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            penalty.severity === "grave"
+                              ? "destructive"
+                              : penalty.severity === "medio"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {penalty.severity === "grave"
+                            ? tProspects('severidadeGrave')
+                            : penalty.severity === "medio"
+                            ? tProspects('severidadeMedia')
+                            : tProspects('severidadeLeve')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="destructive" className="font-semibold">
+                          -{penalty.points_deducted} pts
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {penalty.description || penalty.infraction_type || "-"}
                       </TableCell>
                     </TableRow>
                   ))}

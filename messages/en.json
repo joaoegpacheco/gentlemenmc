@@ -902,8 +902,8 @@
     "halfPatch": "HALF PATCH",
     "prospect": "PROSPECT",
     "estradaDesde": "Road since:",
-    "mesesComoProspect": "{months} {months, plural, =1 {month} other {months}} as prospect ({days} {days, plural, =1 {day} other {days}})",
-    "mesesComoHalf": "{months} {months, plural, =1 {month} other {months}} as Half Patch ({days} {days, plural, =1 {day} other {days}})",
+    "mesesComoProspect": "{months} {months, plural, =1 {month} other {months}} as prospect",
+    "mesesComoHalf": "{months} {months, plural, =1 {month} other {months}} as Half Patch",
     "pontosTotais": "total points",
     "halfPatchTitle": "Half Patch (Half Vest)",
     "fullPatchTitle": "Full Patch (Full Vest)",
@@ -937,7 +937,57 @@
     "validado": "Validated",
     "rejeitado": "Rejected",
     "pendente": "Pending",
-    "desconhecido": "Unknown"
+    "desconhecido": "Unknown",
+    "historicoPenalidades": "Penalty History",
+    "nenhumaPenalidade": "No penalties registered.",
+    "penalidades": "Penalties",
+    "incluirPenalidade": "Add Penalty",
+    "historicoCompleto": "Full History",
+    "visaoProspect": "Prospect View",
+    "mesesComoHalfPatch": "{months} {months, plural, =1 {month} other {months}} as Half Patch",
+    "dias": "{days} {days, plural, =1 {day} other {days}}",
+    "penalidade": "penalty",
+    "penalidades_count": "penalties",
+    "grave": "SEVERE",
+    "graves": "SEVERE",
+    "media": "MEDIUM",
+    "medias": "MEDIUM",
+    "leve": "LIGHT",
+    "leves": "LIGHT",
+    "severidadeGrave": "🔴 Severe",
+    "severidadeMedia": "🟠 Medium",
+    "severidadeLeve": "🟡 Light",
+    "severidade": "Severity",
+    "activityTypes": {
+      "presencaProatividade": {
+        "label": "Presence + Proactivity",
+        "description": "Arrived on time, helped without being asked, correct posture"
+      },
+      "rodar2Fds": {
+        "label": "Ride at least 2 weekends",
+        "description": "Rode at least 2 weekends in the month"
+      },
+      "openHouseOutrosMc": {
+        "label": "Open House other MCs (representing)",
+        "description": "Represented the club at other MCs' open house"
+      },
+      "acoesFilantropicas": {
+        "label": "Philanthropic Actions",
+        "description": "Participated in philanthropic actions"
+      },
+      "viajarComClube": {
+        "label": "Travel with the club",
+        "description": "Participated in official club trip"
+      },
+      "viajarSemClube": {
+        "label": "Travel/Represent without the club",
+        "description": "Traveled or represented the club alone"
+      },
+      "organizarOpenHouse": {
+        "label": "Organize/Work club open house",
+        "description": "Organized or worked at the club's open house"
+      }
+    }
   },
   "prospectValidation": {
     "title": "Points Validation - Prospects",
@@ -965,7 +1015,7 @@
     "prospect": "Prospect",
     "buscarProspect": "Search prospect...",
     "nenhumProspectEncontrado": "No prospect found",
-    "selecionado": "Selected: {name}",
+    "selecionado": "Selected:",
     "tipoAtividade": "Activity Type",
     "selecioneTipoAtividade": "Select activity type",
     "pontosMensaisComportamento": "Monthly Points (behavior)",
@@ -988,6 +1038,33 @@
     "pontos": "Points",
     "descricao": "Description",
     "pts": "pts",
+    "severidade": "Severity",
+    "infracoesLevesTitulo": "🟡 Minor violations",
+    "infracoesLevesSubtitulo": "Warning and minor point loss.",
+    "atrasosPontuais": "Punctual delays — Arriving late without recurrence.",
+    "desatencao": "Lack of attention — Using the phone or being distracted in meetings.",
+    "faltaPostura": "Lack of posture — Interrupting or speaking without being requested.",
+    "comunicacaoInadequada": "Inappropriate communication — Overly informal tone.",
+    "aparencia": "Appearance — Outfit not aligned with the MC standard.",
+    "faltaIniciativa": "Lack of initiative — Not volunteering when needed.",
+
+    "infracoesMediasTitulo": "🟠 Medium violations",
+    "infracoesMediasSubtitulo": "Significant point loss and internal record.",
+    "reincidencia": "Recurrence — Repetition of minor violations.",
+    "ausenciaInjustificada": "Unjustified absence — Missing without prior notice.",
+    "exposicaoIndevida": "Improper exposure — Using the MC image without authorization.",
+    "condutaSocialImpropria": "Improper social conduct — Excessive alcohol or inadequate behavior.",
+    "questionamento": "Questioning — Challenging decisions in the wrong context.",
+    "quebraHierarquia": "Breach of hierarchy — Ignoring members’ guidance.",
+
+    "infracoesGravesTitulo": "🔴 Major violations",
+    "infracoesGravesSubtitulo": "Point reset or immediate dismissal.",
+    "deslealdade": "Disloyalty — Sharing internal matters with outsiders.",
+    "desrespeito": "Disrespect — Towards members, board, or families.",
+    "condutaAntietica": "Unethical conduct — Acts that damage the MC’s reputation.",
+    "falsidade": "Falsehood — Lying or omitting relevant facts.",
+    "usoIndevidoNome": "Misuse of the name — Involving MC in conflicts or sensitive situations.",
+    "atitudeIncompativel": "Incompatible attitude — Any action that tarnishes the institutional image.",
     "errors": {
       "accessDenied": "Access denied. Only Diretoria members can validate points.",
       "userNotFound": "User not found.",
@@ -1002,8 +1079,28 @@
       "unknownError": "Unknown error"
     },
     "success": {
-      "activityRegistered": "Activity registered and validated successfully!"
+      "activityRegistered": "Activity registered and validated successfully!",
+      "penaltyRegistered": "Penalty registered successfully!"
     },
+    "incluirPenalidade": "Add Penalty",
+    "registrarPenalidade": "Register Penalty",
+    "historicoPenalidades": "Penalty History",
+    "nenhumaPenalidade": "No penalties registered yet.",
+    "severidadeInfracao": "Infraction Severity",
+    "selecioneSeveridade": "Select severity",
+    "descricaoInfracao": "Infraction Description",
+    "descrevaInfracao": "Describe the infraction or reason for the penalty...",
+    "exemplosInfracao": "Examples: Occasional delays, Inattention, Recidivism, Disrespect, etc.",
+    "registrarPenalidadeButton": "Register Penalty",
+    "severidadeLeve": "🟡 Light (-5 points)",
+    "severidadeMedia": "🟠 Medium (-10 points)",
+    "severidadeGrave": "🔴 Severe (-20 points)",
+    "leveDescricao": "Warning and light point loss",
+    "medioDescricao": "Significant point loss and internal record",
+    "graveDescricao": "Point reset or immediate dismissal",
+    "verificandoPermissoes": "Checking permissions...",
+    "registrandoPenalidade": "Registering...",
+    "registradoPor": "Registered by",
     "activityTypes": {
       "presencaProatividade": {
         "label": "Presence + Proactivity",
