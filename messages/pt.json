@@ -902,8 +902,8 @@
     "halfPatch": "HALF PATCH",
     "prospect": "PROSPECT",
     "estradaDesde": "Estrada desde:",
-    "mesesComoProspect": "{months} {months, plural, =1 {mês} other {meses}} como prospect ({days} {days, plural, =1 {dia} other {dias}})",
-    "mesesComoHalf": "{months} {months, plural, =1 {mês} other {meses}} como Half Patch ({days} {days, plural, =1 {dia} other {dias}})",
+    "mesesComoProspect": "{months} {months, plural, =1 {mês} other {meses}} como prospect",
+    "mesesComoHalf": "{months} {months, plural, =1 {mês} other {meses}} como Half Patch",
     "pontosTotais": "pontos totais",
     "halfPatchTitle": "Half Patch (Meio Colete)",
     "fullPatchTitle": "Full Patch (Colete Fechado)",
@@ -937,12 +937,63 @@
     "pendente": "Pendente",
     "desconhecido": "Desconhecido",
     "validadoPor": "Validado por",
-    "status": "Status"
+    "status": "Status",
+    "historicoPenalidades": "Histórico de Penalidades",
+    "nenhumaPenalidade": "Nenhuma penalidade registrada.",
+    "penalidades": "Penalidades",
+    "incluirPenalidade": "Incluir Penalidade",
+    "historicoCompleto": "Histórico Completo",
+    "visaoProspect": "Visão do Prospect",
+    "mesesComoHalfPatch": "{months} {months, plural, =1 {mês} other {meses}} como Half Patch",
+    "dias": "{days} {days, plural, =1 {dia} other {dias}}",
+    "penalidade": "penalidade",
+    "penalidades_count": "penalidades",
+    "grave": "GRAVE",
+    "graves": "GRAVES",
+    "media": "MÉDIA",
+    "medias": "MÉDIAS",
+    "leve": "LEVE",
+    "leves": "LEVES",
+    "severidadeGrave": "🔴 Grave",
+    "severidadeMedia": "🟠 Média",
+    "severidadeLeve": "🟡 Leve",
+    "severidade": "Severidade",
+    "activityTypes": {
+      "presencaProatividade": {
+        "label": "Presença + Proatividade",
+        "description": "Chegou no horário, ajudou sem ser mandado, postura correta"
+      },
+      "rodar2Fds": {
+        "label": "Rodar pelo menos 2 FDS",
+        "description": "Rodou pelo menos 2 finais de semana no mês"
+      },
+      "openHouseOutrosMc": {
+        "label": "Open House outros MC (representando)",
+        "description": "Representou o clube em open house de outros MCs"
+      },
+      "acoesFilantropicas": {
+        "label": "Ações Filantrópicas",
+        "description": "Participou de ações filantrópicas"
+      },
+      "viajarComClube": {
+        "label": "Viajar com o clube",
+        "description": "Participou de viagem oficial do clube"
+      },
+      "viajarSemClube": {
+        "label": "Viajar/Representar sem o clube",
+        "description": "Viajou ou representou o clube sozinho"
+      },
+      "organizarOpenHouse": {
+        "label": "Organizar/Trabalhar open house do clube",
+        "description": "Organizou ou trabalhou no open house do clube"
+      }
+    }
   },
   "prospectValidation": {
     "title": "Validação de Pontos - Prospects",
     "subtitle": "Sistema de validação e registro de pontos para Prospects",
     "regrasSistema": "Regras do Sistema",
+    "atividades": "Atividades",
     "halfPatchRule": "Half Patch: 6 meses mínimo + 100 pontos mínimos",
     "fullPatchRule": "Full Patch: 6 meses como Half + 150 pontos mínimos",
     "pontosMensais": "Pontos Mensais (comportamento):",
@@ -965,7 +1016,7 @@
     "prospect": "Prospect",
     "buscarProspect": "Buscar prospect...",
     "nenhumProspectEncontrado": "Nenhum prospect encontrado",
-    "selecionado": "Selecionado: {name}",
+    "selecionado": "Selecionado:",
     "tipoAtividade": "Tipo de Atividade",
     "selecioneTipoAtividade": "Selecione o tipo de atividade",
     "pontosMensaisComportamento": "Pontos Mensais (comportamento)",
@@ -988,6 +1039,33 @@
     "pontos": "Pontos",
     "descricao": "Descrição",
     "pts": "pts",
+    "severidade": "Severidade",
+    "infracoesLevesTitulo": "🟡 Infrações leves",
+    "infracoesLevesSubtitulo": "Advertência e perda leve de pontos.",
+    "atrasosPontuais": "Atrasos pontuais — Chegar atrasado sem reincidência.",
+    "desatencao": "Desatenção — Uso de celular ou dispersão em reuniões.",
+    "faltaPostura": "Falta de postura — Interromper, falar sem ser chamado.",
+    "comunicacaoInadequada": "Comunicação inadequada — Tom informal ou excessivo.",
+    "aparencia": "Aparência — Vestimenta incompatível com o padrão do MC.",
+    "faltaIniciativa": "Falta de iniciativa — Não se voluntariar quando necessário.",
+
+    "infracoesMediasTitulo": "🟠 Infrações médias",
+    "infracoesMediasSubtitulo": "Perda significativa de pontos e registro interno.",
+    "reincidencia": "Reincidência — Repetição de faltas leves.",
+    "ausenciaInjustificada": "Ausência injustificada — Falta sem aviso prévio.",
+    "exposicaoIndevida": "Exposição indevida — Uso de imagem do MC sem autorização.",
+    "condutaSocialImpropria": "Conduta social imprópria — Excesso de álcool ou comportamento inadequado.",
+    "questionamento": "Questionamento — Contestar decisões fora do ambiente adequado.",
+    "quebraHierarquia": "Quebra de hierarquia — Ignorar orientações de membros.",
+
+    "infracoesGravesTitulo": "🔴 Infrações graves",
+    "infracoesGravesSubtitulo": "Zeragem de pontos ou desligamento imediato.",
+    "deslealdade": "Deslealdade — Levar assuntos internos para terceiros.",
+    "desrespeito": "Desrespeito — A membros, diretoria ou famílias.",
+    "condutaAntietica": "Conduta antiética — Atos que comprometam a reputação do MC.",
+    "falsidade": "Falsidade — Mentir ou omitir fatos relevantes.",
+    "usoIndevidoNome": "Uso indevido do nome — Envolver o MC em conflitos ou situações sensíveis.",
+    "atitudeIncompativel": "Atitude incompatível — Qualquer ação que manche a imagem institucional.",
     "errors": {
       "accessDenied": "Acesso negado. Apenas membros da Diretoria podem validar pontos.",
       "userNotFound": "Usuário não encontrado.",
@@ -999,11 +1077,38 @@
       "activityAlreadyRegistered": "Este tipo de atividade já foi registrado para este prospect neste mês ({month})",
       "tableNotFound": "Tabela não encontrada. Por favor, execute a migration SQL primeiro: supabase/migrations/create_prospect_activities.sql",
       "errorRegistering": "Erro ao registrar atividade: {message}",
-      "unknownError": "Erro desconhecido"
+      "unknownError": "Erro desconhecido",
+      "prospectNotFound": "Prospect não encontrado. Por favor, verifique se o prospect existe.",
+      "activityAlreadyExists": "Esta atividade já foi registrada.",
+      "errorRegisteringUnknown": "Erro ao registrar atividade: {message}",
+      "penaltyTableNotFound": "Tabela de penalidades não encontrada. Execute a migration SQL primeiro.",
+      "penaltyAlreadyExists": "Esta penalidade já foi registrada.",
+      "errorRegisteringPenaltyUnknown": "Erro ao registrar penalidade: {message}"
     },
     "success": {
-      "activityRegistered": "Atividade registrada e validada com sucesso!"
+      "activityRegistered": "Atividade registrada e validada com sucesso!",
+      "penaltyRegistered": "Penalidade registrada com sucesso!"
     },
+    "incluirPenalidade": "Incluir Penalidade",
+    "registrarPenalidade": "Registrar Penalidade",
+    "historicoPenalidades": "Histórico de Penalidades",
+    "nenhumaPenalidade": "Nenhuma penalidade registrada ainda.",
+    "severidadeInfracao": "Severidade da Infração",
+    "selecioneSeveridade": "Selecione a severidade",
+    "descricaoInfracao": "Descrição da Infração",
+    "descrevaInfracao": "Descreva a infração ou motivo da penalidade...",
+    "exemplosInfracao": "Exemplos: Atrasos pontuais, Desatenção, Reincidência, Desrespeito, etc.",
+    "registrarPenalidadeButton": "Registrar Penalidade",
+    "penalidades": "Penalidades",
+    "severidadeLeve": "🟡 Leve (-5 pontos)",
+    "severidadeMedia": "🟠 Média (-10 pontos)",
+    "severidadeGrave": "🔴 Grave (-20 pontos)",
+    "leveDescricao": "Advertência e perda leve de pontos",
+    "medioDescricao": "Perda significativa de pontos e registro interno",
+    "graveDescricao": "Zeragem de pontos ou desligamento imediato",
+    "verificandoPermissoes": "Verificando permissões...",
+    "registrandoPenalidade": "Registrando...",
+    "registradoPor": "Registrado por",
     "activityTypes": {
       "presencaProatividade": {
         "label": "Presença + Proatividade",
