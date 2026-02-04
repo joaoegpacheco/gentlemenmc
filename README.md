@@ -62,6 +62,11 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 - View monthly birthdays of club members
 - Birthday reminders in the main interface
 
+#### 🛤️ Prospect journey (Prospects)
+- View your own prospect journey and progress
+- Track points and time toward Half Patch and Full Patch
+- See validated activities and penalties
+
 ### For Administrators
 
 #### 📈 Financial Management
@@ -127,6 +132,14 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 - View member contact information
 - Search and filter members
 - Member profile view with detailed information
+
+#### ✅ Prospect Validation
+- Points validation and registration system for prospects (Diretoria only)
+- Register and validate prospect activities (presença/proatividade, rodar 2 FDS, open house, ações filantrópicas, viagens, etc.)
+- Half Patch and Full Patch progress (points + 6 months)
+- Apply and manage penalties (leve, médio, grave)
+- Prospect search and activity history
+- Progress indicators and eligibility status
 
 #### 📊 Administrative Dashboard
 - **Overview Cards:**
@@ -312,7 +325,7 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 
 ### Utilities
 - **Date Handling:** date-fns 4.1.0, dayjs 1.11.13
-- **PDF Generation:** jsPDF 3.0.2, jspdf-autotable 5.0.2
+- **PDF Generation:** jsPDF 4.x, jspdf-autotable 5.0.x
 - **Printing:** print-js 1.6.0
 - **UUID:** uuid 11.1.0
 - **Responsive:** react-responsive 10.0.1
@@ -340,7 +353,9 @@ gentlemenmc/
 │   │   │   │   ├── dashboard/       # Administrative dashboard
 │   │   │   │   ├── estoque/          # Inventory management
 │   │   │   │   │   └── historico/   # Stock history
-│   │   │   │   └── membros/         # Member management
+│   │   │   │   ├── membros/         # Member management
+│   │   │   │   └── prospectos/      # Prospect validation
+│   │   │   │       └── validacao/   # Validation & points (Command)
 │   │   │   ├── comandas/             # Main application (member bookings)
 │   │   │   ├── nova-comanda/         # Guest comanda creation
 │   │   │   ├── pdv/                  # Point of Sale interface
@@ -362,6 +377,7 @@ gentlemenmc/
 │   │   ├── ChangePasswordForm/      # Password change (when enabled)
 │   │   ├── CreditManager/           # Credit management (when enabled)
 │   │   ├── Dashboard/               # Dashboard components
+│   │   ├── ProspectsPage/           # Prospect journey
 │   │   │   ├── Charts.tsx           # Analytics charts
 │   │   │   ├── DashboardTab.tsx    # Dashboard tab wrapper
 │   │   │   ├── QuickTables.tsx     # Quick view tables
@@ -405,6 +421,7 @@ gentlemenmc/
 │   │       ├── loading-skeletons.tsx
 │   │       ├── pagination.tsx
 │   │       ├── popover.tsx
+│   │       ├── progress.tsx
 │   │       ├── select-multiple.tsx
 │   │       ├── select.tsx
 │   │       ├── sidebar.tsx
@@ -586,6 +603,7 @@ The system supports four distinct user roles with different access levels:
   - Open and paid comandas management
   - Stock history and exports
   - Monthly fee management
+  - Prospect validation (Command only: validate activities and penalties)
 
 ### Manager
 - **Limited Administrative Access:**
@@ -613,6 +631,7 @@ The system supports four distinct user roles with different access levels:
   - Club statutes
   - User profile management
   - Invoice viewing (when applicable)
+  - Prospect journey (progress, when applicable)
 
 ## Features in Detail
 
