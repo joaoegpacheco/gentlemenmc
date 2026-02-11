@@ -113,7 +113,7 @@ export default function TabsComponent() {
   const getCurrentTabs = () => {
     // Verificar se o usuário pode ver a aba de prospects
     const canSeeProspectsTab = caseType === "Half" || caseType === "Prospect";
-    const canSeeCommandValidationTab = caseType === "Diretoria";
+    const canSeeCommandValidationTab = caseType === "Diretoria" || caseType === "Full-Revisor";
 
     if (admin) {
       const tabs = [
@@ -173,7 +173,7 @@ export default function TabsComponent() {
         { key: "11", label: <LogoutButton /> },
       ];
 
-      // Adicionar aba de prospects apenas se for Half ou Prospect
+      // Adicionar aba de validação dos prospects apenas se for Diretoria ou Full-Revisor
       if (canSeeCommandValidationTab) {
         tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
       }
