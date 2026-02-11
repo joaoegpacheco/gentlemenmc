@@ -6,8 +6,6 @@ import { notFound } from 'next/navigation';
 import AuthListener from "@/components/AuthListener";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
 import { routing } from '@/i18n/routing';
 import "../globals.css";
 
