@@ -472,7 +472,6 @@ export default function ProspectValidationPage() {
     }
 
     const isFullRevisor = currentUser.case_type === "Full-Revisor";
-
     const activityConfig = ACTIVITY_TYPES_CONFIG[activityType];
     if (!activityConfig) {
       message.error(tValidation('errors.invalidActivityType'));
@@ -572,7 +571,6 @@ export default function ProspectValidationPage() {
     }
 
     const isFullRevisor = currentUser.case_type === "Full-Revisor";
-
     const pointsMap = {
       leve: 5,
       medio: 10,
@@ -1062,50 +1060,45 @@ export default function ProspectValidationPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredActivities.map((activity) => (
-                    <Fragment key={activity.id}>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          {getProspectName(activity.prospect_id)}
-                        </TableCell>
-                        <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
-                        <TableCell>
-                          {activity.activity_date
-                            ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR })
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="font-semibold">
-                            +{activity.points} pts
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-medium">
+                        {getProspectName(activity.prospect_id)}
+                      </TableCell>
+                      <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
+                      <TableCell>
+                        {activity.activity_date
+                          ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR })
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-semibold">
+                          +{activity.points} pts
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {activity.description || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {activity.validated_by
+                          ? getValidatorName(activity.validated_by)
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {activity.status === "validated" ? (
+                          <Badge className="bg-green-500">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {tValidation('validado')}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {activity.status === "rejected" && activity.rejection_reason ? `${tValidation('motivoRejeicao')}: ${activity.rejection_reason}` : activity.description || "-"}
-                        </TableCell>
-                        <TableCell>
-                          {activity.validated_by
-                            ? getValidatorName(activity.validated_by)
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {activity.status === "validated" ? (
-                            <Badge className="bg-green-500">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              {tValidation('validado')}
-                            </Badge>
-                          ) : activity.status === "rejected" ? (
-                            <Badge variant="destructive">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              {tValidation('rejeitado')}
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-yellow-500" variant="secondary">
-                              <HelpCircle className="h-3 w-3 mr-1" />
-                              {tValidation('pendente')}
-                            </Badge>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    </Fragment>
+                        ) : activity.status === "rejected" ? (
+                          <Badge variant="destructive">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            {tValidation('rejeitado')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">{tValidation('pendente')}</Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
                   ))}
                 </TableBody>
               </Table>
@@ -1146,66 +1139,46 @@ export default function ProspectValidationPage() {
                 </TableHeader>
                 <TableBody>
                   {penalties.map((penalty) => (
-                    <Fragment key={penalty.id}>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          {getProspectName(penalty.prospect_id)}
-                        </TableCell>
-                        <TableCell>
-                          {penalty.created_at
-                            ? format(parseISO(penalty.created_at), "dd/MM/yyyy", { locale: ptBR })
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              penalty.severity === "grave"
-                                ? "destructive"
-                                : penalty.severity === "medio"
-                                  ? "default"
-                                  : "secondary"
-                            }
-                          >
-                            {penalty.severity === "grave"
-                              ? tProspects('severidadeGrave')
+                    <TableRow key={penalty.id}>
+                      <TableCell className="font-medium">
+                        {getProspectName(penalty.prospect_id)}
+                      </TableCell>
+                      <TableCell>
+                        {penalty.created_at
+                          ? format(parseISO(penalty.created_at), "dd/MM/yyyy", { locale: ptBR })
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            penalty.severity === "grave"
+                              ? "destructive"
                               : penalty.severity === "medio"
-                                ? tProspects('severidadeMedia')
-                                : tProspects('severidadeLeve')}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="destructive" className="font-semibold">
-                            -{penalty.points_deducted} pts
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                        {penalty.status === "rejected" && penalty.rejection_reason ? `${tValidation('motivoRejeicao')}: ${penalty.rejection_reason}` : penalty.description || penalty.infraction_type || "-"}
-                        </TableCell>
-                        <TableCell>
-                          {penalty.created_by
-                            ? getCreatorName(penalty.created_by)
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {penalty.status === "validated" ? (
-                            <Badge className="bg-green-500">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              {tValidation('validado')}
-                            </Badge>
-                          ) : penalty.status === "rejected" ? (
-                            <Badge variant="destructive">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              {tValidation('rejeitado')}
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-yellow-500" variant="secondary">
-                              <HelpCircle className="h-3 w-3 mr-1" />
-                              {tValidation('pendente')}
-                            </Badge>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    </Fragment>
+                                ? "default"
+                                : "secondary"
+                          }
+                        >
+                          {penalty.severity === "grave"
+                            ? tProspects('severidadeGrave')
+                            : penalty.severity === "medio"
+                              ? tProspects('severidadeMedia')
+                              : tProspects('severidadeLeve')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="destructive" className="font-semibold">
+                          -{penalty.points_deducted} pts
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {penalty.description || penalty.infraction_type || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {penalty.created_by
+                          ? getCreatorName(penalty.created_by)
+                          : "-"}
+                      </TableCell>
+                    </TableRow>
                   ))}
                 </TableBody>
               </Table>
@@ -1347,225 +1320,6 @@ export default function ProspectValidationPage() {
           </div>
         )}
       </div>
-
-      {/* Dialog de Pendências (somente Diretoria) */}
-      {isDiretoriaMember && (
-        <Dialog open={pendingDialogOpen} onOpenChange={pendingDialogOpen$.set}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{tValidation('pendingDialogTitle')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              {/* Atividades pendentes */}
-              <div>
-                <h3 className="font-semibold mb-2">{tValidation('pendingActivitiesTitle')}</h3>
-                {pendingActivities.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    {tValidation('noPendingActivities')}
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{tValidation('prospect')}</TableHead>
-                          <TableHead>{tValidation('atividade')}</TableHead>
-                          <TableHead>{tValidation('data')}</TableHead>
-                          <TableHead>{tValidation('pontos')}</TableHead>
-                          <TableHead>{tValidation('descricao')}</TableHead>
-                          <TableHead className="w-[200px]">{tValidation('acoes')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pendingActivities.map((activity) => (
-                          <TableRow key={activity.id}>
-                            <TableCell className="font-medium">
-                              {getProspectName(activity.prospect_id)}
-                            </TableCell>
-                            <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
-                            <TableCell>
-                              {activity.activity_date
-                                ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR })
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="font-semibold">
-                                +{activity.points} pts
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {activity.description || "-"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  className="gap-1"
-                                  disabled={actionLoading}
-                                  onClick={() => handleApproveActivity(activity.id)}
-                                >
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  {tValidation('aprovar')}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="gap-1"
-                                  disabled={actionLoading}
-                                  onClick={() => handleOpenRejectDialog("activity", activity.id!)}
-                                >
-                                  <XCircle className="h-3 w-3" />
-                                  {tValidation('rejeitar')}
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-
-              {/* Penalidades pendentes */}
-              <div>
-                <h3 className="font-semibold mb-2">{tValidation('pendingPenaltiesTitle')}</h3>
-                {pendingPenalties.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    {tValidation('noPendingPenalties')}
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{tValidation('prospect')}</TableHead>
-                          <TableHead>{tValidation('data')}</TableHead>
-                          <TableHead>{tValidation('severidade')}</TableHead>
-                          <TableHead>{tValidation('pontos')}</TableHead>
-                          <TableHead>{tValidation('descricao')}</TableHead>
-                          <TableHead className="w-[200px]">{tValidation('acoes')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pendingPenalties.map((penalty) => (
-                          <TableRow key={penalty.id}>
-                            <TableCell className="font-medium">
-                              {getProspectName(penalty.prospect_id)}
-                            </TableCell>
-                            <TableCell>
-                              {penalty.created_at
-                                ? format(parseISO(penalty.created_at), "dd/MM/yyyy", { locale: ptBR })
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  penalty.severity === "grave"
-                                    ? "destructive"
-                                    : penalty.severity === "medio"
-                                      ? "default"
-                                      : "secondary"
-                                }
-                              >
-                                {penalty.severity === "grave"
-                                  ? tProspects('severidadeGrave')
-                                  : penalty.severity === "medio"
-                                    ? tProspects('severidadeMedia')
-                                    : tProspects('severidadeLeve')}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="destructive" className="font-semibold">
-                                -{penalty.points_deducted} pts
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {penalty.description || penalty.infraction_type || "-"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  className="gap-1"
-                                  disabled={actionLoading}
-                                  onClick={() => handleApprovePenalty(penalty.id)}
-                                >
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  {tValidation('aprovar')}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="gap-1"
-                                  disabled={actionLoading}
-                                  onClick={() => handleOpenRejectDialog("penalty", penalty.id!)}
-                                >
-                                  <XCircle className="h-3 w-3" />
-                                  {tValidation('rejeitar')}
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Dialog de Rejeição */}
-      <Dialog open={rejectDialogOpen} onOpenChange={rejectDialogOpen$.set}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {rejectItemType === "activity" 
-                ? tValidation('rejectActivityTitle')
-                : tValidation('rejectPenaltyTitle')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{tValidation('rejectionReason')} *</Label>
-              <Textarea
-                value={rejectionReason}
-                onChange={(e) => rejectionReason$.set(e.target.value)}
-                placeholder={tValidation('rejectionReasonPlaceholder')}
-                rows={4}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  rejectDialogOpen$.set(false);
-                  rejectionReason$.set("");
-                }}
-                disabled={actionLoading}
-              >
-                {tValidation('cancelar')}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (rejectItemType === "activity") {
-                    handleRejectActivity();
-                  } else {
-                    handleRejectPenalty();
-                  }
-                }}
-                disabled={actionLoading || !rejectionReason.trim()}
-              >
-                {actionLoading ? tValidation('rejeitando') : tValidation('confirmarRejeicao')}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog de Registro */}
       <Dialog open={formDialogOpen} onOpenChange={formDialogOpen$.set}>
