@@ -36,7 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase";
-import { Search, CheckCircle2, XCircle, Plus, User, Target, Scale } from "lucide-react";
+import { Search, CheckCircle2, CircleQuestionMark, XCircle, Plus, User, Target, Scale } from "lucide-react";
 import type { SupabaseAuthUser } from "@/types/auth";
 import { format, differenceInMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -77,6 +77,7 @@ interface ProspectPenalty {
   description?: string;
   created_at?: string;
   created_by?: string;
+  status?: "pending" | "validated" | "rejected";
 }
 
 // Tipos de atividades e seus pontos (labels serão traduzidos dinamicamente)
@@ -228,8 +229,9 @@ export default function ProspectValidationPage() {
   const selectedProspect$ = useObservable<Member | null>(null);
   const formDialogOpen$ = useObservable(false);
   const penaltyDialogOpen$ = useObservable(false);
+  const pendingDialogOpen$ = useObservable(false);
   const isDiretoria$ = useObservable<boolean | null>(null);
-  const currentUser$ = useObservable<{ id: string; name: string } | null>(null);
+  const currentUser$ = useObservable<{ id: string; name: string; case_type?: string } | null>(null);
   const actionLoading$ = useObservable(false);
 
   // Form state
@@ -261,6 +263,8 @@ export default function ProspectValidationPage() {
   const penaltySeverity = useValue(penaltySeverity$);
   const penaltyDescription = useValue(penaltyDescription$);
 
+  const pendingDialogOpen = useValue(pendingDialogOpen$);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -288,14 +292,15 @@ export default function ProspectValidationPage() {
       .single();
 
     if (memberData) {
-      const isDiretoriaMember = memberData.case_type === "Diretoria";
-      isDiretoria$.set(isDiretoriaMember);
+      const hasAccess = memberData.case_type === "Diretoria" || memberData.case_type === "Full-Revisor";
+      isDiretoria$.set(hasAccess);
       currentUser$.set({
         id: user.id,
-        name: memberData.user_name || user.email || t('name')
+        name: memberData.user_name || user.email || t('name'),
+        case_type: memberData.case_type,
       });
 
-      if (!isDiretoriaMember) {
+      if (!hasAccess) {
         message.error(tValidation('errors.accessDenied'));
         router.push("/admin/membros");
         return;
@@ -451,6 +456,8 @@ export default function ProspectValidationPage() {
       return;
     }
 
+    const isFullRevisor = currentUser.case_type === "Full-Revisor";
+
     const activityConfig = ACTIVITY_TYPES_CONFIG[activityType];
     if (!activityConfig) {
       message.error(tValidation('errors.invalidActivityType'));
@@ -491,9 +498,10 @@ export default function ProspectValidationPage() {
             points: activityConfig.points,
             activity_date: activityDate,
             description: description,
-            validated_by: currentUser.id,
-            validated_at: new Date().toISOString(),
-            status: "validated", // Diretoria valida automaticamente
+            validated_by: isFullRevisor ? null : currentUser.id,
+            validated_at: isFullRevisor ? null : new Date().toISOString(),
+            // Diretoria valida automaticamente; Full-Revisor cria como pendente
+            status: isFullRevisor ? "pending" : "validated",
           },
         ])
         .select();
@@ -548,6 +556,8 @@ export default function ProspectValidationPage() {
       return;
     }
 
+    const isFullRevisor = currentUser.case_type === "Full-Revisor";
+
     const pointsMap = {
       leve: 5,
       medio: 10,
@@ -565,6 +575,8 @@ export default function ProspectValidationPage() {
             points_deducted: pointsMap[penaltySeverity],
             description: penaltyDescription || null,
             created_by: currentUser.id,
+            // Full-Revisor cria penalidades como pendentes; Diretoria já pode considerar como validadas
+            status: isFullRevisor ? "pending" : "validated",
           },
         ])
         .select();
@@ -672,6 +684,77 @@ export default function ProspectValidationPage() {
     );
   };
 
+  // Listas de pendências para aprovação da Diretoria
+  const pendingActivities = useMemo(
+    () => activities.filter((a) => a.status === "pending"),
+    [activities]
+  );
+
+  const pendingPenalties = useMemo(
+    () => penalties.filter((p) => p.status === "pending"),
+    [penalties]
+  );
+
+  const isDiretoriaMember = currentUser?.case_type === "Diretoria";
+
+  const handleApproveActivity = async (activityId?: number) => {
+    if (!activityId || !currentUser) return;
+
+    actionLoading$.set(true);
+    try {
+      const { error } = await supabase
+        .from("prospect_activities")
+        .update({
+          status: "validated",
+          validated_by: currentUser.id,
+          validated_at: new Date().toISOString(),
+        })
+        .eq("id", activityId);
+
+      if (error) {
+        console.error("Erro ao aprovar atividade:", error);
+        message.error(tValidation('errors.approveActivityFailed'));
+        return;
+      }
+
+      message.success(tValidation('success.activityApproved'));
+      fetchActivities();
+    } catch (err) {
+      console.error("Erro inesperado ao aprovar atividade:", err);
+      message.error(tValidation('errors.approveActivityError'));
+    } finally {
+      actionLoading$.set(false);
+    }
+  };
+
+  const handleApprovePenalty = async (penaltyId?: number) => {
+    if (!penaltyId || !currentUser) return;
+
+    actionLoading$.set(true);
+    try {
+      const { error } = await supabase
+        .from("prospect_penalties")
+        .update({
+          status: "validated",
+        })
+        .eq("id", penaltyId);
+
+      if (error) {
+        console.error("Erro ao aprovar penalidade:", error);
+        message.error(tValidation('errors.approvePenaltyFailed'));
+        return;
+      }
+
+      message.success(tValidation('success.penaltyApproved'));
+      fetchPenalties();
+    } catch (err) {
+      console.error("Erro inesperado ao aprovar penalidade:", err);
+      message.error(tValidation('errors.approvePenaltyError'));
+    } finally {
+      actionLoading$.set(false);
+    }
+  };
+
   // Calcular totais por prospect (apenas Half e Prospect)
   const prospectTotals = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -735,6 +818,16 @@ export default function ProspectValidationPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {isDiretoriaMember && (
+            <Button
+              onClick={() => pendingDialogOpen$.set(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {tValidation('pendenciasParaAprovar')}
+            </Button>
+          )}
           <Button onClick={() => handleOpenForm()} className="gap-2">
             <Plus className="h-4 w-4" />
             {tValidation('registrarAtividade')}
@@ -912,7 +1005,10 @@ export default function ProspectValidationPage() {
                             {tValidation('rejeitado')}
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">{tValidation('pendente')}</Badge>
+                          <Badge className="bg-yellow-500" variant="secondary">
+                            <CircleQuestionMark className="h-3 w-3 mr-1" />
+                            {tValidation('pendente')}
+                          </Badge>
                         )}
                       </TableCell>
                     </TableRow>
@@ -951,6 +1047,7 @@ export default function ProspectValidationPage() {
                     <TableHead>{tValidation('pontos')}</TableHead>
                     <TableHead>{tValidation('descricao')}</TableHead>
                     <TableHead>{tValidation('registradoPor')}</TableHead>
+                    <TableHead>{tValidation('status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -993,6 +1090,19 @@ export default function ProspectValidationPage() {
                         {penalty.created_by
                           ? getCreatorName(penalty.created_by)
                           : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {penalty.status === "validated" ? (
+                          <Badge className="bg-green-500">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {tValidation('validado')}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-yellow-500" variant="secondary">
+                            <CircleQuestionMark className="h-3 w-3 mr-1" />
+                            {tValidation('pendente')}
+                          </Badge>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1136,6 +1246,152 @@ export default function ProspectValidationPage() {
           </div>
         )}
       </div>
+
+      {/* Dialog de Pendências (somente Diretoria) */}
+      {isDiretoriaMember && (
+        <Dialog open={pendingDialogOpen} onOpenChange={pendingDialogOpen$.set}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{tValidation('pendingDialogTitle')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Atividades pendentes */}
+              <div>
+                <h3 className="font-semibold mb-2">{tValidation('pendingActivitiesTitle')}</h3>
+                {pendingActivities.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {tValidation('noPendingActivities')}
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{tValidation('prospect')}</TableHead>
+                          <TableHead>{tValidation('atividade')}</TableHead>
+                          <TableHead>{tValidation('data')}</TableHead>
+                          <TableHead>{tValidation('pontos')}</TableHead>
+                          <TableHead>{tValidation('descricao')}</TableHead>
+                          <TableHead className="w-[120px]">{tValidation('acoes')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingActivities.map((activity) => (
+                          <TableRow key={activity.id}>
+                            <TableCell className="font-medium">
+                              {getProspectName(activity.prospect_id)}
+                            </TableCell>
+                            <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
+                            <TableCell>
+                              {activity.activity_date
+                                ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR })
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="font-semibold">
+                                +{activity.points} pts
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-xs truncate">
+                              {activity.description || "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                className="gap-1"
+                                disabled={actionLoading}
+                                onClick={() => handleApproveActivity(activity.id)}
+                              >
+                                <CheckCircle2 className="h-3 w-3" />
+                                {tValidation('aprovar')}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+
+              {/* Penalidades pendentes */}
+              <div>
+                <h3 className="font-semibold mb-2">{tValidation('pendingPenaltiesTitle')}</h3>
+                {pendingPenalties.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {tValidation('noPendingPenalties')}
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{tValidation('prospect')}</TableHead>
+                          <TableHead>{tValidation('data')}</TableHead>
+                          <TableHead>{tValidation('severidade')}</TableHead>
+                          <TableHead>{tValidation('pontos')}</TableHead>
+                          <TableHead>{tValidation('descricao')}</TableHead>
+                          <TableHead className="w-[120px]">{tValidation('acoes')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingPenalties.map((penalty) => (
+                          <TableRow key={penalty.id}>
+                            <TableCell className="font-medium">
+                              {getProspectName(penalty.prospect_id)}
+                            </TableCell>
+                            <TableCell>
+                              {penalty.created_at
+                                ? format(parseISO(penalty.created_at), "dd/MM/yyyy", { locale: ptBR })
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  penalty.severity === "grave"
+                                    ? "destructive"
+                                    : penalty.severity === "medio"
+                                      ? "default"
+                                      : "secondary"
+                                }
+                              >
+                                {penalty.severity === "grave"
+                                  ? tProspects('severidadeGrave')
+                                  : penalty.severity === "medio"
+                                    ? tProspects('severidadeMedia')
+                                    : tProspects('severidadeLeve')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="destructive" className="font-semibold">
+                                -{penalty.points_deducted} pts
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-xs truncate">
+                              {penalty.description || penalty.infraction_type || "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                className="gap-1"
+                                disabled={actionLoading}
+                                onClick={() => handleApprovePenalty(penalty.id)}
+                              >
+                                <CheckCircle2 className="h-3 w-3" />
+                                {tValidation('aprovar')}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Dialog de Registro */}
       <Dialog open={formDialogOpen} onOpenChange={formDialogOpen$.set}>

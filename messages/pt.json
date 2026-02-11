@@ -1083,11 +1083,17 @@
       "errorRegisteringUnknown": "Erro ao registrar atividade: {message}",
       "penaltyTableNotFound": "Tabela de penalidades não encontrada. Execute a migration SQL primeiro.",
       "penaltyAlreadyExists": "Esta penalidade já foi registrada.",
-      "errorRegisteringPenaltyUnknown": "Erro ao registrar penalidade: {message}"
+      "errorRegisteringPenaltyUnknown": "Erro ao registrar penalidade: {message}",
+      "approveActivityFailed": "Não foi possível aprovar a atividade.",
+      "approveActivityError": "Erro inesperado ao aprovar atividade.",
+      "approvePenaltyFailed": "Não foi possível aprovar a penalidade.",
+      "approvePenaltyError": "Erro inesperado ao aprovar penalidade."
     },
     "success": {
       "activityRegistered": "Atividade registrada e validada com sucesso!",
-      "penaltyRegistered": "Penalidade registrada com sucesso!"
+      "penaltyRegistered": "Penalidade registrada com sucesso!",
+      "activityApproved": "Atividade aprovada com sucesso.",
+      "penaltyApproved": "Penalidade aprovada com sucesso."
     },
     "incluirPenalidade": "Incluir Penalidade",
     "registrarPenalidade": "Registrar Penalidade",
@@ -1109,6 +1115,14 @@
     "verificandoPermissoes": "Verificando permissões...",
     "registrandoPenalidade": "Registrando...",
     "registradoPor": "Registrado por",
+    "pendenciasParaAprovar": "Pendências para aprovar",
+    "pendingDialogTitle": "Atividades e penalidades pendentes",
+    "pendingActivitiesTitle": "Atividades pendentes",
+    "noPendingActivities": "Nenhuma atividade pendente para aprovar.",
+    "acoes": "Ações",
+    "aprovar": "Aprovar",
+    "pendingPenaltiesTitle": "Penalidades pendentes",
+    "noPendingPenalties": "Nenhuma penalidade pendente para aprovar.",
     "activityTypes": {
       "presencaProatividade": {
         "label": "Presença + Proatividade",
