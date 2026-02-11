@@ -1087,13 +1087,20 @@
       "approveActivityFailed": "Não foi possível aprovar a atividade.",
       "approveActivityError": "Erro inesperado ao aprovar atividade.",
       "approvePenaltyFailed": "Não foi possível aprovar a penalidade.",
-      "approvePenaltyError": "Erro inesperado ao aprovar penalidade."
+      "approvePenaltyError": "Erro inesperado ao aprovar penalidade.",
+      "fillRejectionReason": "Por favor, informe o motivo da rejeição.",
+      "rejectActivityFailed": "Não foi possível rejeitar a atividade.",
+      "rejectActivityError": "Erro inesperado ao rejeitar atividade.",
+      "rejectPenaltyFailed": "Não foi possível rejeitar a penalidade.",
+      "rejectPenaltyError": "Erro inesperado ao rejeitar penalidade."
     },
     "success": {
       "activityRegistered": "Atividade registrada e validada com sucesso!",
       "penaltyRegistered": "Penalidade registrada com sucesso!",
       "activityApproved": "Atividade aprovada com sucesso.",
-      "penaltyApproved": "Penalidade aprovada com sucesso."
+      "penaltyApproved": "Penalidade aprovada com sucesso.",
+      "activityRejected": "Atividade rejeitada com sucesso.",
+      "penaltyRejected": "Penalidade rejeitada com sucesso."
     },
     "incluirPenalidade": "Incluir Penalidade",
     "registrarPenalidade": "Registrar Penalidade",
@@ -1123,6 +1130,14 @@
     "aprovar": "Aprovar",
     "pendingPenaltiesTitle": "Penalidades pendentes",
     "noPendingPenalties": "Nenhuma penalidade pendente para aprovar.",
+    "rejeitar": "Rejeitar",
+    "rejectActivityTitle": "Rejeitar Atividade",
+    "rejectPenaltyTitle": "Rejeitar Penalidade",
+    "rejectionReason": "Motivo de Rejeição",
+    "rejectionReasonPlaceholder": "Informe o motivo da rejeição...",
+    "rejeitando": "Rejeitando...",
+    "confirmarRejeicao": "Confirmar Rejeição",
+    "motivoRejeicao": "Motivo de Rejeição",
     "activityTypes": {
       "presencaProatividade": {
         "label": "Presença + Proatividade",

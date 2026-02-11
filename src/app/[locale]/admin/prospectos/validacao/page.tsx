@@ -3,7 +3,7 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, Fragment } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase";
-import { Search, CheckCircle2, CircleQuestionMark, XCircle, Plus, User, Target, Scale } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Plus, User, Target, Scale, HelpCircle } from "lucide-react";
 import type { SupabaseAuthUser } from "@/types/auth";
 import { format, differenceInMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -65,6 +65,7 @@ interface ProspectActivity {
   validated_by?: string;
   validated_at?: string;
   status: "pending" | "validated" | "rejected";
+  rejection_reason?: string;
   created_at?: string;
 }
 
@@ -78,6 +79,7 @@ interface ProspectPenalty {
   created_at?: string;
   created_by?: string;
   status?: "pending" | "validated" | "rejected";
+  rejection_reason?: string;
 }
 
 // Tipos de atividades e seus pontos (labels serão traduzidos dinamicamente)
@@ -149,7 +151,10 @@ function computeStatsForMember(member: Member, activities: ProspectActivity[], p
     .reduce((sum, a) => sum + a.points, 0);
 
   // Penalties are already filtered by prospect_id before being passed to this function
-  const penaltyDeduction = penalties.reduce((sum, p) => sum + Math.abs(p.points_deducted), 0);
+  // Only count validated penalties, rejected ones don't deduct points
+  const penaltyDeduction = penalties
+    .filter((p) => p.status === "validated")
+    .reduce((sum, p) => sum + Math.abs(p.points_deducted), 0);
 
   const totalPoints = Math.max(0, activityPoints - penaltyDeduction);
 
@@ -244,6 +249,12 @@ export default function ProspectValidationPage() {
   const penaltySeverity$ = useObservable<"leve" | "medio" | "grave" | "">("");
   const penaltyDescription$ = useObservable<string>("");
 
+  // Rejection dialog state
+  const rejectDialogOpen$ = useObservable(false);
+  const rejectItemType$ = useObservable<"activity" | "penalty" | null>(null);
+  const rejectItemId$ = useObservable<number | null>(null);
+  const rejectionReason$ = useObservable<string>("");
+
   const members = useValue(members$);
   const allMembers = useValue(allMembers$); // Todos os membros para buscar nomes
   const activities = useValue(activities$);
@@ -262,6 +273,10 @@ export default function ProspectValidationPage() {
   const prospectSearch = useValue(prospectSearch$);
   const penaltySeverity = useValue(penaltySeverity$);
   const penaltyDescription = useValue(penaltyDescription$);
+  const rejectDialogOpen = useValue(rejectDialogOpen$);
+  const rejectItemType = useValue(rejectItemType$);
+  const rejectItemId = useValue(rejectItemId$);
+  const rejectionReason = useValue(rejectionReason$);
 
   const pendingDialogOpen = useValue(pendingDialogOpen$);
 
@@ -457,7 +472,6 @@ export default function ProspectValidationPage() {
     }
 
     const isFullRevisor = currentUser.case_type === "Full-Revisor";
-
     const activityConfig = ACTIVITY_TYPES_CONFIG[activityType];
     if (!activityConfig) {
       message.error(tValidation('errors.invalidActivityType'));
@@ -557,7 +571,6 @@ export default function ProspectValidationPage() {
     }
 
     const isFullRevisor = currentUser.case_type === "Full-Revisor";
-
     const pointsMap = {
       leve: 5,
       medio: 10,
@@ -750,6 +763,83 @@ export default function ProspectValidationPage() {
     } catch (err) {
       console.error("Erro inesperado ao aprovar penalidade:", err);
       message.error(tValidation('errors.approvePenaltyError'));
+    } finally {
+      actionLoading$.set(false);
+    }
+  };
+
+  const handleOpenRejectDialog = (type: "activity" | "penalty", id: number) => {
+    rejectItemType$.set(type);
+    rejectItemId$.set(id);
+    rejectionReason$.set("");
+    rejectDialogOpen$.set(true);
+  };
+
+  const handleRejectActivity = async () => {
+    if (!rejectItemId || !currentUser || !rejectionReason.trim()) {
+      message.error(tValidation('errors.fillRejectionReason'));
+      return;
+    }
+
+    actionLoading$.set(true);
+    try {
+      const { error } = await supabase
+        .from("prospect_activities")
+        .update({
+          status: "rejected",
+          rejection_reason: rejectionReason.trim(),
+          validated_by: currentUser.id,
+          validated_at: new Date().toISOString(),
+        })
+        .eq("id", rejectItemId);
+
+      if (error) {
+        console.error("Erro ao rejeitar atividade:", error);
+        message.error(tValidation('errors.rejectActivityFailed'));
+        return;
+      }
+
+      message.success(tValidation('success.activityRejected'));
+      rejectDialogOpen$.set(false);
+      rejectionReason$.set("");
+      fetchActivities();
+    } catch (err) {
+      console.error("Erro inesperado ao rejeitar atividade:", err);
+      message.error(tValidation('errors.rejectActivityError'));
+    } finally {
+      actionLoading$.set(false);
+    }
+  };
+
+  const handleRejectPenalty = async () => {
+    if (!rejectItemId || !currentUser || !rejectionReason.trim()) {
+      message.error(tValidation('errors.fillRejectionReason'));
+      return;
+    }
+
+    actionLoading$.set(true);
+    try {
+      const { error } = await supabase
+        .from("prospect_penalties")
+        .update({
+          status: "rejected",
+          rejection_reason: rejectionReason.trim(),
+        })
+        .eq("id", rejectItemId);
+
+      if (error) {
+        console.error("Erro ao rejeitar penalidade:", error);
+        message.error(tValidation('errors.rejectPenaltyFailed'));
+        return;
+      }
+
+      message.success(tValidation('success.penaltyRejected'));
+      rejectDialogOpen$.set(false);
+      rejectionReason$.set("");
+      fetchPenalties();
+    } catch (err) {
+      console.error("Erro inesperado ao rejeitar penalidade:", err);
+      message.error(tValidation('errors.rejectPenaltyError'));
     } finally {
       actionLoading$.set(false);
     }
@@ -1005,10 +1095,7 @@ export default function ProspectValidationPage() {
                             {tValidation('rejeitado')}
                           </Badge>
                         ) : (
-                          <Badge className="bg-yellow-500" variant="secondary">
-                            <CircleQuestionMark className="h-3 w-3 mr-1" />
-                            {tValidation('pendente')}
-                          </Badge>
+                          <Badge variant="secondary">{tValidation('pendente')}</Badge>
                         )}
                       </TableCell>
                     </TableRow>
@@ -1090,19 +1177,6 @@ export default function ProspectValidationPage() {
                         {penalty.created_by
                           ? getCreatorName(penalty.created_by)
                           : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {penalty.status === "validated" ? (
-                          <Badge className="bg-green-500">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            {tValidation('validado')}
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-yellow-500" variant="secondary">
-                            <CircleQuestionMark className="h-3 w-3 mr-1" />
-                            {tValidation('pendente')}
-                          </Badge>
-                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1246,152 +1320,6 @@ export default function ProspectValidationPage() {
           </div>
         )}
       </div>
-
-      {/* Dialog de Pendências (somente Diretoria) */}
-      {isDiretoriaMember && (
-        <Dialog open={pendingDialogOpen} onOpenChange={pendingDialogOpen$.set}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{tValidation('pendingDialogTitle')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              {/* Atividades pendentes */}
-              <div>
-                <h3 className="font-semibold mb-2">{tValidation('pendingActivitiesTitle')}</h3>
-                {pendingActivities.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    {tValidation('noPendingActivities')}
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{tValidation('prospect')}</TableHead>
-                          <TableHead>{tValidation('atividade')}</TableHead>
-                          <TableHead>{tValidation('data')}</TableHead>
-                          <TableHead>{tValidation('pontos')}</TableHead>
-                          <TableHead>{tValidation('descricao')}</TableHead>
-                          <TableHead className="w-[120px]">{tValidation('acoes')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pendingActivities.map((activity) => (
-                          <TableRow key={activity.id}>
-                            <TableCell className="font-medium">
-                              {getProspectName(activity.prospect_id)}
-                            </TableCell>
-                            <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
-                            <TableCell>
-                              {activity.activity_date
-                                ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR })
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="font-semibold">
-                                +{activity.points} pts
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {activity.description || "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                className="gap-1"
-                                disabled={actionLoading}
-                                onClick={() => handleApproveActivity(activity.id)}
-                              >
-                                <CheckCircle2 className="h-3 w-3" />
-                                {tValidation('aprovar')}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-
-              {/* Penalidades pendentes */}
-              <div>
-                <h3 className="font-semibold mb-2">{tValidation('pendingPenaltiesTitle')}</h3>
-                {pendingPenalties.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    {tValidation('noPendingPenalties')}
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{tValidation('prospect')}</TableHead>
-                          <TableHead>{tValidation('data')}</TableHead>
-                          <TableHead>{tValidation('severidade')}</TableHead>
-                          <TableHead>{tValidation('pontos')}</TableHead>
-                          <TableHead>{tValidation('descricao')}</TableHead>
-                          <TableHead className="w-[120px]">{tValidation('acoes')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pendingPenalties.map((penalty) => (
-                          <TableRow key={penalty.id}>
-                            <TableCell className="font-medium">
-                              {getProspectName(penalty.prospect_id)}
-                            </TableCell>
-                            <TableCell>
-                              {penalty.created_at
-                                ? format(parseISO(penalty.created_at), "dd/MM/yyyy", { locale: ptBR })
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  penalty.severity === "grave"
-                                    ? "destructive"
-                                    : penalty.severity === "medio"
-                                      ? "default"
-                                      : "secondary"
-                                }
-                              >
-                                {penalty.severity === "grave"
-                                  ? tProspects('severidadeGrave')
-                                  : penalty.severity === "medio"
-                                    ? tProspects('severidadeMedia')
-                                    : tProspects('severidadeLeve')}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="destructive" className="font-semibold">
-                                -{penalty.points_deducted} pts
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {penalty.description || penalty.infraction_type || "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                className="gap-1"
-                                disabled={actionLoading}
-                                onClick={() => handleApprovePenalty(penalty.id)}
-                              >
-                                <CheckCircle2 className="h-3 w-3" />
-                                {tValidation('aprovar')}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
 
       {/* Dialog de Registro */}
       <Dialog open={formDialogOpen} onOpenChange={formDialogOpen$.set}>
