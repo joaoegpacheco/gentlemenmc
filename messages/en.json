@@ -993,6 +993,7 @@
     "title": "Points Validation - Prospects",
     "subtitle": "Points validation and registration system for prospects",
     "regrasSistema": "System Rules",
+    "atividades": "Activities",
     "halfPatchRule": "Half Patch: 6 months minimum + 100 minimum points",
     "fullPatchRule": "Full Patch: 6 months as Half + 150 minimum points",
     "pontosMensais": "Monthly Points (behavior):",
@@ -1076,11 +1077,23 @@
       "activityAlreadyRegistered": "This activity type has already been registered for this prospect this month ({month})",
       "tableNotFound": "Table not found. Please run the SQL migration first: supabase/migrations/create_prospect_activities.sql",
       "errorRegistering": "Error registering activity: {message}",
-      "unknownError": "Unknown error"
+      "unknownError": "Unknown error",
+      "prospectNotFound": "Prospect not found. Please check that the prospect exists.",
+      "activityAlreadyExists": "This activity has already been registered.",
+      "errorRegisteringUnknown": "Error registering activity: {message}",
+      "penaltyTableNotFound": "Penalties table not found. Run the SQL migration first.",
+      "penaltyAlreadyExists": "This penalty has already been registered.",
+      "errorRegisteringPenaltyUnknown": "Error registering penalty: {message}",
+      "approveActivityFailed": "Could not approve the activity.",
+      "approveActivityError": "Unexpected error approving activity.",
+      "approvePenaltyFailed": "Could not approve the penalty.",
+      "approvePenaltyError": "Unexpected error approving penalty."
     },
     "success": {
       "activityRegistered": "Activity registered and validated successfully!",
-      "penaltyRegistered": "Penalty registered successfully!"
+      "penaltyRegistered": "Penalty registered successfully!",
+      "activityApproved": "Activity approved successfully.",
+      "penaltyApproved": "Penalty approved successfully."
     },
     "incluirPenalidade": "Add Penalty",
     "registrarPenalidade": "Register Penalty",
@@ -1101,6 +1114,14 @@
     "verificandoPermissoes": "Checking permissions...",
     "registrandoPenalidade": "Registering...",
     "registradoPor": "Registered by",
+    "pendenciasParaAprovar": "Pending items to approve",
+    "pendingDialogTitle": "Pending activities and penalties",
+    "pendingActivitiesTitle": "Pending activities",
+    "noPendingActivities": "No pending activities to approve.",
+    "acoes": "Actions",
+    "aprovar": "Approve",
+    "pendingPenaltiesTitle": "Pending penalties",
+    "noPendingPenalties": "No pending penalties to approve.",
     "activityTypes": {
       "presencaProatividade": {
         "label": "Presence + Proactivity",
