@@ -1087,13 +1087,20 @@
       "approveActivityFailed": "Could not approve the activity.",
       "approveActivityError": "Unexpected error approving activity.",
       "approvePenaltyFailed": "Could not approve the penalty.",
-      "approvePenaltyError": "Unexpected error approving penalty."
+      "approvePenaltyError": "Unexpected error approving penalty.",
+      "fillRejectionReason": "Please provide the rejection reason.",
+      "rejectActivityFailed": "Could not reject the activity.",
+      "rejectActivityError": "Unexpected error rejecting activity.",
+      "rejectPenaltyFailed": "Could not reject the penalty.",
+      "rejectPenaltyError": "Unexpected error rejecting penalty."
     },
     "success": {
       "activityRegistered": "Activity registered and validated successfully!",
       "penaltyRegistered": "Penalty registered successfully!",
       "activityApproved": "Activity approved successfully.",
-      "penaltyApproved": "Penalty approved successfully."
+      "penaltyApproved": "Penalty approved successfully.",
+      "activityRejected": "Activity rejected successfully.",
+      "penaltyRejected": "Penalty rejected successfully."
     },
     "incluirPenalidade": "Add Penalty",
     "registrarPenalidade": "Register Penalty",
@@ -1122,6 +1129,14 @@
     "aprovar": "Approve",
     "pendingPenaltiesTitle": "Pending penalties",
     "noPendingPenalties": "No pending penalties to approve.",
+    "rejeitar": "Reject",
+    "rejectActivityTitle": "Reject Activity",
+    "rejectPenaltyTitle": "Reject Penalty",
+    "rejectionReason": "Rejection Reason",
+    "rejectionReasonPlaceholder": "Enter the rejection reason...",
+    "rejeitando": "Rejecting...",
+    "confirmarRejeicao": "Confirm Rejection",
+    "motivoRejeicao": "Rejection Reason",
     "activityTypes": {
       "presencaProatividade": {
         "label": "Presence + Proactivity",
