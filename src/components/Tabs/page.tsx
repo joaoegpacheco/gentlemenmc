@@ -162,6 +162,10 @@ export default function TabsComponent() {
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
       ];
+      // Adicionar aba de validação dos prospects apenas se for Diretoria ou Full-Revisor
+      if (canSeeCommandValidationTab) {
+        tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
+      }
     } else {
       const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
