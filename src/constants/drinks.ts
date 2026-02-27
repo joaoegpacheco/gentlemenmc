@@ -2,9 +2,9 @@ export const drinksByCategory = {
   cervejas: {
     guests: {
       "Chopp Pilsen": 12,
-      "Chopp Mutum": 20,
+      "Chopp Mutum": 22,
       "Long Neck Heineken": 15,
-      "Long Neck Corona": 15,
+      "Long Neck Corona": 14,
       "Long Neck Stella Artois": 12,
       "Long Neck Sol": 12,
       "Long Neck Therezópolis": 12,
@@ -23,29 +23,47 @@ export const drinksByCategory = {
       "Long Neck Ultra": 8,
     },
   },
-  cervejasPremium: {
+  // cervejasPremium: {
+  //   guests: {
+  //     "Mutum Lata": 25,
+  //     "Mutum Groller": 40,
+  //   },
+  //   members: {
+  //     "Mutum Lata": 25,
+  //     "Mutum Groller": 40,
+  //   },
+  // },
+  comidas: {
     guests: {
-      "Mutum Lata": 25,
-      "Mutum Groller": 40,
+      "Espetinho de Carne": 12,
+      "Espetinho de Cafta": 12,
+      "Espetinho de Coração": 10,
+      "Espetinho de Queijo": 10,
+      "Pão de Alho": 10,
+      "Pipoca": 25,
     },
     members: {
-      "Mutum Lata": 25,
-      "Mutum Groller": 40,
+      "Espetinho de Carne": 10,
+      "Espetinho de Cafta": 10,
+      "Espetinho de Coração": 8,
+      "Espetinho de Queijo": 8,
+      "Pão de Alho": 8,
+      "Pipoca": 25,
     },
   },
   bebidasNaoAlcoolicas: {
     guests: {
       "Água sem gás": 5,
       "Água com gás": 5,
-      "Água Tônica Zero": 6,
+      "Água Tônica Zero": 8,
       "Café": 5,
-      "Coca-Cola": 6,
-      "Coca-Cola Zero": 6,
-      "Coca-Cola Light": 6,
-      "Guaraná Zero": 6,
-      "Sprite Zero": 6,
+      "Coca-Cola": 8,
+      "Coca-Cola Zero": 8,
+      "Coca-Cola Light": 8,
+      "Guaraná Zero": 8,
+      "Sprite Zero": 8,
       "Suco de Laranja": 5,
-      "Schweppes Citrus": 6,
+      "Schweppes Citrus": 8,
     },
     members: {
       "Água sem gás": 3,
@@ -64,8 +82,8 @@ export const drinksByCategory = {
   energetico: {
     guests: {
       "Monster Zero": 15,
-      "Red Bull": 15,
-      "Red Bull Sugar Free": 15,
+      "Red Bull": 16,
+      "Red Bull Sugar Free": 16,
     },
     members: {
       "Monster Zero": 12,

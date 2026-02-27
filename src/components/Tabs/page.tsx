@@ -119,6 +119,7 @@ export default function TabsComponent() {
       const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "12", label: t('guestOrder'), children: <CreateComandaPage /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
         { key: "18", label: t('members'), children: <MembrosPage /> },
@@ -151,7 +152,7 @@ export default function TabsComponent() {
         { key: "6", label: t('statute'), children: <ByLaw /> },
       ];
     } else if (manager) {
-      return [
+      const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
@@ -166,6 +167,8 @@ export default function TabsComponent() {
       if (canSeeCommandValidationTab) {
         tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
       }
+
+      return tabs;
     } else {
       const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
