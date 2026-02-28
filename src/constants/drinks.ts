@@ -98,6 +98,7 @@ export const drinksByCategory = {
       "Dose Whiskey": 20,
       "Dose Campari": 10,
       "Dose Rum": 15,
+      "Caipirinha": 25
     },
     members: {
       "Dose Gin": 5,
@@ -105,6 +106,7 @@ export const drinksByCategory = {
       "Dose Whiskey": 15,
       "Dose Campari": 5,
       "Dose Rum": 10,
+      "Caipirinha": 20
     },
   },
   vinhos: {
