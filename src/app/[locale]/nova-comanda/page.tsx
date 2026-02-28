@@ -111,7 +111,7 @@ export default function CreateComandaPage() {
   }, []);
 
   const handleCreateComanda = async () => {
-    if (!guestName) {
+    if (!isDirectSale && !guestName) {
       message.error(t('errors.guestNameRequired'));
       return;
     }
@@ -154,6 +154,7 @@ export default function CreateComandaPage() {
         guestPhone: guestPhone || undefined,
         items,
         errorMessage: t('errors.comandaMustHaveGuestNameMemberNameAndPhone'),
+        skipValidation: isDirectSale,
       });
 
       // Se for venda direta, marca a comanda como paga
