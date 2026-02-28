@@ -1,7 +1,7 @@
 export const drinksByCategory = {
   cervejas: {
     guests: {
-      "Chopp Pilsen": 12,
+      "Chopp Pilsen": 14,
       "Chopp Mutum": 22,
       "Long Neck Heineken": 15,
       "Long Neck Corona": 14,
