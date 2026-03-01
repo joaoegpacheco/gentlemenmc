@@ -50,7 +50,8 @@ export default function CreateComandaPage() {
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
     cervejas: t('categories.cervejas'),
-    cervejasPremium: t('categories.cervejasPremium'),
+    comidas: t('categories.comidas'),
+    // cervejasPremium: t('categories.cervejasPremium'),
     refrigerantes: t('categories.refrigerantes'),
     bebidasNaoAlcoolicas: t('categories.bebidasNaoAlcoolicas'),
     energetico: t('categories.energetico'),
@@ -110,7 +111,7 @@ export default function CreateComandaPage() {
   }, []);
 
   const handleCreateComanda = async () => {
-    if (!guestName) {
+    if (!isDirectSale && !guestName) {
       message.error(t('errors.guestNameRequired'));
       return;
     }
@@ -153,6 +154,7 @@ export default function CreateComandaPage() {
         guestPhone: guestPhone || undefined,
         items,
         errorMessage: t('errors.comandaMustHaveGuestNameMemberNameAndPhone'),
+        skipValidation: isDirectSale,
       });
 
       // Se for venda direta, marca a comanda como paga

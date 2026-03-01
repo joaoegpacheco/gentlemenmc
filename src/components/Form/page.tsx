@@ -74,7 +74,8 @@ export function FormCommand() {
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
     cervejas: tCategories('beers'),
-    cervejasPremium: tCategories('premiumBeers'),
+    comidas: tCategories('comidas'),
+    // cervejasPremium: tCategories('premiumBeers'),
     refrigerantes: tCategories('softDrinks'),
     bebidasNaoAlcoolicas: tCategories('nonAlcoholic'),
     energetico: tCategories('energy'),

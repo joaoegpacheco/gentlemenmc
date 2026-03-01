@@ -365,6 +365,7 @@
   },
   "categories": {
     "beers": "Cervejas",
+    "comidas": "Comidas",
     "premiumBeers": "Cervejas Premium",
     "softDrinks": "Refrigerantes",
     "nonAlcoholic": "Bebidas Não Alcoólicas",
@@ -653,6 +654,7 @@
   "novaComanda": {
     "categories": {
       "cervejas": "Cervejas",
+      "comidas": "Comidas",
       "cervejasPremium": "Cervejas Premium",
       "refrigerantes": "Refrigerantes",
       "bebidasNaoAlcoolicas": "Bebidas Não Alcoólicas",
