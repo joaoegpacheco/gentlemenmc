@@ -94,8 +94,8 @@ export const drinksByCategory = {
   doses: {
     guests: {
       "Dose Gin": 10,
-      "Dose Jagermeister": 20,
-      "Dose Whiskey": 20,
+      "Dose Jagermeister": 25,
+      "Dose Whiskey": 25,
       "Dose Campari": 10,
       "Dose Rum": 15,
       "Caipirinha": 25
