@@ -41,6 +41,7 @@ export const drinksByCategory = {
       "Espetinho de Queijo": 10,
       "Pão de Alho": 10,
       "Pipoca": 25,
+      "Comida Quarta-feira": 30
     },
     members: {
       "Espetinho de Carne": 10,
