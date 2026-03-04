@@ -50,6 +50,7 @@ export const drinksByCategory = {
       "Espetinho de Queijo": 8,
       "Pão de Alho": 8,
       "Pipoca": 25,
+      "Comida Quarta-feira": 30
     },
   },
   bebidasNaoAlcoolicas: {
