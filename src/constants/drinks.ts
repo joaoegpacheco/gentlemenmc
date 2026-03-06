@@ -5,6 +5,7 @@ export const drinksByCategory = {
       "Chopp Mutum": 22,
       "Long Neck Heineken": 15,
       "Long Neck Corona": 14,
+      "Long Neck Corona Zero": 14,
       "Long Neck Stella Artois": 12,
       "Long Neck Sol": 12,
       "Long Neck Therezópolis": 12,
@@ -16,6 +17,7 @@ export const drinksByCategory = {
       "Chopp Mutum": 18,
       "Long Neck Heineken": 12,
       "Long Neck Corona": 12,
+      "Long Neck Corona Zero": 12,
       "Long Neck Stella Artois": 8,
       "Long Neck Sol": 8,
       "Long Neck Therezópolis": 8,
@@ -41,6 +43,7 @@ export const drinksByCategory = {
       "Espetinho de Queijo": 10,
       "Pão de Alho": 10,
       "Pipoca": 25,
+      "Comida Quarta-feira": 30
     },
     members: {
       "Espetinho de Carne": 10,
@@ -49,6 +52,7 @@ export const drinksByCategory = {
       "Espetinho de Queijo": 8,
       "Pão de Alho": 8,
       "Pipoca": 25,
+      "Comida Quarta-feira": 30
     },
   },
   bebidasNaoAlcoolicas: {
@@ -94,8 +98,8 @@ export const drinksByCategory = {
   doses: {
     guests: {
       "Dose Gin": 10,
-      "Dose Jagermeister": 20,
-      "Dose Whiskey": 20,
+      "Dose Jagermeister": 25,
+      "Dose Whiskey": 25,
       "Dose Campari": 10,
       "Dose Rum": 15,
       "Caipirinha": 25
