@@ -27,49 +27,16 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   const STORE_HANDLE = "gentlemenmc";
 
   const getData = async () => {
-    const { data: drinks } = await supabase
-      .from("bebidas")
-      .select("created_at, name, drink, paid, quantity, price, user, uuid")
-      .order("created_at", { ascending: false });
+    const [debtRes, membersRes] = await Promise.all([
+      fetch("/api/bebidas/debt-summary"),
+      supabase.from("membros").select("user_name, phone, user_email"),
+    ]);
 
-    const { data: membersData } = await supabase
-      .from("membros")
-      .select("user_name, phone, user_email");
+    const debtSummary: Array<{ name: string; sumPrice: number }> = await debtRes.json();
 
-    members$.set(membersData || []);
-
-    const calculateSumValues = (transactions: Array<any> | null) => {
-      const result: Record<string, { name: string; sumPrice: number }> = {};
-
-      transactions?.forEach((transaction) => {
-        if (!transaction) return;
-
-        const price = Number(transaction.price);
-        const isPaid =
-          transaction.paid === null ||
-          transaction.paid === false ||
-          transaction.paid === 0;
-
-        if (isPaid && !isNaN(price)) {
-          if (!result[transaction.name]) {
-            result[transaction.name] = {
-              name: transaction.name,
-              sumPrice: 0,
-            };
-          }
-          result[transaction.name].sumPrice += price;
-        }
-      });
-
-      return Object.values(result).sort((a, b) => b.sumPrice - a.sumPrice);
-    };
-
-    const totalSumBase = calculateSumValues(drinks);
-
-    debtData$.set(totalSumBase);
-    totalSum$.set(
-      totalSumBase.reduce((acc, curr) => acc + (curr.sumPrice || 0), 0)
-    );
+    members$.set(membersRes.data || []);
+    debtData$.set(debtSummary);
+    totalSum$.set(debtSummary.reduce((acc, curr) => acc + (curr.sumPrice || 0), 0));
   };
 
   useImperativeHandle(ref, () => ({
