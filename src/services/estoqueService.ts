@@ -71,6 +71,24 @@ export async function getEstoqueByDrink(drink: string) {
   return data.quantity || 0;
 }
 
+export async function updateEstoque(id: string, quantity: number) {
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: item } = await supabase
+    .from("estoque")
+    .select("drink")
+    .eq("id", id)
+    .single();
+
+  await logEstoque(item?.drink || "", quantity, "entrada", user?.email || "");
+
+  return await supabase
+    .from("estoque")
+    .update({ quantity })
+    .eq("id", id);
+}
+
 export async function consumirEstoque(
   drink: string, 
   quantity: number,

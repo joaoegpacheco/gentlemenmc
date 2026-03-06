@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -43,12 +43,14 @@ export default function TabsComponent() {
   const admin$ = useObservable<boolean | null>(null);
   const manager$ = useObservable<boolean | null>(null);
   const isBarUser$ = useObservable<boolean>(false);
+  const isFacilitiesUser$ = useObservable<boolean>(false);
   const caseType$ = useObservable<string | null>(null);
   const activeTab$ = useObservable("1");
   
   const admin = useValue(admin$);
   const manager = useValue(manager$);
   const isBarUser = useValue(isBarUser$);
+  const isFacilitiesUser = useValue(isFacilitiesUser$);
   const caseType = useValue(caseType$);
   const activeTab = useValue(activeTab$);
   
@@ -69,6 +71,7 @@ export default function TabsComponent() {
 
       isBarUser$.set(user.email === "barmc@gentlemenmc.com.br");
       manager$.set(user.email === "robson@gentlemenmc.com.br");
+      isFacilitiesUser$.set(user.email === "guiotto@gentlemenmc.com.br");
 
       try {
         const { data: admins }: PostgrestResponse<AdminData> = await supabase
@@ -148,9 +151,25 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "12", label: t('guestOrder'), children: <CreateComandaPage /> },
         { key: "13", label: t('openOrders'), children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
-        { key: "14", label: t('stock'), children: <EstoquePage /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
       ];
+    } else if (isFacilitiesUser) {
+      const tabs = [
+        { key: "1", label: t('mark'), children: <FormCommand /> },
+        { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: t('events'), children: <CalendarEvents /> },
+        { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "6", label: t('statute'), children: <ByLaw /> },
+        { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
+        { key: "11", label: <LogoutButton /> },
+      ];
+
+      // Adicionar aba de prospects apenas se for Half ou Prospect
+      if (canSeeProspectsTab) {
+        tabs.splice(3, 0, { key: "21", label: t('prospects'), children: <ProspectsPage /> });
+      }
+
+      return tabs;
     } else if (manager) {
       const tabs = [
         { key: "1", label: t('mark'), children: <FormCommand /> },
