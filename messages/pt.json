@@ -403,6 +403,24 @@
     "quantityColumn": "Quantidade",
     "showingItems": "Mostrando {start} - {end} de {total} itens"
   },
+  "overview": {
+    "financialOverview": "Visão Financeira",
+    "totalRevenue": "Faturamento Total",
+    "all": "Todos",
+    "allTime": "Todo período",
+    "members": "Membros",
+    "guests": "Convidados",
+    "directSales": "Venda direta",
+    "today": "Hoje",
+    "week": "Semana",
+    "month": "Mês",
+    "name": "Nome",
+    "type": "Tipo",
+    "items": "Itens",
+    "total": "Total",
+    "date": "Data",
+    "noRecords": "Nenhum registro encontrado"
+  },
   "logout": {
     "logoutSuccess": "Logout realizado com sucesso!",
     "logoutFailed": "Falha ao fazer logout",

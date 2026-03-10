@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { message } from "@/lib/message";
 import { addOrUpdateEstoque, getEstoque } from "@/services/estoqueService";
-import { drinksPricesMembers } from "@/constants/drinks";
+import { useDrinks } from "@/hooks/useDrinks";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -38,6 +38,7 @@ type EstoqueType = {
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
+  const { drinksPricesMembers } = useDrinks();
   const t = useTranslations('adminEstoque');
   const stock$ = useObservable<EstoqueType[]>([]);
   const drink$ = useObservable("");

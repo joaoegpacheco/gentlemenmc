@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus, Trash } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -21,49 +21,71 @@ import {
   getEstoque,
   updateEstoque,
 } from "@/services/estoqueService";
-import { useDeviceSizes } from "@/utils/mediaQueries";
-import { Card, CardContent } from "@/components/ui/card";
+import { createDrink } from "@/services/drinksService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useDrinks } from "@/hooks/useDrinks";
 
 type EstoqueType = {
   id: string;
-  drink: string;
+  drink_id: string;
+  drink_name: string;
+  category_id: string;
   quantity: number;
 };
 
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
+  const { drinksByCategory } = useDrinks();
+
   const t = useTranslations("stock");
   const tCommon = useTranslations("common");
   const tDashboard = useTranslations("dashboard");
 
   const stock$ = useObservable<EstoqueType[]>([]);
+  const category$ = useObservable("");
   const drink$ = useObservable("");
-  const quantity$ = useObservable<number>(1);
+  const quantity$ = useObservable<number>(0);
   const editingId$ = useObservable<string | null>(null);
-
   const loading$ = useObservable(false);
   const search$ = useObservable("");
 
-  const currentPage$ = useObservable<number>(1);
-  const pageSize$ = useObservable<number>(20);
-
   const stock = useValue(stock$);
+  const category = useValue(category$);
   const drink = useValue(drink$);
   const quantity = useValue(quantity$);
   const editingId = useValue(editingId$);
-
   const loading = useValue(loading$);
   const search = useValue(search$);
-  const currentPage = useValue(currentPage$);
-  const pageSize = useValue(pageSize$);
 
-  const { isMobile } = useDeviceSizes();
+  const [categoria, setCategoria] = useState("");
+  const [nome, setNome] = useState("");
+  const [precoCusto, setPrecoCusto] = useState(0);
+  const [precoMembro, setPrecoMembro] = useState(0);
+  const [precoConvidado, setPrecoConvidado] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isNewDrink, setIsNewDrink] = useState(false);
 
+  // --- Fetch Estoque ---
   async function fetchStock() {
     try {
       const data = await getEstoque();
-      stock$.set(data);
+      stock$.set(
+        data.map((item: any) => ({
+          id: item.id,
+          drink_id: item.drink_id,
+          drink_name: item.drink_name,
+          category_id: item.category_id || "",
+          quantity: item.quantity,
+        }))
+      );
     } catch {
       message.error(t("errorFetchingStock"));
     }
@@ -73,37 +95,113 @@ export default function EstoquePage() {
     fetchStock();
   }, []);
 
-  useEffect(() => {
-    currentPage$.set(1);
-  }, [search]);
+  // --- Categories List (ID + Name) ---
+  const categories = useMemo(() => {
+    return Object.entries(drinksByCategory || {}).map(([catName, catData]: any) => ({
+      id: catData.id ?? "",
+      name: catName,
+    }));
+  }, [drinksByCategory]);
 
+  // --- Drinks from selected category ---
+  const drinksFromCategory = useMemo(() => {
+    if (!categoria) return [];
+    return Object.values(drinksByCategory || {})
+      .flatMap((cat: any) => cat.items || [])
+      .filter((d: any) => d.category_id === categoria);
+  }, [categoria, drinksByCategory]);
+
+  const brlFormatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
+  function parseCurrency(value: string) {
+    const numbers = value.replace(/\D/g, "");
+    return Number(numbers) / 100;
+  }
+
+  // --- Edit Item ---
   const handleEdit = (item: EstoqueType) => {
     editingId$.set(item.id);
-    drink$.set(item.drink);
+    drink$.set(item.drink_id);
     quantity$.set(item.quantity);
+    setIsNewDrink(false);
+
+    // Encontrar categoria e drink pelo drink_id
+    const catName = Object.keys(drinksByCategory).find((cat) =>
+      drinksByCategory[cat].items.some((d: any) => d.id === item.drink_id)
+    );
+
+    if (catName) {
+      const drinkItem = drinksByCategory[catName].items.find(
+        (d: any) => d.id === item.drink_id
+      );
+
+      if (drinkItem) {
+        setCategoria(drinkItem.category_id);
+        setNome(drinkItem.name);
+
+        setPrecoCusto(drinkItem.cost_price || 0);
+        setPrecoMembro(drinksByCategory[catName].members?.[drinkItem.name] || 0);
+        setPrecoConvidado(drinksByCategory[catName].guests?.[drinkItem.name] || 0);
+      }
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // --- Add / Update Estoque ---
   const handleAdd = async () => {
-    if (!drink || quantity <= 0) {
+    if (quantity < 0) {
+      message.error(t("informDrinkAndQuantity"));
+      return;
+    }
+
+    if (!editingId && isNewDrink) {
+      if (!categoria || !nome) {
+        message.error("Informe categoria e nome da nova bebida");
+        return;
+      }
+    } else if (!drink) {
       message.error(t("informDrinkAndQuantity"));
       return;
     }
 
     loading$.set(true);
-
     try {
       if (editingId) {
         await updateEstoque(editingId, quantity);
         message.success("Estoque atualizado");
       } else {
-        await addOrUpdateEstoque(drink.trim(), quantity);
+        let drinkIdToUse = drink;
+
+        if (isNewDrink) {
+          const newDrink = await createDrink({
+            name: nome,
+            categoryId: categoria,
+            costPrice: precoCusto,
+            priceMember: precoMembro,
+            priceGuest: precoConvidado,
+          });
+
+          drinkIdToUse = newDrink?.id;
+        }
+
+        await addOrUpdateEstoque(drinkIdToUse, quantity, precoCusto);
         message.success(t("stockUpdated"));
       }
 
       drink$.set("");
-      quantity$.set(1);
+      category$.set("");
+      quantity$.set(0);
       editingId$.set(null);
+      setCategoria("");
+      setNome("");
+      setPrecoCusto(0);
+      setPrecoMembro(0);
+      setPrecoConvidado(0);
+      setIsNewDrink(false);
 
       await fetchStock();
     } catch {
@@ -113,209 +211,191 @@ export default function EstoquePage() {
     }
   };
 
+  // --- Delete Drink ---
+  async function handleDeleteDrink(drinkId: string) {
+    if (!confirm("Deseja realmente deletar essa bebida?")) return;
+    try {
+      await deleteDrink(drinkId);
+      message.success("Bebida deletada");
+      await fetchStock();
+    } catch {
+      message.error("Erro ao deletar bebida");
+    }
+  }
+
+  // --- Filtered Stock ---
   const filteredStock = useMemo(() => {
     return stock
       .filter((item) =>
-        item.drink.toLowerCase().includes(search.toLowerCase())
+        item.drink_name.toLowerCase().includes(search.toLowerCase())
       )
-      .sort((a, b) => a.drink.localeCompare(b.drink));
+      .sort((a, b) => a.drink_name.localeCompare(b.drink_name));
   }, [stock, search]);
 
-  const totalPages = Math.ceil(filteredStock.length / pageSize);
-
-  const paginatedStock = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredStock.slice(startIndex, startIndex + pageSize);
-  }, [filteredStock, currentPage, pageSize]);
-
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-
+    <div className="p-6 max-w-5xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">{t("stockControl")}</h2>
 
-      {/* FORM */}
-
+      {/* --- Form Add/Update --- */}
       <div className="border p-4 rounded-xl shadow-sm mb-6 bg-card">
+        <h4 className="text-lg font-semibold mb-4">{t("addOrUpdateDrink")}</h4>
+        <div className="flex flex-col md:flex-row gap-2 items-end flex-wrap">
 
-        <h4 className="text-lg font-semibold mb-4">
-          {t("addOrUpdateDrink")}
-        </h4>
+          {/* Categoria */}
+          <select
+            value={categoria}
+            onChange={(e) => {
+              setCategoria(e.target.value);
+              category$.set(e.target.value);
+              drink$.set("");
+              setNome("");
+              setPrecoCusto(0);
+              setPrecoMembro(0);
+              setPrecoConvidado(0);
+              setIsNewDrink(false);
+            }}
+            className="border rounded-md p-2 w-48"
+          >
+            <option value="">Selecione categoria</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
 
-        <div className="flex flex-col md:flex-row gap-4">
+          {/* Toggle nova bebida (apenas quando não está editando) */}
+          {!editingId && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isNewDrink}
+                onChange={(e) => {
+                  setIsNewDrink(e.target.checked);
+                  drink$.set("");
+                  if (!e.target.checked) {
+                    setNome("");
+                    setPrecoCusto(0);
+                    setPrecoMembro(0);
+                    setPrecoConvidado(0);
+                  }
+                }}
+                disabled={!categoria}
+              />
+              Nova bebida
+            </label>
+          )}
 
-          <Input
-            value={drink}
-            onChange={(e) => drink$.set(e.target.value)}
-            placeholder={t("selectDrink")}
-          />
+          {/* Drink */}
+          {isNewDrink && !editingId ? (
+            <Input
+              placeholder="Nome da bebida"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              className="w-48"
+              disabled={!categoria}
+            />
+          ) : (
+            <select
+              value={drink}
+              onChange={(e) => {
+                const selected = drinksFromCategory.find((d: any) => d.id === e.target.value);
+                const catName = categories.find((c) => c.id === categoria)?.name;
+                drink$.set(e.target.value);
+                setNome(selected?.name || "");
+                setPrecoCusto(selected?.cost_price ?? 0);
+                setPrecoMembro(catName ? drinksByCategory?.[catName]?.members?.[selected?.name] ?? 0 : 0);
+                setPrecoConvidado(catName ? drinksByCategory?.[catName]?.guests?.[selected?.name] ?? 0 : 0);
+              }}
+              className="border rounded-md p-2 w-48"
+              disabled={!categoria}
+            >
+              <option value="">Selecione bebida</option>
+              {drinksFromCategory.map((d: any) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          )}
 
+          {/* Quantidade */}
           <Input
             type="number"
             value={quantity}
             onChange={(e) => quantity$.set(Number(e.target.value))}
-            className="w-full md:w-32"
+            className="w-24"
+          />
+
+          {/* Preços */}
+          <Input
+            placeholder="Preço custo"
+            value={brlFormatter.format(precoCusto)}
+            onChange={(e) => setPrecoCusto(parseCurrency(e.target.value))}
+            className="w-32"
+          />
+          <Input
+            placeholder="Preço membro"
+            value={brlFormatter.format(precoMembro)}
+            onChange={(e) => setPrecoMembro(parseCurrency(e.target.value))}
+            className="w-32"
+          />
+          <Input
+            placeholder="Preço convidado"
+            value={brlFormatter.format(precoConvidado)}
+            onChange={(e) => setPrecoConvidado(parseCurrency(e.target.value))}
+            className="w-32"
           />
 
           <Button onClick={handleAdd} disabled={loading}>
-            {loading
-              ? tCommon("loading")
-              : editingId
-              ? "Atualizar"
-              : tDashboard("addToStock")}
+            {loading ? tCommon("loading") : editingId ? "Atualizar" : tDashboard("addToStock")}
           </Button>
-
         </div>
-
       </div>
 
-      {/* SEARCH */}
+      {/* --- Table --- */}
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nome da bebida</TableHead>
+              <TableHead>Quantidade</TableHead>
+              <TableHead>Ações</TableHead>
+            </TableRow>
+          </TableHeader>
 
-      <div className="mb-4">
-        <Input
-          placeholder="Buscar bebida..."
-          value={search}
-          onChange={(e) => search$.set(e.target.value)}
-        />
-      </div>
-
-      {/* MOBILE */}
-
-      {isMobile && (
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-          {paginatedStock.map((item) => (
-
-            <Card key={item.id}>
-
-              <CardContent className="p-4">
-
-                <div className="flex items-center justify-between">
-
-                  <h3 className="font-semibold">{item.drink}</h3>
-
-                  <div className="flex items-center gap-2">
-
-                    {item.quantity <= LOW_STOCK_THRESHOLD ? (
-                      <Badge variant="destructive">
-                        {item.quantity} 🔻
-                      </Badge>
-                    ) : (
-                      <Badge>{item.quantity}</Badge>
-                    )}
-
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleEdit(item)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-
-                  </div>
-
-                </div>
-
-              </CardContent>
-
-            </Card>
-
-          ))}
-
-        </div>
-
-      )}
-
-      {/* DESKTOP */}
-
-      {!isMobile && (
-
-        <div className="border rounded-lg">
-
-          <Table>
-
-            <TableHeader>
-
-              <TableRow>
-
-                <TableHead>{t("drinkColumn")}</TableHead>
-                <TableHead>{t("quantityColumn")}</TableHead>
-                <TableHead>Ações</TableHead>
-
+          <TableBody>
+            {filteredStock.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.drink_name}</TableCell>
+                <TableCell>
+                  {item.quantity <= LOW_STOCK_THRESHOLD ? (
+                    <Badge variant="destructive">{item.quantity} 🔻</Badge>
+                  ) : (
+                    <Badge>{item.quantity}</Badge>
+                  )}
+                </TableCell>
+                <TableCell className="flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleEdit(item)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDeleteDrink(item.drink_id)}
+                  >
+                    <Trash className="h-4 w-4 text-red-500" />
+                  </Button>
+                </TableCell>
               </TableRow>
-
-            </TableHeader>
-
-            <TableBody>
-
-              {paginatedStock.map((item) => (
-
-                <TableRow key={item.id}>
-
-                  <TableCell>{item.drink}</TableCell>
-
-                  <TableCell>
-
-                    {item.quantity <= LOW_STOCK_THRESHOLD ? (
-                      <Badge variant="destructive">
-                        {item.quantity} 🔻
-                      </Badge>
-                    ) : (
-                      <Badge>{item.quantity}</Badge>
-                    )}
-
-                  </TableCell>
-
-                  <TableCell>
-
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleEdit(item)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-
-                  </TableCell>
-
-                </TableRow>
-
-              ))}
-
-            </TableBody>
-
-          </Table>
-
-        </div>
-
-      )}
-
-      {/* PAGINATION */}
-
-      <div className="flex items-center justify-between mt-6">
-
-        <Button
-          variant="outline"
-          disabled={currentPage === 1}
-          onClick={() => currentPage$.set(currentPage - 1)}
-        >
-          Anterior
-        </Button>
-
-        <span className="text-sm">
-          Página {currentPage} de {totalPages || 1}
-        </span>
-
-        <Button
-          variant="outline"
-          disabled={currentPage >= totalPages}
-          onClick={() => currentPage$.set(currentPage + 1)}
-        >
-          Próxima
-        </Button>
-
+            ))}
+          </TableBody>
+        </Table>
       </div>
-
     </div>
   );
 }
