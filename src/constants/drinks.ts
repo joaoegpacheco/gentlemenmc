@@ -143,3 +143,15 @@ export const drinksPricesMembers: Record<string, number> = Object.values(drinksB
   (acc, category) => ({ ...acc, ...category.members }),
   {}
 );
+
+export const getDrinksPricesGuests = () =>
+  Object.values(drinksByCategory).reduce(
+    (acc, category) => ({ ...acc, ...category.guests }),
+    {}
+  );
+
+export const getDrinksPricesMembers = () =>
+  Object.values(drinksByCategory).reduce(
+    (acc, category) => ({ ...acc, ...category.members }),
+    {}
+  );
