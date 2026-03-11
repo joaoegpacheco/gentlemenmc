@@ -22,7 +22,9 @@ export async function getEstoque() {
     ? data.map((item) => ({
         id: item.id,
         drink_id: item.drink_id,
-        drink_name: Array.isArray(item.drinks) ? item.drinks[0]?.name ?? "" : "",
+        drink_name: Array.isArray(item.drinks)
+          ? item.drinks[0]?.name ?? ""
+          : (item.drinks as any)?.name ?? "",
         quantity: item.quantity,
       }))
     : [];

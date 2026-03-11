@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Plus, Trash } from "lucide-react";
+import { Pencil, Trash } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,23 +22,7 @@ import {
   updateEstoque,
 } from "@/services/estoqueService";
 import { createDrink, deleteDrink } from "@/services/drinksService";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useDrinks } from "@/hooks/useDrinks";
-
-type EstoqueType = {
-  id: string;
-  drink_id: string;
-  drink_name: string;
-  category_id: string;
-  quantity: number;
-};
+import { useDrinks } from "@/hooks/useDrinks.ts"
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -58,7 +42,6 @@ export default function EstoquePage() {
   const search$ = useObservable("");
 
   const stock = useValue(stock$);
-  const category = useValue(category$);
   const drink = useValue(drink$);
   const quantity = useValue(quantity$);
   const editingId = useValue(editingId$);
@@ -70,7 +53,6 @@ export default function EstoquePage() {
   const [precoCusto, setPrecoCusto] = useState(0);
   const [precoMembro, setPrecoMembro] = useState(0);
   const [precoConvidado, setPrecoConvidado] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
   const [isNewDrink, setIsNewDrink] = useState(false);
 
   // --- Fetch Estoque ---
@@ -86,6 +68,7 @@ export default function EstoquePage() {
           quantity: item.quantity,
         }))
       );
+
     } catch {
       message.error(t("errorFetchingStock"));
     }
@@ -239,7 +222,32 @@ export default function EstoquePage() {
       {/* --- Form Add/Update --- */}
       <div className="border p-4 rounded-xl shadow-sm mb-6 bg-card">
         <h4 className="text-lg font-semibold mb-4">{t("addOrUpdateDrink")}</h4>
-        <div className="flex flex-col md:flex-row gap-2 items-end flex-wrap">
+        <div className="flex flex-col md:flex-row gap-2 items-center flex-wrap md:justify-between">
+
+          <div className="flex flex-col items-center gap-2">
+          {/* Toggle nova bebida (apenas quando não está editando) */}
+          {!editingId && (
+            <div className="flex items-center rounded-md p-2 w-36">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isNewDrink}
+                onChange={(e) => {
+                  setIsNewDrink(e.target.checked);
+                  drink$.set("");
+                  if (!e.target.checked) {
+                    setNome("");
+                    setPrecoCusto(0);
+                    setPrecoMembro(0);
+                    setPrecoConvidado(0);
+                  }
+                }}
+                disabled={!categoria}
+              />
+              Nova bebida
+            </label>
+            </div>
+          )}
 
           {/* Categoria */}
           <select
@@ -263,28 +271,6 @@ export default function EstoquePage() {
               </option>
             ))}
           </select>
-
-          {/* Toggle nova bebida (apenas quando não está editando) */}
-          {!editingId && (
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={isNewDrink}
-                onChange={(e) => {
-                  setIsNewDrink(e.target.checked);
-                  drink$.set("");
-                  if (!e.target.checked) {
-                    setNome("");
-                    setPrecoCusto(0);
-                    setPrecoMembro(0);
-                    setPrecoConvidado(0);
-                  }
-                }}
-                disabled={!categoria}
-              />
-              Nova bebida
-            </label>
-          )}
 
           {/* Drink */}
           {isNewDrink && !editingId ? (
@@ -318,35 +304,48 @@ export default function EstoquePage() {
               ))}
             </select>
           )}
-
           {/* Quantidade */}
+          <div className="flex gap-2 items-center">
+          <label className="flex items-center gap-2 text-sm">Quantidade</label>
           <Input
             type="number"
             value={quantity}
             onChange={(e) => quantity$.set(Number(e.target.value))}
             className="w-24"
           />
-
+</div>
+</div>
+<div className="flex md:flex-row flex-col items-center gap-2">
+          
+<div>
           {/* Preços */}
+          <label className="flex items-center gap-2 text-sm">Preço Custo</label>
           <Input
             placeholder="Preço custo"
             value={brlFormatter.format(precoCusto)}
             onChange={(e) => setPrecoCusto(parseCurrency(e.target.value))}
             className="w-32"
           />
+          </div>
+          <div>
+          <label className="flex items-center gap-2 text-sm">Preço Membro</label>
           <Input
             placeholder="Preço membro"
             value={brlFormatter.format(precoMembro)}
             onChange={(e) => setPrecoMembro(parseCurrency(e.target.value))}
             className="w-32"
           />
+          </div>
+          <div>
+          <label className="flex items-center gap-2 text-sm">Preço Convidado</label>
           <Input
             placeholder="Preço convidado"
             value={brlFormatter.format(precoConvidado)}
             onChange={(e) => setPrecoConvidado(parseCurrency(e.target.value))}
             className="w-32"
           />
-
+          </div>
+</div>
           <Button onClick={handleAdd} disabled={loading}>
             {loading ? tCommon("loading") : editingId ? "Atualizar" : tDashboard("addToStock")}
           </Button>
