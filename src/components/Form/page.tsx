@@ -20,9 +20,9 @@ import { notification } from "@/lib/notification";
 import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
-import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
-import { drinksPricesMembers, drinksByCategory } from "@/constants/drinks";
+import { consumirEstoque, getAllStock } from "@/services/estoqueService";
 import { message } from "@/lib/message";
+import { useDrinks } from "@/hooks/useDrinks";
 
 // Schema será criado dentro do componente para ter acesso às traduções
 
@@ -33,6 +33,7 @@ type MemberType = {
 };
 
 export function FormCommand() {
+  const { drinksPricesMembers, drinksByCategory } = useDrinks();
   const t = useTranslations('form');
   const tCategories = useTranslations('categories');
   const tPlaceholders = useTranslations('placeholders');
@@ -128,11 +129,7 @@ export function FormCommand() {
     }
 
     async function fetchAllStock() {
-      const stockMap: Record<string, number> = {};
-      for (const drink of Object.keys(drinksPricesMembers)) {
-        const quantity = await getEstoqueByDrink(drink);
-        stockMap[drink] = quantity;
-      }
+      const stockMap = await getAllStock();
       drinkStock$.set(stockMap);
     }
 
@@ -285,8 +282,8 @@ export function FormCommand() {
       
       // Atualiza o estoque após consumo
       if (values.drink) {
-        const newStock = await getEstoqueByDrink(values.drink);
-        drinkStock$.set({ ...drinkStock, [values.drink]: newStock });
+        const stockMap = await getAllStock();
+        drinkStock$.set(stockMap);
       }
     } catch (err) {
       notification.error({ message: t('errorRegisteringDrinkCheckStock') });
