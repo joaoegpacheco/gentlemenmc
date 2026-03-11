@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, Pencil } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -51,6 +51,7 @@ export default function EstoquePage() {
   const pageSize$ = useObservable<number>(20);
   const drinkSearch$ = useObservable("");
   const drinkPopoverOpen$ = useObservable(false);
+  const editingId$ = useObservable<string | null>(null);
 
   const stock = useValue(stock$);
   const drink = useValue(drink$);
@@ -64,6 +65,7 @@ export default function EstoquePage() {
   const pageSize = useValue(pageSize$);
   const drinkSearch = useValue(drinkSearch$);
   const drinkPopoverOpen = useValue(drinkPopoverOpen$);
+  const editingId = useValue(editingId$);
   const { isMobile } = useDeviceSizes();
 
   async function fetchStock() {
@@ -99,12 +101,20 @@ export default function EstoquePage() {
       drink$.set("");
       quantity$.set(1);
       valuePrice$.set("");
+      editingId$.set(null);
       await fetchStock();
     } catch {
       message.error(t('errors.errorUpdatingStock'));
     } finally {
       loading$.set(false);
     }
+  };
+
+  const handleEdit = (item: EstoqueType) => {
+    editingId$.set(item.id);
+    drink$.set(item.drink);
+    quantity$.set(item.quantity);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const filteredStock = useMemo(() => {
@@ -140,7 +150,7 @@ export default function EstoquePage() {
     if (!sortedColumn) return filteredStock;
     const sorted = [...filteredStock].sort((a, b) => {
       if (sortedColumn === "drink") {
-        return sortDirection === "asc" 
+        return sortDirection === "asc"
           ? a.drink.localeCompare(b.drink)
           : b.drink.localeCompare(a.drink);
       } else {
@@ -265,7 +275,11 @@ export default function EstoquePage() {
             placeholder="Valor pago (R$)"
           />
           <Button onClick={handleAdd} disabled={loading}>
-            {loading ? "Carregando..." : "Adicionar ao estoque"}
+            {loading
+              ? "Carregando..."
+              : editingId
+                ? "Atualizar estoque"
+                : "Adicionar ao estoque"}
           </Button>
         </div>
       </div>
@@ -277,9 +291,10 @@ export default function EstoquePage() {
           value={search}
           onChange={(e) => search$.set(e.target.value)}
         />
+        kkkkk
       </div>
 
-      {/* Mobile-first: Cards de estoque */}
+      {isMobile && (
       <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
         {paginatedStock.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -297,7 +312,8 @@ export default function EstoquePage() {
                         Quantidade
                       </p>
                     </div>
-                    <div>
+
+                    <div className="flex items-center gap-2">
                       {item.quantity <= LOW_STOCK_THRESHOLD ? (
                         <Badge variant="destructive" className="text-lg px-3 py-1">
                           {item.quantity} 🔻
@@ -307,6 +323,14 @@ export default function EstoquePage() {
                           {item.quantity}
                         </Badge>
                       )}
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleEdit(item)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -315,6 +339,7 @@ export default function EstoquePage() {
           </div>
         )}
       </div>
+)}
 
       {/* Tabela para telas grandes */}
       {!isMobile && (
@@ -322,24 +347,25 @@ export default function EstoquePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer"
                   onClick={() => handleSort("drink")}
                 >
                   Bebida {sortedColumn === "drink" && (sortDirection === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer"
                   onClick={() => handleSort("quantity")}
                 >
                   Quantidade {sortedColumn === "quantity" && (sortDirection === "asc" ? "↑" : "↓")}
                 </TableHead>
+                <TableHead className="text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedStock.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center text-muted-foreground">
                     {t('table.noItemsFound')}
                   </TableCell>
                 </TableRow>
@@ -354,6 +380,15 @@ export default function EstoquePage() {
                         <Badge variant="default">{item.quantity}</Badge>
                       )}
                     </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleEdit(item)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -366,10 +401,10 @@ export default function EstoquePage() {
       {sortedStock.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-muted-foreground">
-            {t('pagination.showing', { 
-              start: ((currentPage - 1) * pageSize) + 1, 
-              end: Math.min(currentPage * pageSize, sortedStock.length), 
-              total: sortedStock.length 
+            {t('pagination.showing', {
+              start: ((currentPage - 1) * pageSize) + 1,
+              end: Math.min(currentPage * pageSize, sortedStock.length),
+              total: sortedStock.length
             })}
           </div>
           <div className="flex items-center gap-2">
@@ -395,7 +430,7 @@ export default function EstoquePage() {
                   // Adiciona "..." entre páginas não consecutivas
                   const prevPage = array[index - 1];
                   const showEllipsis = prevPage && page - prevPage > 1;
-                  
+
                   return (
                     <React.Fragment key={page}>
                       {showEllipsis && (
