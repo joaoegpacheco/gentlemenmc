@@ -22,7 +22,7 @@ import {
   updateEstoque,
 } from "@/services/estoqueService";
 import { createDrink, deleteDrink } from "@/services/drinksService";
-import { useDrinks } from "@/hooks/useDrinks.ts"
+import { useDrinks } from "@/hooks/useDrinks";
 
 const LOW_STOCK_THRESHOLD = 5;
 
