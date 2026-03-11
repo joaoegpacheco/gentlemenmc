@@ -403,6 +403,24 @@
     "quantityColumn": "Quantity",
     "showingItems": "Showing {start} - {end} of {total} items"
   },
+  "overview": {
+    "financialOverview": "Financial Overview",
+    "totalRevenue": "Total Revenue",
+    "all": "All",
+    "allTime": "All time",
+    "members": "Members",
+    "guests": "Guests",
+    "directSales": "Direct sales",
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "name": "Name",
+    "type": "Type",
+    "items": "Items",
+    "total": "Total",
+    "date": "Date",
+    "noRecords": "No records found"
+  },
   "logout": {
     "logoutSuccess": "Logout successful!",
     "logoutFailed": "Logout failed",

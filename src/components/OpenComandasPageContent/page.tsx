@@ -25,11 +25,11 @@ import { Input } from "@/components/ui/input";
 import { message } from "@/lib/message";
 import { Spinner } from "@/components/ui/spinner";
 import { updateComanda } from "@/services/comandaService";
-import { drinksPricesGuests } from "@/constants/drinks";
 import { supabase } from "@/hooks/use-supabase";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useDrinks } from "@/hooks/useDrinks";
 
 interface Props { }
 
@@ -39,6 +39,7 @@ interface AdminData {
 }
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
+  const { drinksPricesGuests } = useDrinks();
   const t = useTranslations('openComandas');
   const comandas$ = useObservable<any[]>([]);
   const loading$ = useObservable(false);
@@ -386,7 +387,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Object.entries(drinksPricesGuests).map(([drink, price]) => (
+              {Object.entries(drinksPricesGuests as Record<string, number>).map(([drink, price]) => (
                 <Button
                   key={drink}
                   variant={newDrink === drink ? "default" : "outline"}

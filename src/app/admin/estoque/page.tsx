@@ -25,19 +25,21 @@ import {
 } from "@/components/ui/table";
 import { message } from "@/lib/message";
 import { addOrUpdateEstoque, getEstoque } from "@/services/estoqueService";
-import { drinksPricesMembers } from "@/constants/drinks";
+import { useDrinks } from "@/hooks/useDrinks";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
 
 type EstoqueType = {
   id: string;
-  drink: string;
+  drink_id: string;
+  drink_name: string;
   quantity: number;
 };
 
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
+  const { drinksPricesMembers } = useDrinks();
   const t = useTranslations('adminEstoque');
   const stock$ = useObservable<EstoqueType[]>([]);
   const drink$ = useObservable("");
@@ -112,7 +114,7 @@ export default function EstoquePage() {
 
   const handleEdit = (item: EstoqueType) => {
     editingId$.set(item.id);
-    drink$.set(item.drink);
+    drink$.set(item.drink_name);
     quantity$.set(item.quantity);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -120,9 +122,9 @@ export default function EstoquePage() {
   const filteredStock = useMemo(() => {
     return stock
       .filter((item) =>
-        item.drink.toLowerCase().includes(search.toLowerCase())
+        item.drink_name.toLowerCase().includes(search.toLowerCase())
       )
-      .sort((a, b) => a.drink.localeCompare(b.drink));
+      .sort((a, b) => a.drink_name.localeCompare(b.drink_name));
   }, [stock, search]);
 
   const drinksOptions = Object.keys(drinksPricesMembers).map((name) => ({
@@ -151,8 +153,8 @@ export default function EstoquePage() {
     const sorted = [...filteredStock].sort((a, b) => {
       if (sortedColumn === "drink") {
         return sortDirection === "asc"
-          ? a.drink.localeCompare(b.drink)
-          : b.drink.localeCompare(a.drink);
+          ? a.drink_name.localeCompare(b.drink_name)
+          : b.drink_name.localeCompare(a.drink_name);
       } else {
         return sortDirection === "asc"
           ? a.quantity - b.quantity
@@ -307,7 +309,7 @@ export default function EstoquePage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold">{item.drink}</h3>
+                      <h3 className="font-semibold">{item.drink_name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         Quantidade
                       </p>
@@ -372,7 +374,7 @@ export default function EstoquePage() {
               ) : (
                 paginatedStock.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.drink}</TableCell>
+                    <TableCell>{item.drink_name}</TableCell>
                     <TableCell>
                       {item.quantity <= LOW_STOCK_THRESHOLD ? (
                         <Badge variant="destructive">{item.quantity} 🔻</Badge>

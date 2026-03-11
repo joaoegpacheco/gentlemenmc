@@ -20,14 +20,15 @@ import {
 import { message } from "@/lib/message";
 import { Plus, Trash2 } from "lucide-react";
 import { registerComanda } from "@/services/comandaService";
-import { drinksPricesGuests, drinksByCategory } from "@/constants/drinks";
-import { consumirEstoque, getEstoqueByDrink } from "@/services/estoqueService";
+import { consumirEstoque, getAllStock } from "@/services/estoqueService";
 import { supabase } from "@/hooks/use-supabase.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMediaQuery } from "react-responsive";
+import { useDrinks } from "@/hooks/useDrinks";
 
 export default function CreateComandaPage() {
+  const { drinksPricesGuests, drinksByCategory } = useDrinks();
   const t = useTranslations('novaComanda');
   const tEstoqueService = useTranslations('estoqueService');
   const items$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
@@ -85,11 +86,7 @@ export default function CreateComandaPage() {
 
   useEffect(() => {
     async function fetchAllStock() {
-      const stockMap: Record<string, number> = {};
-      for (const drink of Object.keys(drinksPricesGuests)) {
-        const quantity = await getEstoqueByDrink(drink);
-        stockMap[drink] = quantity;
-      }
+      const stockMap = await getAllStock();
       drinkStock$.set(stockMap);
     }
 
@@ -141,8 +138,8 @@ export default function CreateComandaPage() {
           insufficientStock: tEstoqueService('errors.insufficientStock', { drink: item.drink }),
         });
         // Atualiza o estoque local após consumo
-        const newStock = await getEstoqueByDrink(item.drink);
-        drinkStock$.set({ ...drinkStock, [item.drink]: newStock });
+        const stockMap = await getAllStock();
+        drinkStock$.set(stockMap);
       }
 
       // Busca o nome do membro selecionado
@@ -195,11 +192,8 @@ export default function CreateComandaPage() {
       isDirectSale$.set(false);
 
       // Atualiza todo o estoque após criar a comanda
-      const stockMap: Record<string, number> = {};
-      for (const drink of Object.keys(drinksPricesGuests)) {
-        const quantity = await getEstoqueByDrink(drink);
-        stockMap[drink] = quantity;
-      }
+      const stockMap = await getAllStock();
+      drinkStock$.set(stockMap);
       drinkStock$.set(stockMap);
     } catch (error: any) {
       message.error(`Erro: ${error.message || "Erro ao processar"}`);

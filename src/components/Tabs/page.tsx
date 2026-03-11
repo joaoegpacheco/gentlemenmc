@@ -6,9 +6,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormCommand } from "@/components/Form/page";
 import { CardCommand } from "@/components/CardDrinks/page";
 import { CardCommandAll } from "@/components/CardDrinksAll/page";
-// import { InvoiceForm } from "@/components/InvoiceForm/page";
 // import { InvoiceTable } from "@/components/InvoiceTable/page";
+// import { InvoiceForm } from "@/components/InvoiceForm/page";
 // import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
+import OverviewFinancePage from "@/components/OverviewFinancePage/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
 import CalendarEvents from "../Calendar/page";
@@ -133,7 +134,7 @@ export default function TabsComponent() {
         { key: "17", label: t('orderHistory'), children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
-        // { key: "16", label: "Créditos", children: <CreditManager /> },
+        { key: "23", label: "Financeiro", children: <OverviewFinancePage /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
@@ -159,6 +160,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         { key: "11", label: <LogoutButton /> },
