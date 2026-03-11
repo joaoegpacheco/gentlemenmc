@@ -24,6 +24,14 @@ import {
 import { createDrink, deleteDrink } from "@/services/drinksService";
 import { useDrinks } from "@/hooks/useDrinks";
 
+type EstoqueType = {
+  id: string;
+  drink_id: string;
+  drink_name: string;
+  category_id?: string;
+  quantity: number;
+};
+
 const LOW_STOCK_THRESHOLD = 5;
 
 export default function EstoquePage() {
