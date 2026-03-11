@@ -387,7 +387,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Object.entries(drinksPricesGuests).map(([drink, price]) => (
+              {Object.entries(drinksPricesGuests as Record<string, number>).map(([drink, price]) => (
                 <Button
                   key={drink}
                   variant={newDrink === drink ? "default" : "outline"}

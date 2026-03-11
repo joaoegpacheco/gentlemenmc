@@ -18,19 +18,14 @@ export async function getEstoque() {
     `)
     .order("name", { foreignTable: "drinks", ascending: true });
 
-    const formatted = Array.isArray(data)
-      ? data.map((item) => ({
-          id: item.id,
-          drink_id: item.drink_id,
-          drink_name:
-            Array.isArray(item.drinks) && item.drinks.length > 0
-              ? item.drinks[0]?.name || ""
-              : typeof item.drinks === "object" && item.drinks !== null
-                ? item.drinks.name || ""
-                : "",
-          quantity: item.quantity,
-        }))
-      : [];
+  const formatted = Array.isArray(data)
+    ? data.map((item) => ({
+        id: item.id,
+        drink_id: item.drink_id,
+        drink_name: Array.isArray(item.drinks) ? item.drinks[0]?.name ?? "" : "",
+        quantity: item.quantity,
+      }))
+    : [];
 
   if (error) throw error;
   return formatted;

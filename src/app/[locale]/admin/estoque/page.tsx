@@ -21,7 +21,7 @@ import {
   getEstoque,
   updateEstoque,
 } from "@/services/estoqueService";
-import { createDrink } from "@/services/drinksService";
+import { createDrink, deleteDrink } from "@/services/drinksService";
 import {
   Dialog,
   DialogContent,
