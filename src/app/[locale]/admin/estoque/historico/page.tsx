@@ -18,7 +18,7 @@ import { message } from "@/lib/message";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import dayjs from "dayjs";
-import { supabase } from "@/hooks/use-supabase";
+import { getEstoqueLogsWithDrinkNames } from "@/services/estoqueService";
 import { Download, FileText } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -50,17 +50,12 @@ export default function HistoricoEstoquePage() {
   const { isMobile } = useDeviceSizes();
 
   async function fetchLogs() {
-    const { data, error } = await supabase
-      .from("estoque_log")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const data = await getEstoqueLogsWithDrinkNames();
+      logs$.set(data);
+    } catch {
       message.error(t('errors.errorFetchingLogs'));
-      return;
     }
-
-    logs$.set(data || []);
   }
 
   useEffect(() => {
