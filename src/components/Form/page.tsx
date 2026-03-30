@@ -7,16 +7,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { notification } from "@/lib/notification";
+import { Trash2 } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 import { formatDateTime } from "@/utils/formatDateTime.js";
 import { supabase } from "@/hooks/use-supabase.js";
@@ -32,6 +41,12 @@ type MemberType = {
   status?: "ativo" | "inativo" | "suspenso";
 };
 
+type CartItem = {
+  drink: string;
+  quantity: number;
+  price: number;
+};
+
 export function FormCommand() {
   const { drinksPricesMembers, drinksByCategory } = useDrinks();
   const t = useTranslations('form');
@@ -41,22 +56,18 @@ export function FormCommand() {
   
   const formCommandSchema = z.object({
     name: z.string().min(1, t('selectMember')),
-    drink: z.string().min(1, t('selectItem')),
-    amount: z.number().min(1).default(1),
   });
   
   const form = useForm<z.infer<typeof formCommandSchema>>({
     resolver: zodResolver(formCommandSchema) as any,
     defaultValues: {
       name: "",
-      drink: "",
-      amount: 1,
     },
   });
 
   const userId$ = useObservable("");
   const userName$ = useObservable("");
-  const selectedDrink$ = useObservable("");
+  const items$ = useObservable<CartItem[]>([]);
   const selectedCategory$ = useObservable<string>("");
   const members$ = useObservable<Record<string, MemberType>>({});
   const userCredit$ = useObservable<number>(0);
@@ -65,7 +76,7 @@ export function FormCommand() {
 
   const userId = useValue(userId$);
   const userName = useValue(userName$);
-  const selectedDrink = useValue(selectedDrink$);
+  const items = useValue(items$);
   const selectedCategory = useValue(selectedCategory$);
   const members = useValue(members$);
   const userCredit = useValue(userCredit$);
@@ -156,13 +167,45 @@ export function FormCommand() {
     return standardPrice;
   }
 
-  const handleSubmit = async (values: z.infer<typeof formCommandSchema>) => {
+  /** Igual à nova comanda: carrinho persiste ao trocar categoria; repetir clique na mesma bebida incrementa qtd. */
+  const bumpDrinkToCart = (drink: string, linePrice: number) => {
+    const price = linePrice || drinksPricesMembers[drink] || 0;
+    const stock = drinkStock[drink] || 0;
+    if (!stock || !price) return;
+
+    items$.set((old) => {
+      const existing = old.find((i) => i.drink === drink);
+      const qty = existing?.quantity ?? 0;
+      if (qty >= stock) {
+        message.warning(t("stockExceeded", { amount: qty + 1 }));
+        return old;
+      }
+      if (existing) {
+        return old.map((i) =>
+          i.drink === drink ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      }
+      return [...old, { drink, quantity: 1, price }];
+    });
+  };
+
+  const removeCartLine = (drink: string) => {
+    items$.set((old) => old.filter((i) => i.drink !== drink));
+  };
+
+  const handleSubmit = async (_values: z.infer<typeof formCommandSchema>) => {
+    const cart = items$.peek() as CartItem[];
+
     if (!userId || !userName) {
       notification.error({ message: t('selectValidUserAndDrink') });
       return;
     }
 
-    // Verificar se o membro está suspenso
+    if (!cart?.length) {
+      notification.error({ message: t('selectItem') });
+      return;
+    }
+
     if (memberStatus === "suspenso") {
       notification.error({ 
         message: t('memberSuspended'),
@@ -173,60 +216,87 @@ export function FormCommand() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const amount = values.amount || 1;
-      const valueDrink = calculateCustomPrice(userName, values.drink || "", drinksPricesMembers[values.drink || ""] || 0);
+      let creditLeft = userCredit;
 
-      await consumirEstoque(values.drink!, amount, {
-        invalidDrinkOrQuantity: tEstoqueService('errors.invalidDrinkOrQuantity'),
-        insufficientStock: tEstoqueService('errors.insufficientStock', { drink: values.drink! }),
-      });
+      for (const item of cart) {
+        const amount = item.quantity;
+        const valueDrink = calculateCustomPrice(
+          userName,
+          item.drink,
+          drinksPricesMembers[item.drink] ?? item.price
+        );
+        const totalPrice = valueDrink * amount;
 
-      const totalPrice = valueDrink * amount;
-      
-      // Se o usuário tem crédito, usar para abater
-      if (userCredit > 0) {
-        if (userCredit >= totalPrice) {
-          // Crédito suficiente - marca como paga e debita todo o valor
-          const { error: drinkError } = await supabase.from("bebidas").insert([
-            {
-              name: userName,
-              drink: values.drink,
-              quantity: amount,
-              price: totalPrice,
-              user: user?.email,
-              uuid: userId,
-              paid: true,
-            },
-          ]);
+        await consumirEstoque(item.drink, amount, {
+          invalidDrinkOrQuantity: tEstoqueService('errors.invalidDrinkOrQuantity'),
+          insufficientStock: tEstoqueService('errors.insufficientStock', { drink: item.drink }),
+        });
 
-          if (drinkError) {
-            notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
-            return;
-          }
+        if (creditLeft > 0) {
+          if (creditLeft >= totalPrice) {
+            const { error: drinkError } = await supabase.from("bebidas").insert([
+              {
+                name: userName,
+                drink: item.drink,
+                quantity: amount,
+                price: totalPrice,
+                user: user?.email,
+                uuid: userId,
+                paid: true,
+              },
+            ]);
 
-          // Debita do crédito inserindo valor negativo
-          const { error: creditError } = await supabase.from("credits").insert([
-            {
-              user_id: userId,
-              balance: -totalPrice,
-            },
-          ]);
+            if (drinkError) {
+              notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
+              return;
+            }
 
-          if (creditError) {
-            notification.error({ message: t('errorDebitingCredit'), description: creditError.message });
-            return;
+            const { error: creditError } = await supabase.from("credits").insert([
+              { user_id: userId, balance: -totalPrice },
+            ]);
+
+            if (creditError) {
+              notification.error({ message: t('errorDebitingCredit'), description: creditError.message });
+              return;
+            }
+            creditLeft -= totalPrice;
+          } else {
+            const remainingPrice = totalPrice - creditLeft;
+
+            const { error: drinkError } = await supabase.from("bebidas").insert([
+              {
+                name: userName,
+                drink: item.drink,
+                quantity: amount,
+                price: remainingPrice,
+                user: user?.email,
+                uuid: userId,
+                paid: null,
+              },
+            ]);
+
+            if (drinkError) {
+              notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
+              return;
+            }
+
+            const { error: creditError } = await supabase.from("credits").insert([
+              { user_id: userId, balance: -creditLeft },
+            ]);
+
+            if (creditError) {
+              notification.error({ message: t('errorDebitingCredit'), description: creditError.message });
+              return;
+            }
+            creditLeft = 0;
           }
         } else {
-          // Crédito insuficiente - abate parcialmente
-          const remainingPrice = totalPrice - userCredit;
-          
-          // Insere a bebida com o valor restante (após abater crédito) e marca como não paga
           const { error: drinkError } = await supabase.from("bebidas").insert([
             {
               name: userName,
-              drink: values.drink,
+              drink: item.drink,
               quantity: amount,
-              price: remainingPrice, // Apenas o valor que falta pagar
+              price: totalPrice,
               user: user?.email,
               uuid: userId,
               paid: null,
@@ -237,58 +307,21 @@ export function FormCommand() {
             notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
             return;
           }
-
-          // Debita todo o crédito disponível
-          const { error: creditError } = await supabase.from("credits").insert([
-            {
-              user_id: userId,
-              balance: -userCredit, // Debita todo o crédito disponível
-            },
-          ]);
-
-          if (creditError) {
-            notification.error({ message: t('errorDebitingCredit'), description: creditError.message });
-            return;
-          }
-        }
-      } else {
-        // Sem crédito - insere normalmente como não paga
-        const { error: drinkError } = await supabase.from("bebidas").insert([
-          {
-            name: userName,
-            drink: values.drink,
-            quantity: amount,
-            price: totalPrice,
-            user: user?.email,
-            uuid: userId,
-            paid: null,
-          },
-        ]);
-
-        if (drinkError) {
-          notification.error({ message: t('errorRegisteringDrink'), description: drinkError.message });
-          return;
         }
       }
 
       notification.success({ message: t('drinkAddedSuccessfully') });
-      form.reset();
-      selectedDrink$.set("");
-      selectedCategory$.set("");
-      userName$.set("");
-      userId$.set("");
-      userCredit$.set(0);
-      memberStatus$.set(null);
-      
-      // Atualiza o estoque após consumo
-      if (values.drink) {
-        const stockMap = await getAllStock();
-        drinkStock$.set(stockMap);
-      }
+      items$.set([]);
+      form.reset({ name: userName });
+      const stockMap = await getAllStock();
+      drinkStock$.set(stockMap);
+      await fetchUserCredit(userId);
     } catch (err) {
       notification.error({ message: t('errorRegisteringDrinkCheckStock') });
     }
   };
+
+  const cartTotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
 
   return (
     <Form {...form}>
@@ -310,6 +343,7 @@ export function FormCommand() {
                         userName$.set(member.user_name);
                         memberStatus$.set(member.status || "ativo");
                         field.onChange(member.user_name);
+                        items$.set([]);
                         fetchUserCredit(member.user_id);
                         
                         // Verificar se o membro está suspenso
@@ -345,6 +379,7 @@ export function FormCommand() {
                           userName$.set(member.user_name);
                           memberStatus$.set(member.status || "ativo");
                           field.onChange(member.user_name);
+                          items$.set([]);
                           fetchUserCredit(member.user_id);
                           
                           // Verificar se o membro está suspenso e mostrar alerta
@@ -373,160 +408,169 @@ export function FormCommand() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="drink"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('item')}</FormLabel>
-              {isMobile ? (
-                <>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(value) => {
-                      selectedCategory$.set(value);
-                      selectedDrink$.set("");
-                      field.onChange("");
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={tPlaceholders('selectCategory')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {categoryLabels[category] || category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedCategory && (
-                    <Select
-                      value={selectedDrink}
-                      onValueChange={(value) => {
-                        selectedDrink$.set(value);
-                        field.onChange(value);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={tPlaceholders('selectDrink')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(getDrinksForCategory(selectedCategory)).map(drink => {
-                          const stock = drinkStock[drink] || 0;
-                          const hasStock = stock > 0;
-                          const categoryDrinks = getDrinksForCategory(selectedCategory);
-                          const price = categoryDrinks[drink] || 0;
-                          return (
-                            <SelectItem 
-                              key={drink} 
-                              value={drink}
-                              disabled={!hasStock}
-                              className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
-                            >
-                              {drink} - {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} {hasStock ? t('inStock', { stock }) : t('outOfStock')}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </>
-              ) : (
-                <Tabs 
-                  value={selectedCategory || categories[0] || ""} 
-                  onValueChange={(value) => {
-                    selectedCategory$.set(value);
-                    selectedDrink$.set("");
-                    field.onChange("");
-                  }}
-                  className="w-full"
-                  defaultValue={categories[0] || ""}
-                >
-                  <TabsList className="h-16 items-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-3 lg:grid-cols-5">
-                    {categories.map(category => (
-                      <TabsTrigger key={category} value={category} className="text-xs lg:text-sm">
-                        {categoryLabels[category] || category}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  {categories.map(category => {
-                    const categoryDrinks = getDrinksForCategory(category);
+        <div className="space-y-2">
+          <Label>{t('item')}</Label>
+          {isMobile ? (
+            <>
+              <Select
+                value={selectedCategory}
+                onValueChange={(value) => selectedCategory$.set(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={tPlaceholders('selectCategory')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {categoryLabels[category] || category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedCategory && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+                  {Object.keys(getDrinksForCategory(selectedCategory)).map((drink) => {
+                    const stock = drinkStock[drink] || 0;
+                    const hasStock = stock > 0;
+                    const categoryDrinks = getDrinksForCategory(selectedCategory);
+                    const price = categoryDrinks[drink] || 0;
+                    const qtyInCart = items.find((i) => i.drink === drink)?.quantity ?? 0;
+                    const atMaxQty = qtyInCart >= stock;
                     return (
-                      <TabsContent key={category} value={category}>
-                        <div className="flex flex-wrap gap-6">
-                          {Object.keys(categoryDrinks).map(drink => {
-                            const stock = drinkStock[drink] || 0;
-                            const hasStock = stock > 0;
-                            const price = categoryDrinks[drink] || 0;
-                            return (
-                              <div key={drink} className="flex flex-col items-center gap-1">
-                                <Button
-                                  type="button"
-                                  variant={selectedDrink === drink ? "default" : "outline"}
-                                  disabled={!hasStock}
-                                  onClick={() => {
-                                    selectedDrink$.set(drink);
-                                    field.onChange(drink);
-                                  }}
-                                  className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
-                                >
-                                  {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
-                                </Button>
-                                <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
-                                  {t('stockLabel')} {stock}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </TabsContent>
+                      <div key={drink} className="flex flex-col items-center gap-1">
+                        <Button
+                          type="button"
+                          variant={qtyInCart > 0 ? "default" : "outline"}
+                          disabled={!hasStock || atMaxQty}
+                          className={!hasStock ? "opacity-50 cursor-not-allowed min-h-[4rem] whitespace-pre-wrap flex flex-col" : "min-h-[4rem] whitespace-pre-wrap flex flex-col"}
+                          onClick={() => bumpDrinkToCart(drink, price)}
+                        >
+                          <span className="text-center leading-tight text-xs sm:text-sm">{drink}</span>
+                          <span className="text-xs font-normal">
+                            {price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                          </span>
+                        </Button>
+                        <span className={`text-xs font-semibold ${hasStock ? "text-green-600" : "text-red-600"}`}>
+                          {t("stockLabel")} {stock}
+                        </span>
+                        {qtyInCart > 0 && (
+                          <span className="text-xs text-blue-600 font-medium">
+                            {t("inCart", { quantity: qtyInCart })}
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
-                </Tabs>
+                </div>
               )}
-              <FormMessage />
-            </FormItem>
+            </>
+          ) : (
+            <Tabs
+              value={selectedCategory || categories[0] || ""}
+              onValueChange={(value) => selectedCategory$.set(value)}
+              className="w-full"
+              defaultValue={categories[0] || ""}
+            >
+              <TabsList className="h-16 items-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-3 lg:grid-cols-5">
+                {categories.map(category => (
+                  <TabsTrigger key={category} value={category} className="text-xs lg:text-sm">
+                    {categoryLabels[category] || category}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {categories.map(category => {
+                const categoryDrinks = getDrinksForCategory(category);
+                return (
+                  <TabsContent key={category} value={category}>
+                    <div className="flex flex-wrap gap-6">
+                      {Object.keys(categoryDrinks).map(drink => {
+                        const stock = drinkStock[drink] || 0;
+                        const hasStock = stock > 0;
+                        const price = categoryDrinks[drink] || 0;
+                        const qtyInCart = items.find((i) => i.drink === drink)?.quantity ?? 0;
+                        const atMaxQty = qtyInCart >= stock;
+                        return (
+                          <div key={drink} className="flex flex-col items-center gap-1">
+                            <Button
+                              type="button"
+                              variant={qtyInCart > 0 ? "default" : "outline"}
+                              disabled={!hasStock || atMaxQty}
+                              onClick={() => bumpDrinkToCart(drink, price)}
+                              className={!hasStock ? "opacity-50 cursor-not-allowed" : ""}
+                            >
+                              {`${drink} ${price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                            </Button>
+                            <span className={`text-xs font-semibold ${hasStock ? 'text-green-600' : 'text-red-600'}`}>
+                              {t('stockLabel')} {stock}
+                            </span>
+                            {qtyInCart > 0 && (
+                              <span className="text-xs text-blue-600 font-medium">
+                                {t('inCart', { quantity: qtyInCart })}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
           )}
-        />
+        </div>
 
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('quantity')}</FormLabel>
-              <FormControl>
-                <Select
-                  value={field.value?.toString() || "1"}
-                  onValueChange={(val) => field.onChange(parseInt(val))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('item')}</TableHead>
+                <TableHead>{t('quantity')}</TableHead>
+                <TableHead>{t('subtotal')}</TableHead>
+                <TableHead className="w-12" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    {t('cartNoItems')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                items.map((item, idx) => (
+                  <TableRow key={`${item.drink}-${idx}`}>
+                    <TableCell>{item.drink}</TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                    <TableCell>R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeCartLine(item.drink)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="text-lg font-bold">
+          {t('orderTotal')}: R$ {cartTotal.toFixed(2)}
+        </div>
 
         <Button 
           type="submit" 
           className="w-full" 
           disabled={
-            form.formState.isSubmitting || 
-            !selectedDrink || 
-            !userId || 
-            memberStatus === "suspenso" ||
-            (selectedDrink !== "" && (drinkStock[selectedDrink] || 0) < (form.watch("amount") || 1))
+            form.formState.isSubmitting ||
+            items.length === 0 ||
+            !userId ||
+            memberStatus === "suspenso"
           }
         >
           {form.formState.isSubmitting ? t('adding') : t('add')}
@@ -546,22 +590,6 @@ export function FormCommand() {
             ) : (
               <div>
                 {t('currentCredit')} <strong>{userCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
-              </div>
-            )}
-          </div>
-        )}
-
-        {selectedDrink && (
-          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-              {t('availableStockOf')} <strong>{selectedDrink}</strong>: 
-              <span className={`ml-2 text-lg font-bold ${(drinkStock[selectedDrink] || 0) > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {drinkStock[selectedDrink] || 0}
-              </span>
-            </div>
-            {form.watch("amount") > (drinkStock[selectedDrink] || 0) && (
-              <div className="mt-2 text-sm text-red-600 dark:text-red-400 font-medium">
-                ⚠️ {t('stockExceeded', { amount: form.watch("amount") })}
               </div>
             )}
           </div>

@@ -297,7 +297,12 @@
     "inStock": "(Estoque: {stock})",
     "memberSuspended": "Membro Suspenso",
     "memberSuspendedMessage": "O usuário {name} está suspenso/bloqueado e não pode marcar bebidas. Entre em contato com o tesoureiro do grupo para mais informações.",
-    "cannotMarkDrinksSuspended": "Não é possível marcar bebidas para membros suspensos"
+    "cannotMarkDrinksSuspended": "Não é possível marcar bebidas para membros suspensos",
+    "clearSelectedDrink": "Limpar bebida selecionada",
+    "cartNoItems": "Nenhum item adicionado",
+    "inCart": "No pedido: {quantity}",
+    "subtotal": "Subtotal",
+    "orderTotal": "Total do pedido"
   },
   "members": {
     "addMember": "Adicionar Membro",
@@ -528,6 +533,9 @@
     "next": "Próxima"
   },
   "openComandas": {
+    "notices": {
+      "paymentBarMC": "Confirme o pagamento como usuário do bar. Não é necessário informar administrador."
+    },
     "errorFetchingAdmins": "Erro ao buscar administradores",
     "selectAdminAndPassword": "Selecione um admin e digite a senha",
     "incorrectUserOrPassword": "Usuário ou senha incorretos",
@@ -535,8 +543,8 @@
     "errorPayingComanda": "Erro ao pagar comanda",
     "comandaPaidSuccessfully": "Comanda paga com sucesso",
     "errorFetchingComandas": "Erro ao buscar comandas",
+    "errorUpdatingComanda": "Erro ao atualizar comanda ou estoque",
     "drinkAdded": "Bebida adicionada",
-    "openComandas": "Comandas Abertas",
     "name": "Nome",
     "member": "Integrante",
     "phone": "Telefone",
@@ -545,6 +553,7 @@
     "actions": "Ações",
     "noOpenComandas": "Nenhuma comanda aberta",
     "drinks": "bebida(s)",
+    "loadingDrinks": "Carregando bebidas…",
     "addDrink": "Adicionar bebida",
     "markAsPaid": "Marcar como paga",
     "addDrinkToComanda": "Adicionar bebida à comanda de {name}",
@@ -670,6 +679,7 @@
     }
   },
   "novaComanda": {
+    "selectCategory": "Selecione uma categoria",
     "categories": {
       "cervejas": "Cervejas",
       "comidas": "Comidas",
@@ -724,7 +734,8 @@
   },
   "comandas": {
     "notLoggedIn": "Você não está logado!",
-    "loading": "Carregando..."
+    "loading": "Carregando...",
+    "openComandasPageHeading": "Comandas Abertas"
   },
   "adminMembros": {
     "errors": {
