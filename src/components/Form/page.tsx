@@ -34,6 +34,7 @@ import { consumirEstoque, getAllStock } from "@/services/estoqueService";
 import { message } from "@/lib/message";
 import { useDrinks } from "@/hooks/useDrinks";
 import { printComandaHTML } from "@/utils-client/printComandaHTML";
+import { appStore$ } from "@/stores/appStore";
 
 const BAR_MC_EMAIL = "barmc@gentlemenmc.com.br";
 
@@ -77,7 +78,7 @@ export function FormCommand() {
   const userCredit$ = useObservable<number>(0);
   const drinkStock$ = useObservable<Record<string, number>>({});
   const memberStatus$ = useObservable<"ativo" | "inativo" | "suspenso" | null>(null);
-  const openHouse$ = useObservable(false);
+  const openHouse$ = appStore$.switches.openHouse;
 
   const userId = useValue(userId$);
   const userName = useValue(userName$);
@@ -87,7 +88,7 @@ export function FormCommand() {
   const userCredit = useValue(userCredit$);
   const drinkStock = useValue(drinkStock$);
   const memberStatus = useValue(memberStatus$);
-  const openHouse = useValue(openHouse$);
+  const openHouse = useValue(appStore$.switches.openHouse);
   const [isBarMcUser, setIsBarMcUser] = useState(false);
 
   useEffect(() => {

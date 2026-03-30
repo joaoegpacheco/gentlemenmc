@@ -32,6 +32,7 @@ import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useDrinks } from "@/hooks/useDrinks";
+import { appStore$ } from "@/stores/appStore";
 
 interface Props { }
 
@@ -41,7 +42,7 @@ interface AdminData {
 }
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
-  const { drinksPricesGuests, drinksByCategory } = useDrinks();
+  const { drinksPricesGuests, drinksPricesMembers, drinksByCategory } = useDrinks();
   const t = useTranslations('openComandas');
   const tComandas = useTranslations('comandas');
   const tNova = useTranslations('novaComanda');
@@ -77,6 +78,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const payingComandaId = useValue(payingComandaId$);
   const itemsModalOpen = useValue(itemsModalOpen$);
   const selectedItemsRecord = useValue(selectedItemsRecord$);
+  const festaParticular = useValue(appStore$.switches.festaParticular);
   const { isMobile } = useDeviceSizes();
 
   const categoryLabels: Record<string, string> = {
@@ -95,7 +97,8 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
 
   const getDrinksForCategory = (category: string): Record<string, number> => {
     if (!category || !drinksByCategory[category as keyof typeof drinksByCategory]) return {};
-    return drinksByCategory[category as keyof typeof drinksByCategory].guests;
+    const cat = drinksByCategory[category as keyof typeof drinksByCategory];
+    return festaParticular ? cat.members : cat.guests;
   };
 
   useEffect(() => {
@@ -107,11 +110,15 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       }
     }
     loadStock();
+    // drinkStock$ is a stable Legend observable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!selectedComanda || categories.length === 0) return;
     selectedCategory$.set(categories[0]);
+    // selectedCategory$ is a stable Legend observable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedComanda?.id, categories.length]);
 
   const fetchAdmins = async () => {
@@ -274,7 +281,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
         {
           drink: newDrink,
           quantity,
-          price: drinksPricesGuests[newDrink],
+          price: festaParticular ? drinksPricesMembers[newDrink] : drinksPricesGuests[newDrink],
         },
       ];
     }

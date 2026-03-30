@@ -63,7 +63,7 @@ export function UserProfileTab() {
     } finally {
       loading$.set(false);
     }
-  }, [loading$, member$, user$]);
+  }, [loading$, member$, user$, tProfileTab]);
 
   useEffect(() => {
     fetchUserData();

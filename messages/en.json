@@ -711,6 +711,7 @@
       "guestOf": "Guest of",
       "guestPhone": "Guest phone",
       "directSale": "Direct sale (automatic payment)",
+      "festaParticular": "PRIVATE PARTY",
       "stock": "Stock: {stock}",
       "inCart": "In cart: {quantity}",
       "drink": "Drink",
