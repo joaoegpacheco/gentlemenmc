@@ -1,4 +1,5 @@
 import { supabase } from "@/hooks/use-supabase";
+import { getEstoqueLogsWithDrinkNames } from "@/services/estoqueService";
 
 export interface DashboardStats {
   totalDebts: number;
@@ -49,7 +50,7 @@ export interface RecentOrder {
 }
 
 export interface StockMovement {
-  id: number;
+  id: string | number;
   drink: string;
   quantity: number;
   type: "entrada" | "saida";
@@ -395,13 +396,15 @@ export async function getRecentPaidOrders(limit: number = 10, fallbackNoName: st
 // Movimentações recentes de estoque
 export async function getRecentStockMovements(limit: number = 10): Promise<StockMovement[]> {
   try {
-    const { data } = await supabase
-      .from("estoque_log")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    return data || [];
+    const rows = await getEstoqueLogsWithDrinkNames({ limit });
+    return rows.map((r) => ({
+      id: r.id,
+      drink: r.drink,
+      quantity: r.quantity,
+      type: r.type,
+      user: r.user ?? "",
+      created_at: r.created_at,
+    }));
   } catch (error) {
     console.error("Erro ao buscar movimentações de estoque:", error);
     throw error;

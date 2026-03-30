@@ -84,6 +84,8 @@ export default function EstoquePage() {
 
   useEffect(() => {
     fetchStock();
+    // fetchStock only depends on stable observables/translations in this component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --- Categories List (ID + Name) ---

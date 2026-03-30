@@ -302,7 +302,8 @@
     "cartNoItems": "Nenhum item adicionado",
     "inCart": "No pedido: {quantity}",
     "subtotal": "Subtotal",
-    "orderTotal": "Total do pedido"
+    "orderTotal": "Total do pedido",
+    "openHouse": "OPEN HOUSE"
   },
   "members": {
     "addMember": "Adicionar Membro",
@@ -710,6 +711,7 @@
       "guestOf": "Convidado do",
       "guestPhone": "Telefone do convidado",
       "directSale": "Venda direta (pagamento automático)",
+      "festaParticular": "FESTA PARTICULAR",
       "stock": "Estoque: {stock}",
       "inCart": "No carrinho: {quantity}",
       "drink": "Bebida",
