@@ -302,7 +302,8 @@
     "cartNoItems": "No items added",
     "inCart": "In order: {quantity}",
     "subtotal": "Subtotal",
-    "orderTotal": "Order total"
+    "orderTotal": "Order total",
+    "openHouse": "OPEN HOUSE"
   },
   "members": {
     "addMember": "Add Member",

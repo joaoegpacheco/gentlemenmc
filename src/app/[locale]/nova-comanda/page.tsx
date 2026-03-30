@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMediaQuery } from "react-responsive";
 import { useDrinks } from "@/hooks/useDrinks";
+import { printComandaHTML } from "@/utils-client/printComandaHTML";
 
 export default function CreateComandaPage() {
   const { drinksPricesGuests, drinksByCategory } = useDrinks();
@@ -177,8 +178,8 @@ export default function CreateComandaPage() {
         message.success("Comanda criada com sucesso");
 
         if (typeof window !== "undefined") {
-          const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
-          printComandaHTML({ guestName: guestName || "Sem nome", items });
+          const payload = { guestName: guestName || "Sem nome", items };
+          window.setTimeout(() => printComandaHTML(payload), 0);
         }
       }
 

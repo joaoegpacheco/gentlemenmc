@@ -302,7 +302,8 @@
     "cartNoItems": "Nenhum item adicionado",
     "inCart": "No pedido: {quantity}",
     "subtotal": "Subtotal",
-    "orderTotal": "Total do pedido"
+    "orderTotal": "Total do pedido",
+    "openHouse": "OPEN HOUSE"
   },
   "members": {
     "addMember": "Adicionar Membro",

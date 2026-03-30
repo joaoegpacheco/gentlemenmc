@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -32,6 +33,9 @@ import { supabase } from "@/hooks/use-supabase.js";
 import { consumirEstoque, getAllStock } from "@/services/estoqueService";
 import { message } from "@/lib/message";
 import { useDrinks } from "@/hooks/useDrinks";
+import { printComandaHTML } from "@/utils-client/printComandaHTML";
+
+const BAR_MC_EMAIL = "barmc@gentlemenmc.com.br";
 
 // Schema será criado dentro do componente para ter acesso às traduções
 
@@ -73,6 +77,7 @@ export function FormCommand() {
   const userCredit$ = useObservable<number>(0);
   const drinkStock$ = useObservable<Record<string, number>>({});
   const memberStatus$ = useObservable<"ativo" | "inativo" | "suspenso" | null>(null);
+  const openHouse$ = useObservable(false);
 
   const userId = useValue(userId$);
   const userName = useValue(userName$);
@@ -82,6 +87,23 @@ export function FormCommand() {
   const userCredit = useValue(userCredit$);
   const drinkStock = useValue(drinkStock$);
   const memberStatus = useValue(memberStatus$);
+  const openHouse = useValue(openHouse$);
+  const [isBarMcUser, setIsBarMcUser] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (cancelled) return;
+      const isBar = user?.email === BAR_MC_EMAIL;
+      setIsBarMcUser(isBar);
+      if (!isBar) openHouse$.set(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // openHouse$ is a stable Legend observable; only read session once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
@@ -195,6 +217,12 @@ export function FormCommand() {
 
   const handleSubmit = async (_values: z.infer<typeof formCommandSchema>) => {
     const cart = items$.peek() as CartItem[];
+    const shouldPrintOpenHouse = openHouse$.peek();
+    const cartForPrint = cart.map((i) => ({
+      drink: i.drink,
+      quantity: i.quantity,
+      price: i.price,
+    }));
 
     if (!userId || !userName) {
       notification.error({ message: t('selectValidUserAndDrink') });
@@ -311,11 +339,22 @@ export function FormCommand() {
       }
 
       notification.success({ message: t('drinkAddedSuccessfully') });
+      if (
+        shouldPrintOpenHouse &&
+        user?.email === BAR_MC_EMAIL &&
+        typeof window !== "undefined"
+      ) {
+        const payload = { guestName: userName, items: cartForPrint };
+        window.setTimeout(() => printComandaHTML(payload), 0);
+      }
       items$.set([]);
-      form.reset({ name: userName });
+      userId$.set("");
+      userName$.set("");
+      memberStatus$.set(null);
+      userCredit$.set(0);
+      form.reset({ name: "" });
       const stockMap = await getAllStock();
       drinkStock$.set(stockMap);
-      await fetchUserCredit(userId);
     } catch (err) {
       notification.error({ message: t('errorRegisteringDrinkCheckStock') });
     }
@@ -335,7 +374,7 @@ export function FormCommand() {
               {Object.keys(members).length > 0 ? (
                 isMobile ? (
                   <Select
-                    value={userId}
+                    value={userId || undefined}
                     onValueChange={(value) => {
                       const member = Object.values(members).find(m => m.user_id === value);
                       if (member) {
@@ -594,7 +633,20 @@ export function FormCommand() {
             )}
           </div>
         )}
-
+        {isBarMcUser ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <Switch
+              id="open-house-switch"
+              size="sm"
+              checked={openHouse}
+              onCheckedChange={(checked) => openHouse$.set(checked)}
+              className="shrink-0 border border-border/80 data-[state=unchecked]:bg-muted-foreground/25"
+            />
+            <Label htmlFor="open-house-switch" className="text-xs font-semibold cursor-pointer leading-snug text-foreground">
+              {t("openHouse")}
+            </Label>
+          </div>
+        ) : null}
         <div className="text-sm">
           {t('currentDateTime')} <strong suppressHydrationWarning>{formatDateTime(new Date())}</strong>
         </div>
