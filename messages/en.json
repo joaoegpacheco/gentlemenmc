@@ -297,7 +297,12 @@
     "inStock": "(Stock: {stock})",
     "memberSuspended": "Member Suspended",
     "memberSuspendedMessage": "The user {name} is suspended/blocked and cannot mark drinks. Contact the group treasurer for more information.",
-    "cannotMarkDrinksSuspended": "Cannot mark drinks for suspended members"
+    "cannotMarkDrinksSuspended": "Cannot mark drinks for suspended members",
+    "clearSelectedDrink": "Clear selected drink",
+    "cartNoItems": "No items added",
+    "inCart": "In order: {quantity}",
+    "subtotal": "Subtotal",
+    "orderTotal": "Order total"
   },
   "members": {
     "addMember": "Add Member",
@@ -528,6 +533,9 @@
     "next": "Next"
   },
   "openComandas": {
+    "notices": {
+      "paymentBarMC": "Confirm payment as bar user. No administrator credentials needed."
+    },
     "errorFetchingAdmins": "Error fetching administrators",
     "selectAdminAndPassword": "Select an admin and enter password",
     "incorrectUserOrPassword": "Incorrect user or password",
@@ -535,8 +543,8 @@
     "errorPayingComanda": "Error paying order",
     "comandaPaidSuccessfully": "order paid successfully",
     "errorFetchingComandas": "Error fetching orders",
+    "errorUpdatingComanda": "Error updating order or stock",
     "drinkAdded": "Drink added",
-    "openComandas": "Open orders",
     "name": "Name",
     "member": "Member",
     "phone": "Phone",
@@ -545,6 +553,7 @@
     "actions": "Actions",
     "noOpenComandas": "No open orders",
     "drinks": "drink(s)",
+    "loadingDrinks": "Loading drinks…",
     "addDrink": "Add drink",
     "markAsPaid": "Mark as paid",
     "addDrinkToComanda": "Add drink to {name}'s order",
@@ -670,6 +679,7 @@
     }
   },
   "novaComanda": {
+    "selectCategory": "Select a category",
     "categories": {
       "cervejas": "Beers",
       "comidas": "Foods",
@@ -724,7 +734,8 @@
   },
   "comandas": {
     "notLoggedIn": "You are not logged in!",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "openComandasPageHeading": "Open orders"
   },
   "adminMembros": {
     "errors": {
