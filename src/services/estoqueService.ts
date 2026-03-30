@@ -22,7 +22,9 @@ export async function getEstoque() {
     ? data.map((item) => ({
         id: item.id,
         drink_id: item.drink_id,
-        drink_name: Array.isArray(item.drinks) ? item.drinks[0]?.name ?? "" : "",
+        drink_name: Array.isArray(item.drinks)
+          ? item.drinks[0]?.name ?? ""
+          : (item.drinks as any)?.name ?? "",
         quantity: item.quantity,
       }))
     : [];
@@ -172,7 +174,8 @@ export async function consumirEstoque(
     insufficientStock?: string;
   }
 ) {
-  if (!drinkIdOrName || quantity === undefined) {
+  const qty = Number(quantity);
+  if (!drinkIdOrName || quantity === undefined || !Number.isFinite(qty) || qty <= 0) {
     throw new Error(
       errorMessages?.invalidDrinkOrQuantity ||
         "Bebida ou quantidade inválida"
@@ -187,7 +190,7 @@ export async function consumirEstoque(
     .eq("drink_id", drinkId)
     .single();
 
-  if (error || !item || item.quantity < quantity) {
+  if (error || !item || item.quantity < qty) {
     throw new Error(
       errorMessages?.insufficientStock ||
         "Estoque insuficiente"
@@ -198,14 +201,30 @@ export async function consumirEstoque(
     data: { user },
   } = await supabase.auth.getUser();
 
-  await logEstoque(drinkId, -quantity, "saida", user?.email || "");
+  await logEstoque(drinkId, -qty, "saida", user?.email || "");
 
-  return await supabase
+  const { error: updateError } = await supabase
     .from("estoque")
     .update({
-      quantity: item.quantity - quantity,
+      quantity: item.quantity - qty,
     })
     .eq("id", item.id);
+
+  if (updateError) {
+    throw new Error(
+      updateError.message || "Erro ao baixar estoque no servidor"
+    );
+  }
+}
+
+/**
+ * Devolve quantidade ao estoque (ex.: rollback se gravar comanda falhar após consumo).
+ */
+export async function devolverEstoque(drinkIdOrName: string, quantity: number) {
+  const qty = Number(quantity);
+  if (!drinkIdOrName || !Number.isFinite(qty) || qty <= 0) return;
+  const drinkId = await resolveDrinkId(drinkIdOrName);
+  await addOrUpdateEstoque(drinkId, qty, null);
 }
 
 export async function getAllStock() {
