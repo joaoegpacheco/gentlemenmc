@@ -67,7 +67,10 @@ export function useAsync<T>(
 
   useEffect(() => {
     if (immediate) {
-      execute();
+      // Run outside the effect tick to satisfy react-hooks/set-state-in-effect.
+      queueMicrotask(() => {
+        void execute();
+      });
     }
   }, [immediate, execute]);
 
@@ -182,6 +185,7 @@ export function usePrevious<T>(value: T): T | undefined {
     ref.current = value;
   }, [value]);
 
+  // eslint-disable-next-line react-hooks/refs
   return ref.current;
 }
 

@@ -1,5 +1,80 @@
 import { supabase } from "@/hooks/use-supabase";
 
+const DRINK_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type EstoqueLogWithDrinkName = {
+  id: string;
+  drink: string;
+  drink_id?: string;
+  quantity: number;
+  type: "entrada" | "saida";
+  created_at: string;
+  user?: string;
+};
+
+/**
+ * Histórico de estoque: `estoque_log` guarda o id da bebida; o nome vem de `drinks.name`.
+ */
+export async function getEstoqueLogsWithDrinkNames(options?: {
+  limit?: number;
+}): Promise<EstoqueLogWithDrinkName[]> {
+  let query = supabase
+    .from("estoque_log")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (options?.limit != null) {
+    query = query.limit(options.limit);
+  }
+
+  const { data: logs, error } = await query;
+
+  if (error) throw error;
+  if (!logs?.length) return [];
+
+  const ids = new Set<string>();
+  for (const row of logs) {
+    const raw = (row as { drink_id?: string; drink?: string }).drink_id
+      ?? (row as { drink?: string }).drink;
+    if (typeof raw === "string" && DRINK_UUID_RE.test(raw)) {
+      ids.add(raw);
+    }
+  }
+
+  const nameById: Record<string, string> = {};
+  if (ids.size > 0) {
+    const { data: drinks } = await supabase
+      .from("drinks")
+      .select("id, name")
+      .in("id", [...ids]);
+
+    for (const d of drinks || []) {
+      if (d.id) nameById[d.id] = d.name ?? "";
+    }
+  }
+
+  return logs.map((row: Record<string, unknown>) => {
+    const drinkId =
+      (row.drink_id as string | undefined) ?? (row.drink as string | undefined);
+    const isUuid =
+      typeof drinkId === "string" && DRINK_UUID_RE.test(drinkId);
+    const drinkLabel = isUuid
+      ? nameById[drinkId] || drinkId
+      : String((row.drink as string) || "");
+
+    return {
+      id: String(row.id),
+      drink: drinkLabel,
+      drink_id: drinkId,
+      quantity: Number(row.quantity),
+      type: row.type as "entrada" | "saida",
+      created_at: String(row.created_at),
+      user: row.user != null ? String(row.user) : undefined,
+    };
+  });
+}
+
 /*
 Buscar estoque com nome da bebida
 */
@@ -144,11 +219,7 @@ export async function updateEstoque(id: string, quantity: number) {
 Resolve drink_id: aceita UUID ou nome da bebida
 */
 async function resolveDrinkId(drinkIdOrName: string): Promise<string> {
-  const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      drinkIdOrName
-    );
-  if (isUuid) return drinkIdOrName;
+  if (DRINK_UUID_RE.test(drinkIdOrName)) return drinkIdOrName;
 
   const { data: drink, error } = await supabase
     .from("drinks")

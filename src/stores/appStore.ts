@@ -15,5 +15,9 @@ export const appStore$ = observable({
   tabs: {
     activeTab: "1",
   },
+  switches: {
+    openHouse: false,
+    festaParticular: false,
+  },
 });
 

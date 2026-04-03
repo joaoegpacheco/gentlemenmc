@@ -147,6 +147,8 @@ export default function OverviewFinancePage() {
 
   useEffect(() => {
     fetchData();
+    // fetchData reads stable observables and service clients from this scope.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredRecords = useMemo(() => {

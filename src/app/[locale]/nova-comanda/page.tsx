@@ -6,6 +6,8 @@ import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -23,9 +25,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMediaQuery } from "react-responsive";
 import { useDrinks } from "@/hooks/useDrinks";
+import { printComandaHTML } from "@/utils-client/printComandaHTML";
+import { appStore$ } from "@/stores/appStore";
 
 export default function CreateComandaPage() {
-  const { drinksPricesGuests, drinksByCategory } = useDrinks();
+  const { drinksPricesGuests, drinksPricesMembers, drinksByCategory } = useDrinks();
   const t = useTranslations('novaComanda');
   const tEstoqueService = useTranslations('estoqueService');
   const items$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
@@ -33,6 +37,7 @@ export default function CreateComandaPage() {
   const memberName$ = useObservable<string>("");
   const guestPhone$ = useObservable<string>("");
   const isDirectSale$ = useObservable<boolean>(false);
+  const festaParticular$ = appStore$.switches.festaParticular;
   const drinkStock$ = useObservable<Record<string, number>>({});
   const selectedCategory$ = useObservable<string>("");
   const selectedUUID$ = useObservable<string>("");
@@ -43,6 +48,7 @@ export default function CreateComandaPage() {
   const memberName = useValue(memberName$);
   const guestPhone = useValue(guestPhone$);
   const isDirectSale = useValue(isDirectSale$);
+  const festaParticular = useValue(appStore$.switches.festaParticular);
   const drinkStock = useValue(drinkStock$);
   const selectedCategory = useValue(selectedCategory$);
   const selectedUUID = useValue(selectedUUID$);
@@ -65,11 +71,25 @@ export default function CreateComandaPage() {
   // Obter lista de categorias
   const categories = Object.keys(drinksByCategory);
 
-  // Obter bebidas da categoria selecionada (para guests)
+  // Obter bebidas da categoria selecionada (convidado ou preço membro em festa particular)
   const getDrinksForCategory = (category: string): Record<string, number> => {
     if (!category || !drinksByCategory[category as keyof typeof drinksByCategory]) return {};
-    return drinksByCategory[category as keyof typeof drinksByCategory].guests;
+    const cat = drinksByCategory[category as keyof typeof drinksByCategory];
+    return festaParticular ? cat.members : cat.guests;
   };
+
+  useEffect(() => {
+    items$.set((old) => {
+      if (old.length === 0) return old;
+      const map = festaParticular ? drinksPricesMembers : drinksPricesGuests;
+      return old.map((i) => ({
+        ...i,
+        price: map[i.drink] ?? i.price,
+      }));
+    });
+    // items$ is a stable Legend observable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [festaParticular, drinksPricesMembers, drinksPricesGuests]);
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
@@ -177,8 +197,8 @@ export default function CreateComandaPage() {
         message.success("Comanda criada com sucesso");
 
         if (typeof window !== "undefined") {
-          const { printComandaHTML } = await import("@/utils-client/printComandaHTML");
-          printComandaHTML({ guestName: guestName || "Sem nome", items });
+          const payload = { guestName: guestName || "Sem nome", items };
+          window.setTimeout(() => printComandaHTML(payload), 0);
         }
       }
 
@@ -188,6 +208,7 @@ export default function CreateComandaPage() {
       guestPhone$.set("");
       selectedUUID$.set("");
       isDirectSale$.set(false);
+      festaParticular$.set(false);
 
       // Atualiza todo o estoque após criar a comanda
       const stockMap = await getAllStock();
@@ -247,18 +268,32 @@ export default function CreateComandaPage() {
           </div>
         </div>
       )}
-      <div className="mb-4 flex items-center space-x-2">
-        <Checkbox
-          id="directSale"
-          checked={isDirectSale}
-          onCheckedChange={(checked) => isDirectSale$.set(checked === true)}
-        />
-        <label
-          htmlFor="directSale"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          {t('labels.directSale')}
-        </label>
+      <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="directSale"
+            checked={isDirectSale}
+            onCheckedChange={(checked) => isDirectSale$.set(checked === true)}
+          />
+          <label
+            htmlFor="directSale"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {t('labels.directSale')}
+          </label>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Switch
+            id="festa-particular-switch"
+            size="sm"
+            checked={festaParticular}
+            onCheckedChange={(checked) => festaParticular$.set(checked)}
+            className="shrink-0 border border-border/80 data-[state=unchecked]:bg-muted-foreground/25"
+          />
+          <Label htmlFor="festa-particular-switch" className="text-xs font-semibold cursor-pointer leading-snug text-foreground">
+            {t('labels.festaParticular')}
+          </Label>
+        </div>
       </div>
 
       {isMobile ? (

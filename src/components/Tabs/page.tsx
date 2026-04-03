@@ -180,6 +180,7 @@ export default function TabsComponent() {
         { key: "6", label: t('statute'), children: <ByLaw /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
+        { key: "17", label: t('orderHistory'), children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
