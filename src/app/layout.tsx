@@ -13,7 +13,7 @@ export default async function RootLayout({
   const messages = await getMessages({ locale: routing.defaultLocale });
 
   return (
-    <html suppressHydrationWarning>
+    <html lang={routing.defaultLocale} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
