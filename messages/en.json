@@ -388,7 +388,7 @@
   },
   "categories": {
     "beers": "Beers",
-    "foods": "Foods",
+    "comidas": "Foods",
     "premiumBeers": "Premium Beers",
     "softDrinks": "Soft Drinks",
     "nonAlcoholic": "Non-Alcoholic Beverages",
@@ -1196,6 +1196,7 @@
     "descrevaInfracao": "Describe the infraction or reason for the penalty...",
     "exemplosInfracao": "Examples: Occasional delays, Inattention, Recidivism, Disrespect, etc.",
     "registrarPenalidadeButton": "Register Penalty",
+    "penalidades": "Penalties",
     "severidadeLeve": "🟡 Light (-5 points)",
     "severidadeMedia": "🟠 Medium (-10 points)",
     "severidadeGrave": "🔴 Severe (-20 points)",
