@@ -4,7 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo } from "react";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -34,23 +34,72 @@ import { MemberForm } from "@/components/MemberForm/page";
 import type { SupabaseAuthUser } from "@/types/auth";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
+import { MEMBROS_ADMIN_SELECT } from "@/lib/membros-query";
 
 type MemberStatus = "ativo" | "inativo" | "suspenso";
 
 interface Member {
   id?: number;
+  created_at?: string;
   user_id: string;
   user_name: string;
   user_email?: string;
-  user_phone?: string;
+  phone?: string;
   foto_url?: string;
-  status?: MemberStatus;
   observacoes?: string;
-  created_at?: string;
+  status?: MemberStatus;
+  case_type?: string | null;
+  half_date?: string | null;
+  cpf?: string | null;
+  date_of_birth?: string | null;
+  motorcycle?: string | null;
+  motorcycle_license_plate?: string | null;
+  emergency_telephone_number?: string | null;
+  emergency_contact?: string | null;
+  kinship_contact_emergency?: string | null;
 }
 
 export default function MembrosPage() {
   const t = useTranslations('adminMembros');
+  const tMembers = useTranslations('members');
+  const locale = useLocale();
+  const dateLocale = locale === "en" ? "en-US" : "pt-BR";
+
+  const formatTableDate = (iso?: string | null) => {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString(dateLocale);
+  };
+
+  const caseTypeLabel = (ct?: string | null) => {
+    if (!ct) return "-";
+    const map: Record<string, string> = {
+      Prospect: tMembers("caseTypeProspect"),
+      Half: tMembers("caseTypeHalf"),
+      Diretoria: tMembers("caseTypeDiretoria"),
+      "Full-Revisor": tMembers("caseTypeFullRevisor"),
+      Full: tMembers("caseTypeFull"),
+    };
+    return map[ct] ?? ct;
+  };
+
+  const motorcycleSummary = (m: Member) => {
+    const parts = [m.motorcycle, m.motorcycle_license_plate].filter(
+      (x): x is string => Boolean(x && String(x).trim())
+    );
+    return parts.length ? parts.join(" · ") : "-";
+  };
+
+  const emergencySummary = (m: Member) => {
+    const parts = [
+      m.emergency_contact,
+      m.emergency_telephone_number,
+      m.kinship_contact_emergency,
+    ].filter((x): x is string => Boolean(x && String(x).trim()));
+    return parts.length ? parts.join(" · ") : "-";
+  };
+
   const members$ = useObservable<Member[]>([]);
   const loading$ = useObservable(false);
   const search$ = useObservable("");
@@ -112,13 +161,13 @@ export default function MembrosPage() {
     try {
       const { data, error } = await supabase
         .from("membros")
-        .select("*")
+        .select(MEMBROS_ADMIN_SELECT)
         .order("user_name", { ascending: true });
 
       if (error) {
         message.error(t('errors.errorLoadingMembers'));
       } else {
-        members$.set(data || []);
+        members$.set((data ?? []) as unknown as Member[]);
       }
     } catch (err) {
       message.error(t('errors.errorFetchingMembers'));
@@ -134,7 +183,15 @@ export default function MembrosPage() {
       (member) =>
         member.user_name?.toLowerCase().includes(searchLower) ||
         member.user_email?.toLowerCase().includes(searchLower) ||
-        member.user_phone?.toLowerCase().includes(searchLower)
+        member.phone?.toLowerCase().includes(searchLower) ||
+        member.cpf?.toLowerCase().includes(searchLower) ||
+        member.motorcycle?.toLowerCase().includes(searchLower) ||
+        member.motorcycle_license_plate?.toLowerCase().includes(searchLower) ||
+        member.emergency_contact?.toLowerCase().includes(searchLower) ||
+        member.emergency_telephone_number?.toLowerCase().includes(searchLower) ||
+        member.kinship_contact_emergency?.toLowerCase().includes(searchLower) ||
+        member.case_type?.toLowerCase().includes(searchLower) ||
+        member.observacoes?.toLowerCase().includes(searchLower)
     );
   }, [members, search]);
 
@@ -377,13 +434,37 @@ export default function MembrosPage() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">{t('table.phone')}</p>
-                      <p>{member.user_phone || "-"}</p>
+                      <p>{member.phone || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.cpf')}</p>
+                      <p className="truncate">{member.cpf || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.caseType')}</p>
+                      <p className="truncate">{caseTypeLabel(member.case_type)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.halfDate')}</p>
+                      <p>{formatTableDate(member.half_date)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.birthDate')}</p>
+                      <p>{formatTableDate(member.date_of_birth)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.motorcycle')}</p>
+                      <p className="truncate">{motorcycleSummary(member)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('table.emergency')}</p>
+                      <p className="truncate">{emergencySummary(member)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">{t('table.registrationDate')}</p>
                       <p>
                         {member.created_at
-                          ? new Date(member.created_at).toLocaleDateString("pt-BR")
+                          ? new Date(member.created_at).toLocaleDateString(dateLocale)
                           : "-"}
                       </p>
                     </div>
@@ -449,6 +530,12 @@ export default function MembrosPage() {
                 <TableHead>{t('table.name')}</TableHead>
                 <TableHead>{t('table.email')}</TableHead>
                 <TableHead>{t('table.phone')}</TableHead>
+                <TableHead>{t('table.caseType')}</TableHead>
+                <TableHead>{t('table.halfDate')}</TableHead>
+                <TableHead>{t('table.birthDate')}</TableHead>
+                <TableHead>{t('table.cpf')}</TableHead>
+                <TableHead>{t('table.motorcycle')}</TableHead>
+                <TableHead>{t('table.emergency')}</TableHead>
                 <TableHead>{t('table.status')}</TableHead>
                 <TableHead>{t('table.registrationDate')}</TableHead>
                 <TableHead className="text-right">{t('table.actions')}</TableHead>
@@ -457,13 +544,13 @@ export default function MembrosPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={12} className="text-center">
                     {t('loading')}
                   </TableCell>
                 </TableRow>
               ) : filteredMembers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={12} className="text-center text-muted-foreground">
                     {t('table.noMembersFound')}
                   </TableCell>
                 </TableRow>
@@ -492,11 +579,25 @@ export default function MembrosPage() {
                       </div>
                     </TableCell>
                     <TableCell>{member.user_email || "-"}</TableCell>
-                    <TableCell>{member.user_phone || "-"}</TableCell>
+                    <TableCell>{member.phone || "-"}</TableCell>
+                    <TableCell className="max-w-[140px] truncate" title={caseTypeLabel(member.case_type)}>
+                      {caseTypeLabel(member.case_type)}
+                    </TableCell>
+                    <TableCell>{formatTableDate(member.half_date)}</TableCell>
+                    <TableCell>{formatTableDate(member.date_of_birth)}</TableCell>
+                    <TableCell className="max-w-[100px] truncate" title={member.cpf || undefined}>
+                      {member.cpf || "-"}
+                    </TableCell>
+                    <TableCell className="max-w-[140px] truncate" title={motorcycleSummary(member)}>
+                      {motorcycleSummary(member)}
+                    </TableCell>
+                    <TableCell className="max-w-[160px] truncate" title={emergencySummary(member)}>
+                      {emergencySummary(member)}
+                    </TableCell>
                     <TableCell>{getStatusBadge(member.status)}</TableCell>
                     <TableCell>
                       {member.created_at
-                        ? new Date(member.created_at).toLocaleDateString("pt-BR")
+                        ? new Date(member.created_at).toLocaleDateString(dateLocale)
                         : "-"}
                     </TableCell>
                     <TableCell className="text-right">

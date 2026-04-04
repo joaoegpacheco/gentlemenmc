@@ -361,6 +361,23 @@
     "statusActive": "Ativo",
     "statusInactive": "Inativo",
     "statusSuspended": "Suspenso",
+    "caseTypeLabel": "Tipo de membro (colete)",
+    "selectCaseType": "Selecione o tipo",
+    "caseTypeNone": "Não definido",
+    "caseTypeProspect": "Prospect",
+    "caseTypeHalf": "Half Patch",
+    "caseTypeDiretoria": "Diretoria",
+    "caseTypeFullRevisor": "Full-Revisor",
+    "caseTypeFull": "Full Patch",
+    "halfDateLabel": "Data Half Patch",
+    "halfDateHint": "Data em que o membro virou Half (usado no fluxo de prospects).",
+    "cpfLabel": "CPF",
+    "dateOfBirthLabel": "Data de nascimento",
+    "motorcycleLabel": "Moto",
+    "motorcyclePlateLabel": "Placa",
+    "emergencyContactLabel": "Contato de emergência",
+    "emergencyPhoneLabel": "Telefone de emergência",
+    "kinshipEmergencyLabel": "Parentesco",
     "memberProfile": "Perfil do Membro",
     "memberManagement": "👥 Gestão de Membros",
     "memberManagementDescription": "Gerencie informações, status e histórico dos membros",
@@ -444,6 +461,8 @@
     "markedBy": "Marcado por: {user}"
   },
   "cardDrinksAll": {
+    "errorLoadingDebts": "Não foi possível carregar as dívidas. Verifique a conexão ou tente de novo.",
+    "errorLoadingMembers": "Não foi possível carregar a lista de membros.",
     "memberPhoneNotFound": "Telefone do membro não encontrado.",
     "unpaidTotal": "Total não pago:",
     "noDebts": "Nenhuma dívida.",
@@ -759,12 +778,18 @@
       "delete": "Excluir"
     },
     "placeholders": {
-      "search": "Buscar por nome, email ou telefone..."
+      "search": "Buscar por nome, email, telefone, CPF, moto, emergência..."
     },
     "table": {
       "name": "Nome",
       "email": "Email",
       "phone": "Telefone",
+      "caseType": "Tipo",
+      "halfDate": "Data Half",
+      "birthDate": "Nascimento",
+      "cpf": "CPF",
+      "motorcycle": "Moto",
+      "emergency": "Emergência",
       "status": "Status",
       "registrationDate": "Data de Cadastro",
       "actions": "Ações",
