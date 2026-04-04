@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getTranslations } from 'next-intl/server';
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import AuthListener from "@/components/AuthListener";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -41,15 +45,16 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  // Providing all messages to the client
-  // side is the easiest way to get started
-  const messages = await getMessages();
+  setRequestLocale(locale);
+
+  // Alinhar mensagens ao segmento [locale] (evita MISSING_MESSAGE no cliente)
+  const messages = await getMessages({ locale });
   const t = await getTranslations({ locale, namespace: 'layout' });
 
   return (
     <div className={`${inter.className} min-h-screen flex flex-col`}>
       <ThemeProvider attribute="class">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <SetHtmlLang locale={locale} />
           <AuthListener />
           <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
