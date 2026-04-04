@@ -178,7 +178,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
                         {birthday.user_name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(birthday.data_nascimento).toLocaleDateString(locale === 'en' ? 'en-US' : 'pt-BR', {
+                        {new Date(birthday.date_of_birth).toLocaleDateString(locale === 'en' ? 'en-US' : 'pt-BR', {
                           day: "2-digit",
                           month: "long",
                         })}

@@ -47,14 +47,18 @@ export default function TabsComponent() {
   const isFacilitiesUser$ = useObservable<boolean>(false);
   const caseType$ = useObservable<string | null>(null);
   const activeTab$ = useObservable("1");
-  
+  const command$ = useObservable<boolean | null>(null);
+  const birthdays$ = useObservable<Birthday[]>([]);
+
   const admin = useValue(admin$);
   const manager = useValue(manager$);
+  const command = useValue(command$);
   const isBarUser = useValue(isBarUser$);
   const isFacilitiesUser = useValue(isFacilitiesUser$);
   const caseType = useValue(caseType$);
   const activeTab = useValue(activeTab$);
-  
+  const birthdays = useValue(birthdays$);
+
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
   const comandOpenTableRef = useRef<any>(null);
@@ -83,6 +87,12 @@ export default function TabsComponent() {
 
         admin$.set(!!admins?.length);
 
+        const { data: command }: PostgrestResponse<AdminData> = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "command");
+        command$.set(!!command?.length);
         // Buscar case_type do membro
         const { data: memberData } = await supabase
           .from("membros")
@@ -103,6 +113,45 @@ export default function TabsComponent() {
     };
 
     checkIfUserIsAdmin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const loadBirthdays = async () => {
+      const { data, error } = await supabase
+        .from("membros")
+        .select("user_name, date_of_birth")
+        .not("date_of_birth", "is", null)
+        .order("user_name", { ascending: true });
+
+      if (error) {
+        console.error("Erro ao carregar aniversariantes:", error);
+        birthdays$.set([]);
+        return;
+      }
+
+      const currentMonth = new Date().getMonth();
+      const list: Birthday[] = (data ?? [])
+        .filter(
+          (row) =>
+            row.user_name &&
+            row.date_of_birth &&
+            dayjs(row.date_of_birth).month() === currentMonth
+        )
+        .map((row) => {
+          const d = dayjs(row.date_of_birth);
+          return {
+            name: row.user_name as string,
+            fullDate: d.format("YYYY-MM-DD"),
+            day: d.format("DD"),
+          };
+        })
+        .sort((a, b) => Number(a.day) - Number(b.day));
+
+      birthdays$.set(list);
+    };
+
+    loadBirthdays();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -137,6 +186,25 @@ export default function TabsComponent() {
         { key: "23", label: "Financeiro", children: <OverviewFinancePage /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
+        { key: "11", label: <LogoutButton /> },
+      ];
+
+      // Adicionar aba de prospects apenas se for Half ou Prospect
+      if (canSeeCommandValidationTab) {
+        tabs.splice(1, 0, { key: "22", label: t('prospectValidation'), children: <ProspectValidationPage /> });
+      }
+
+      return tabs;
+    } else if (command) {
+      const tabs = [
+        { key: "1", label: t('mark'), children: <FormCommand /> },
+        { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
+        { key: "5", label: t('events'), children: <CalendarEvents /> },
+        { key: "6", label: t('statute'), children: <ByLaw /> },
+        { key: "18", label: t('members'), children: <MembrosPage /> },
+        { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
+        { key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> },
+        { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         { key: "11", label: <LogoutButton /> },
       ];
 
@@ -218,52 +286,7 @@ export default function TabsComponent() {
 
   const tabs = getCurrentTabs();
 
-  const birthdays: Birthday[] = [
-    { name: "Alex", fullDate: "1974-08-12", day: "12" },
-    { name: "André", fullDate: "1985-09-12", day: "12" },
-    { name: "Athayde", fullDate: "1979-01-24", day: "24" },
-    { name: "Bacellar", fullDate: "1962-09-05", day: "05" },
-    { name: "Baeza", fullDate: "1977-01-09", day: "09" },
-    { name: "Beto", fullDate: "1962-09-07", day: "07" },
-    { name: "Beni", fullDate: "1969-02-04", day: "04" },
-    { name: "Claudio", fullDate: "1971-10-08", day: "08" },
-    { name: "Camargo", fullDate: "1971-06-11", day: "11" },
-    { name: "Fernando", fullDate: "1967-11-05", day: "05" },
-    { name: "Fagner", fullDate: "1980-10-27", day: "27" },
-    { name: "Gulitich", fullDate: "1973-02-19", day: "19" },
-    { name: "Guiotto", fullDate: "1984-01-22", day: "22" },
-    { name: "Índio", fullDate: "1970-06-25", day: "25" },
-    { name: "Jefão", fullDate: "1981-02-04", day: "04" },
-    { name: "Jeferson", fullDate: "1974-10-05", day: "05" },
-    { name: "Julinho", fullDate: "1980-09-30", day: "30" },
-    { name: "Léo", fullDate: "1981-09-27", day: "27" },
-    { name: "Madalosso", fullDate: "1988-02-20", day: "20" },
-    { name: "Mega", fullDate: "1979-07-31", day: "31" },
-    { name: "Mortari", fullDate: "1970-01-18", day: "18" },
-    { name: "Dani", fullDate: "1979-08-15", day: "15" },
-    { name: "Pacheco", fullDate: "1990-03-04", day: "04" },
-    { name: "Rafael", fullDate: "1975-08-09", day: "09" },
-    { name: "Rick", fullDate: "1972-01-06", day: "06" },
-    { name: "Robson", fullDate: "1987-07-18", day: "18" },
-    { name: "Rodrigo ND", fullDate: "1976-08-04", day: "04" },
-    { name: "Rogério", fullDate: "1971-11-03", day: "03" },
-    { name: "Soares", fullDate: "1991-06-19", day: "19" },
-    { name: "Valdinei", fullDate: "1977-08-06", day: "06" },
-    { name: "Weriton", fullDate: "1976-04-14", day: "14" },
-    { name: "Will", fullDate: "1989-11-04", day: "04" },
-    { name: "Zanona", fullDate: "1985-01-02", day: "02" },
-    { name: "Zé Carlos", fullDate: "1967-12-08", day: "08" },
-    { name: "Zeca", fullDate: "1970-03-05", day: "05" },
-    { name: "Zorek", fullDate: "1987-10-02", day: "02" },
-  ];
-
-  const birthdaysOfTheMonth = birthdays
-    .filter(
-      (birthday) => dayjs(birthday.fullDate).month() === new Date().getMonth()
-    )
-    .sort((a, b) => Number(a.day) - Number(b.day));
-
-  const birthdaysString = birthdaysOfTheMonth
+  const birthdaysString = birthdays
     .map((birthday) => `${birthday.name} (${birthday.day})`)
     .join(", ");
 
