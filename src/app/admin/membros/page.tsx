@@ -107,6 +107,7 @@ export default function MembrosPage() {
   const profileDialogOpen$ = useObservable(false);
   const formDialogOpen$ = useObservable(false);
   const isAdmin$ = useObservable<boolean | null>(null);
+  const isCommand$ = useObservable<boolean | null>(null);
   const blockDialogOpen$ = useObservable(false);
   const deleteDialogOpen$ = useObservable(false);
   const actionLoading$ = useObservable(false);
@@ -118,6 +119,7 @@ export default function MembrosPage() {
   const profileDialogOpen = useValue(profileDialogOpen$);
   const formDialogOpen = useValue(formDialogOpen$);
   const isAdmin = useValue(isAdmin$);
+  const isCommand = useValue(isCommand$);
   const blockDialogOpen = useValue(blockDialogOpen$);
   const deleteDialogOpen = useValue(deleteDialogOpen$);
   const actionLoading = useValue(actionLoading$);
@@ -134,16 +136,17 @@ export default function MembrosPage() {
         return;
       }
 
-      const { data: admins } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "admin");
+      const [adminsResult, commandResult] = await Promise.all([
+        supabase.from("admins").select("id").eq("id", user.id).eq("role", "admin"),
+        supabase.from("admins").select("id").eq("id", user.id).eq("role", "command"),
+      ]);
 
-      const adminStatus = !!(admins && admins.length > 0);
+      const adminStatus = !!(adminsResult.data && adminsResult.data.length > 0);
+      const commandStatus = !!(commandResult.data && commandResult.data.length > 0);
       isAdmin$.set(adminStatus);
+      isCommand$.set(commandStatus);
 
-      if (!adminStatus && user.email !== "barmc@gentlemenmc.com.br") {
+      if (!adminStatus && !commandStatus) {
         message.error(t('errors.accessDenied'));
         router.push("/comandas");
         return;
@@ -235,10 +238,16 @@ export default function MembrosPage() {
         .eq("id", user.id)
         .eq("role", "admin");
 
-      const isAdmin = !!(admins && admins.length > 0);
-      const isBarMC = user.email === "barmc@gentlemenmc.com.br";
+      const { data: command } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "command");
 
-      if (!isAdmin && !isBarMC) {
+      const isAdminUser = !!(admins && admins.length > 0);
+      const isCommandUser = !!(command && command.length > 0);
+
+      if (!isAdminUser && !isCommandUser) {
         message.error(t('errors.accessDenied'));
         return;
       }
@@ -291,10 +300,16 @@ export default function MembrosPage() {
         .eq("id", user.id)
         .eq("role", "admin");
 
-      const isAdmin = !!(admins && admins.length > 0);
-      const isBarMC = user.email === "barmc@gentlemenmc.com.br";
+      const { data: command } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "command");
 
-      if (!isAdmin && !isBarMC) {
+      const isAdminUser = !!(admins && admins.length > 0);
+      const isCommandUser = !!(command && command.length > 0);
+
+      if (!isAdminUser && !isCommandUser) {
         message.error(t('errors.accessDenied'));
         return;
       }
@@ -357,7 +372,7 @@ export default function MembrosPage() {
     }
   };
 
-  if (isAdmin === null) {
+  if (isAdmin === null || isCommand === null) {
     return <div className="p-6">{t('loading')}</div>;
   }
 
