@@ -11,6 +11,8 @@ import Image from 'next/image';
 import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 
+const PAYMENT_CONFIRM_ALLOWED_EMAIL = "mortari@gentlemenmc.com.br";
+
 type Props = {
   searchParams: {
     // Novo retorno (InfinitePay / PIX)
@@ -56,7 +58,16 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         const normalizedTransactionId = transaction_nsu || transaction_id || nsu || null;
 
         // Verifica se o pagamento falhou
-        if (warning || !normalizedOrderNsu || !normalizedTransactionId) throw new Error(warning || "Dados inválidos");
+        if (warning || !normalizedOrderNsu || !normalizedTransactionId) {
+          throw new Error(warning || t("invalidData"));
+        }
+
+        const { data: authData } = await supabase.auth.getUser();
+        const email = authData?.user?.email?.trim().toLowerCase() ?? "";
+        if (email !== PAYMENT_CONFIRM_ALLOWED_EMAIL) {
+          status$.set("failed");
+          return;
+        }
 
         // Atualiza cobrança
         const { error: updateError } = await supabase
@@ -115,14 +126,12 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         <Card className="max-w-md">
           <CardHeader className="text-center">
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <CardTitle>Erro ao confirmar seu pagamento</CardTitle>
-            <CardDescription>
-              Não foi possível confirmar sua transação. Fale diretamente com o diretor financeiro.
-            </CardDescription>
+            <CardTitle>{t("errorConfirmingPayment")}</CardTitle>
+            <CardDescription>{t("errorDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
             <Link href="/comandas">
-              <Button>Voltar ao início</Button>
+              <Button>{t("backToHome")}</Button>
             </Link>
           </CardContent>
         </Card>
