@@ -200,7 +200,9 @@ export default function CreateComandaPage() {
 
         if (typeof window !== "undefined") {
           const payload = { guestName: guestName || t('fallback.noName'), items };
-          window.setTimeout(() => printComandaHTML(payload), 0);
+          window.setTimeout(() => {
+            void printComandaHTML(payload);
+          }, 0);
         }
       }
 

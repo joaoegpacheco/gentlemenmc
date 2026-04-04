@@ -198,7 +198,9 @@ export default function CreateComandaPage() {
 
         if (typeof window !== "undefined") {
           const payload = { guestName: guestName || "Sem nome", items };
-          window.setTimeout(() => printComandaHTML(payload), 0);
+          window.setTimeout(() => {
+            void printComandaHTML(payload);
+          }, 0);
         }
       }
 

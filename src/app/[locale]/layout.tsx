@@ -9,7 +9,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster";
 import { routing } from '@/i18n/routing';
-import "../globals.css";
+import { SetHtmlLang } from '@/components/SetHtmlLang';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,33 +47,22 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: 'layout' });
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
-      </head>
-      <body className={`${inter.className} min-h-screen flex flex-col`} suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-        >
-          <NextIntlClientProvider messages={messages}>
-            <AuthListener />
-            <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
-              <ModeToggle />
-            </header>
-            <main className="flex-1 p-6">{children}</main>
-            <footer className="flex items-center justify-center w-full pb-2">
-              <span className="text-xs text-gray-500">
-                {t('copyright')}
-              </span> 
-            </footer>
-            <SpeedInsights />
-            <Toaster />
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <div className={`${inter.className} min-h-screen flex flex-col`}>
+      <ThemeProvider attribute="class">
+        <NextIntlClientProvider messages={messages}>
+          <SetHtmlLang locale={locale} />
+          <AuthListener />
+          <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
+            <ModeToggle />
+          </header>
+          <main className="flex-1 p-6">{children}</main>
+          <footer className="flex items-center justify-center w-full pb-2">
+            <span className="text-xs text-gray-500">{t("copyright")}</span>
+          </footer>
+          <SpeedInsights />
+          <Toaster />
+        </NextIntlClientProvider>
+      </ThemeProvider>
+    </div>
   );
 }

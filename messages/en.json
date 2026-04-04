@@ -361,6 +361,23 @@
     "statusActive": "Active",
     "statusInactive": "Inactive",
     "statusSuspended": "Suspended",
+    "caseTypeLabel": "Member type (patch)",
+    "selectCaseType": "Select type",
+    "caseTypeNone": "Not set",
+    "caseTypeProspect": "Prospect",
+    "caseTypeHalf": "Half Patch",
+    "caseTypeDiretoria": "Board (Diretoria)",
+    "caseTypeFullRevisor": "Full-Revisor",
+    "caseTypeFull": "Full Patch",
+    "halfDateLabel": "Half Patch date",
+    "halfDateHint": "Date the member became Half (used in the prospects flow).",
+    "cpfLabel": "CPF",
+    "dateOfBirthLabel": "Date of birth",
+    "motorcycleLabel": "Motorcycle",
+    "motorcyclePlateLabel": "License plate",
+    "emergencyContactLabel": "Emergency contact",
+    "emergencyPhoneLabel": "Emergency phone",
+    "kinshipEmergencyLabel": "Relationship to member",
     "memberProfile": "Member Profile",
     "memberManagement": "👥 Member Management",
     "memberManagementDescription": "Manage member information, status and history",
@@ -444,6 +461,8 @@
     "markedBy": "Marked by: {user}"
   },
   "cardDrinksAll": {
+    "errorLoadingDebts": "Could not load debts. Check your connection or try again.",
+    "errorLoadingMembers": "Could not load the member list.",
     "memberPhoneNotFound": "Member phone not found.",
     "unpaidTotal": "Unpaid total:",
     "noDebts": "No debts.",
@@ -759,12 +778,18 @@
       "delete": "Delete"
     },
     "placeholders": {
-      "search": "Search by name, email or phone..."
+      "search": "Search by name, email, phone, CPF, bike, emergency..."
     },
     "table": {
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
+      "caseType": "Type",
+      "halfDate": "Half date",
+      "birthDate": "Birth date",
+      "cpf": "CPF",
+      "motorcycle": "Motorcycle",
+      "emergency": "Emergency",
       "status": "Status",
       "registrationDate": "Registration Date",
       "actions": "Actions",

@@ -346,7 +346,9 @@ export function FormCommand() {
         typeof window !== "undefined"
       ) {
         const payload = { guestName: userName, items: cartForPrint };
-        window.setTimeout(() => printComandaHTML(payload), 0);
+        window.setTimeout(() => {
+          void printComandaHTML(payload);
+        }, 0);
       }
       items$.set([]);
       userId$.set("");

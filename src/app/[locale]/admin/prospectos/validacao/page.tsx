@@ -48,7 +48,7 @@ interface Member {
   user_id: string;
   user_name: string;
   user_email?: string;
-  user_phone?: string;
+  phone?: string;
   foto_url?: string;
   case_type?: string;
   created_at?: string;

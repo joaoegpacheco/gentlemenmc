@@ -27,16 +27,42 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   const STORE_HANDLE = "gentlemenmc";
 
   const getData = async () => {
-    const [debtRes, membersRes] = await Promise.all([
-      fetch("/api/bebidas/debt-summary"),
-      supabase.from("membros").select("user_name, phone, user_email"),
-    ]);
+    try {
+      const [debtRes, membersRes] = await Promise.all([
+        fetch("/api/bebidas/debt-summary"),
+        supabase.from("membros").select("user_name, phone, user_email"),
+      ]);
 
-    const debtSummary: Array<{ name: string; sumPrice: number }> = await debtRes.json();
+      if (!debtRes.ok) {
+        message.error(t("errorLoadingDebts"));
+        debtData$.set([]);
+        totalSum$.set(0);
+        members$.set(membersRes.data || []);
+        return;
+      }
 
-    members$.set(membersRes.data || []);
-    debtData$.set(debtSummary);
-    totalSum$.set(debtSummary.reduce((acc, curr) => acc + (curr.sumPrice || 0), 0));
+      const debtSummary: Array<{ name: string; sumPrice: number }> =
+        await debtRes.json();
+
+      if (membersRes.error) {
+        console.error(membersRes.error);
+        message.error(t("errorLoadingMembers"));
+      }
+
+      members$.set(membersRes.data || []);
+      debtData$.set(Array.isArray(debtSummary) ? debtSummary : []);
+      totalSum$.set(
+        (Array.isArray(debtSummary) ? debtSummary : []).reduce(
+          (acc, curr) => acc + (curr.sumPrice || 0),
+          0
+        )
+      );
+    } catch (e) {
+      console.error(e);
+      message.error(t("errorLoadingDebts"));
+      debtData$.set([]);
+      totalSum$.set(0);
+    }
   };
 
   useImperativeHandle(ref, () => ({
@@ -50,13 +76,17 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
 
   const shortenUrl = async (url: string): Promise<string> => {
     try {
-      const response = await fetch(
-        `https://tinyurl.com/api-create.php?url=${url}`
-      );
-      return await response.text(); // A resposta é o link encurtado direto
+      const response = await fetch("/api/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      if (!response.ok) return url;
+      const data = (await response.json()) as { shortUrl?: string };
+      return data.shortUrl?.trim() || url;
     } catch (error) {
       console.error("Erro ao encurtar o link:", error);
-      return url; // fallback para a URL original
+      return url;
     }
   };
 

@@ -10,7 +10,7 @@ export interface DashboardStats {
   inactiveMembers: number;
   upcomingBirthdays: Array<{
     user_name: string;
-    data_nascimento: string;
+    date_of_birth: string;
     foto_url?: string;
   }>;
 }
@@ -143,20 +143,20 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     const { data: members } = await supabase
       .from("membros")
-      .select("user_name, data_nascimento, foto_url")
-      .not("data_nascimento", "is", null);
+      .select("user_name, date_of_birth, foto_url")
+      .not("date_of_birth", "is", null);
 
     const upcomingBirthdays = (members || [])
       .filter((m) => {
-        if (!m.data_nascimento) return false;
-        const birthDate = new Date(m.data_nascimento);
+        if (!m.date_of_birth) return false;
+        const birthDate = new Date(m.date_of_birth);
         const birthdayThisYear = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
         
         return birthdayThisYear >= today && birthdayThisYear <= in7Days;
       })
       .sort((a, b) => {
-        const dateA = new Date(a.data_nascimento);
-        const dateB = new Date(b.data_nascimento);
+        const dateA = new Date(a.date_of_birth);
+        const dateB = new Date(b.date_of_birth);
         return dateA.getDate() - dateB.getDate();
       });
 

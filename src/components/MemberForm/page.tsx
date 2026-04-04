@@ -30,6 +30,17 @@ import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase";
 import { Loader2 } from "lucide-react";
 
+const MEMBER_CASE_TYPES = [
+  "__none__",
+  "Prospect",
+  "Half",
+  "Diretoria",
+  "Full-Revisor",
+  "Full",
+] as const;
+
+type MemberCaseTypeForm = (typeof MEMBER_CASE_TYPES)[number];
+
 interface Member {
   id?: number;
   user_id: string;
@@ -39,7 +50,29 @@ interface Member {
   foto_url?: string;
   status?: "ativo" | "inativo" | "suspenso";
   observacoes?: string;
+  case_type?: string | null;
+  half_date?: string | null;
+  cpf?: string | null;
+  date_of_birth?: string | null;
+  motorcycle?: string | null;
+  motorcycle_license_plate?: string | null;
+  emergency_telephone_number?: string | null;
+  emergency_contact?: string | null;
+  kinship_contact_emergency?: string | null;
   created_at?: string;
+}
+
+function caseTypeToFormValue(caseType?: string | null): MemberCaseTypeForm {
+  if (!caseType) return "__none__";
+  return (MEMBER_CASE_TYPES as readonly string[]).includes(caseType)
+    ? (caseType as MemberCaseTypeForm)
+    : "__none__";
+}
+
+function halfDateInputValue(iso?: string | null): string {
+  if (!iso) return "";
+  const d = iso.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : "";
 }
 
 interface MemberFormProps {
@@ -105,6 +138,15 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       .min(1, tMembers('validation.phoneRequired')),
     status: z.enum(["ativo", "inativo", "suspenso"]),
     observacoes: z.string().optional(),
+    case_type: z.enum(MEMBER_CASE_TYPES),
+    half_date: z.string().optional(),
+    cpf: z.string().optional(),
+    date_of_birth: z.string().optional(),
+    motorcycle: z.string().optional(),
+    motorcycle_license_plate: z.string().optional(),
+    emergency_telephone_number: z.string().optional(),
+    emergency_contact: z.string().optional(),
+    kinship_contact_emergency: z.string().optional(),
   };
 
   // Se está criando novo membro, senha é obrigatória
@@ -132,11 +174,22 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       user_name: member?.user_name || "",
       user_email: member?.user_email || "",
       password: "",
-      phone: member?.phone || "",
+      phone: member?.phone ?? "",
       status: member?.status || "ativo",
       observacoes: member?.observacoes || "",
+      case_type: caseTypeToFormValue(member?.case_type),
+      half_date: halfDateInputValue(member?.half_date),
+      cpf: member?.cpf ?? "",
+      date_of_birth: halfDateInputValue(member?.date_of_birth),
+      motorcycle: member?.motorcycle ?? "",
+      motorcycle_license_plate: member?.motorcycle_license_plate ?? "",
+      emergency_telephone_number: member?.emergency_telephone_number ?? "",
+      emergency_contact: member?.emergency_contact ?? "",
+      kinship_contact_emergency: member?.kinship_contact_emergency ?? "",
     },
   });
+
+  const watchedCaseType = form.watch("case_type");
 
   useEffect(() => {
     if (member) {
@@ -144,9 +197,18 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         user_name: member.user_name || "",
         user_email: member.user_email || "",
         password: "",
-        phone: member.phone || "",
+        phone: member.phone ?? "",
         status: member.status || "ativo",
         observacoes: member.observacoes || "",
+        case_type: caseTypeToFormValue(member.case_type),
+        half_date: halfDateInputValue(member.half_date),
+        cpf: member.cpf ?? "",
+        date_of_birth: halfDateInputValue(member.date_of_birth),
+        motorcycle: member.motorcycle ?? "",
+        motorcycle_license_plate: member.motorcycle_license_plate ?? "",
+        emergency_telephone_number: member.emergency_telephone_number ?? "",
+        emergency_contact: member.emergency_contact ?? "",
+        kinship_contact_emergency: member.kinship_contact_emergency ?? "",
       });
       photoPreview$.set(member.foto_url || null);
     }
@@ -269,12 +331,52 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       const normalizedEmail = values.user_email ? normalizeEmail(values.user_email) : null;
       const capitalizedName = values.user_name ? capitalizeFirstLetter(values.user_name) : values.user_name;
 
-      const memberData: any = {
+      const resolvedCaseType =
+        values.case_type === "__none__" ? null : values.case_type;
+      const halfDateForDb =
+        resolvedCaseType === "Half" && values.half_date?.trim()
+          ? values.half_date.trim()
+          : null;
+
+      const emptyToNull = (v: string | undefined) => {
+        const s = v?.trim();
+        return s ? s : null;
+      };
+
+      const memberData: {
+        user_name: string;
+        user_email: string | null;
+        phone: string;
+        status: MemberFormValues["status"];
+        observacoes: string | null;
+        case_type: string | null;
+        half_date: string | null;
+        cpf: string | null;
+        date_of_birth: string | null;
+        motorcycle: string | null;
+        motorcycle_license_plate: string | null;
+        emergency_telephone_number: string | null;
+        emergency_contact: string | null;
+        kinship_contact_emergency: string | null;
+        user_id?: string;
+        foto_url?: string | null;
+      } = {
         user_name: capitalizedName,
         user_email: normalizedEmail,
         phone: values.phone,
         status: values.status,
         observacoes: values.observacoes || null,
+        case_type: resolvedCaseType,
+        half_date: halfDateForDb,
+        cpf: emptyToNull(values.cpf),
+        date_of_birth: values.date_of_birth?.trim()
+          ? values.date_of_birth.trim()
+          : null,
+        motorcycle: emptyToNull(values.motorcycle),
+        motorcycle_license_plate: emptyToNull(values.motorcycle_license_plate),
+        emergency_telephone_number: emptyToNull(values.emergency_telephone_number),
+        emergency_contact: emptyToNull(values.emergency_contact),
+        kinship_contact_emergency: emptyToNull(values.kinship_contact_emergency),
       };
 
       // Sempre incluir foto_url explicitamente (mesmo que seja null)
@@ -529,6 +631,104 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
 
         <FormField
           control={form.control}
+          name="cpf"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('cpfLabel')}</FormLabel>
+              <FormControl>
+                <Input placeholder="000.000.000-00" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date_of_birth"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('dateOfBirthLabel')}</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="motorcycle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('motorcycleLabel')}</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="motorcycle_license_plate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('motorcyclePlateLabel')}</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="emergency_contact"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('emergencyContactLabel')}</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="emergency_telephone_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('emergencyPhoneLabel')}</FormLabel>
+              <FormControl>
+                <Input type="tel" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="kinship_contact_emergency"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('kinshipEmergencyLabel')}</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="status"
           render={({ field }) => (
             <FormItem>
@@ -552,6 +752,59 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="case_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tMembers('caseTypeLabel')}</FormLabel>
+              <Select
+                onValueChange={(v) => {
+                  field.onChange(v);
+                  if (v !== "Half") {
+                    form.setValue("half_date", "");
+                  }
+                }}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={tMembers('selectCaseType')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="__none__">{tMembers('caseTypeNone')}</SelectItem>
+                  <SelectItem value="Prospect">{tMembers('caseTypeProspect')}</SelectItem>
+                  <SelectItem value="Half">{tMembers('caseTypeHalf')}</SelectItem>
+                  <SelectItem value="Diretoria">{tMembers('caseTypeDiretoria')}</SelectItem>
+                  <SelectItem value="Full-Revisor">{tMembers('caseTypeFullRevisor')}</SelectItem>
+                  <SelectItem value="Full">{tMembers('caseTypeFull')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {watchedCaseType === "Half" && (
+          <FormField
+            control={form.control}
+            name="half_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{tMembers('halfDateLabel')}</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  {tMembers('halfDateHint')}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
