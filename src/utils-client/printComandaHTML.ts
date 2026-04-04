@@ -1,5 +1,3 @@
-import printJS from "print-js";
-
 type Item = {
   drink: string;
   quantity: number;
@@ -46,8 +44,10 @@ const PRINT_STYLE = `
  * Monta o DOM com createElement/textContent (sem innerHTML) para evitar erro de
  * Trusted Types no Chromium: "The provided callback is no longer runnable".
  */
-export function printComandaHTML({ guestName, items }: PrintOptions) {
+export async function printComandaHTML({ guestName, items }: PrintOptions) {
   if (typeof window === "undefined") return;
+
+  const { default: printJS } = await import("print-js");
 
   const containerId = "print-container";
 
