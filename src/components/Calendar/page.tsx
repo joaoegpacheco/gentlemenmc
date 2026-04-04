@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import React, {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useLocale } from "next-intl";
+import enMessages from "../../../messages/en.json";
+import ptMessages from "../../../messages/pt.json";
 import { Calendar } from "@fullcalendar/core";
 import type { EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -114,12 +122,37 @@ function formatEventWhen(
   });
 }
 
+/** Mensagens do calendário vêm dos JSON de locale (evita MISSING_MESSAGE no cliente por contexto next-intl). */
+function calendarT(
+  root: (typeof ptMessages)["calendar"],
+  key: string,
+  values?: Record<string, string | number>
+): string {
+  const parts = key.split(".");
+  let cur: unknown = root;
+  for (const p of parts) {
+    if (cur == null || typeof cur !== "object") return key;
+    cur = (cur as Record<string, unknown>)[p];
+  }
+  if (typeof cur !== "string") return key;
+  if (!values) return cur;
+  return cur.replace(/\{(\w+)\}/g, (_, name) =>
+    values[name] !== undefined ? String(values[name]) : `{${name}}`
+  );
+}
+
 const CalendarEvents = () => {
   const calendarRef = useRef<HTMLDivElement>(null);
   const calendarInstanceRef = useRef<Calendar | null>(null);
   const { resolvedTheme } = useTheme();
   const locale = useLocale();
-  const t = useTranslations("calendar");
+  const calRoot =
+    locale === "en" ? enMessages.calendar : ptMessages.calendar;
+  const t = useCallback(
+    (key: string, values?: Record<string, string | number>) =>
+      calendarT(calRoot, key, values),
+    [calRoot]
+  );
 
   const fullCalendarLocale = locale === "en" ? "en" : "pt-br";
   const dateLocale = locale === "en" ? "en-US" : "pt-BR";
@@ -215,7 +248,9 @@ const CalendarEvents = () => {
   }, []);
 
   useEffect(() => {
-    loadEvents();
+    startTransition(() => {
+      void loadEvents();
+    });
   }, [loadEvents]);
 
   useEffect(() => {
