@@ -96,7 +96,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center">
         <Spinner className="h-12 w-12" />
-        <p className="mt-4 text-lg">Verificando pagamento...</p>
+        <p className="mt-4 text-lg">{t("verifyingPayment")}</p>
       </div>
     );
   }
@@ -115,10 +115,8 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         <Card className="max-w-md">
           <CardHeader className="text-center">
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <CardTitle>{t('errorConfirmingPayment')}</CardTitle>
-            <CardDescription>
-              {t('errorDescription')}
-            </CardDescription>
+            <CardTitle>{t("errorConfirmingPayment")}</CardTitle>
+            <CardDescription>{t("errorDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
             <Link href="/comandas">
