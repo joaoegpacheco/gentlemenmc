@@ -84,6 +84,9 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const categoryLabels: Record<string, string> = {
     cervejas: tNova('categories.cervejas'),
     comidas: tNova('categories.comidas'),
+    cervejasZero: tNova('categories.cervejasZero'),
+    "cervejas zero": tNova('categories.cervejasZero'),
+    cervejas_zero: tNova('categories.cervejasZero'),
     refrigerantes: tNova('categories.refrigerantes'),
     bebidasNaoAlcoolicas: tNova('categories.bebidasNaoAlcoolicas'),
     energetico: tNova('categories.energetico'),
