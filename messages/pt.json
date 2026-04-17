@@ -396,7 +396,8 @@
     "shots": "Doses",
     "wines": "Vinhos",
     "snacks": "Snacks",
-    "cigars": "Cigarros"
+    "cigars": "Cigarros",
+    "zeroBeers": "Cervejas zero"
   },
   "placeholders": {
     "selectMember": "Selecione um membro",
@@ -704,6 +705,7 @@
       "cervejas": "Cervejas",
       "comidas": "Comidas",
       "cervejasPremium": "Cervejas Premium",
+      "cervejasZero": "Cervejas zero",
       "refrigerantes": "Refrigerantes",
       "bebidasNaoAlcoolicas": "Bebidas Não Alcoólicas",
       "energetico": "Energético",
