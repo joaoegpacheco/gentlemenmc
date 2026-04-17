@@ -388,7 +388,7 @@
   },
   "categories": {
     "beers": "Beers",
-    "foods": "Foods",
+    "comidas": "Foods",
     "premiumBeers": "Premium Beers",
     "softDrinks": "Soft Drinks",
     "nonAlcoholic": "Non-Alcoholic Beverages",
@@ -932,9 +932,35 @@
       "week": "Week",
       "day": "Day"
     },
-    "alerts": {
-      "clickedEvent": "Clicked {title}.\nWill open {url} in a new tab",
-      "eventTitle": "{title}"
+    "loading": "Loading events…",
+    "loadError": "Could not load events: {message}",
+    "detail": {
+      "title": "Event details",
+      "name": "Name",
+      "when": "Date and time",
+      "location": "Location",
+      "locationEmpty": "Not provided",
+      "close": "Close"
+    },
+    "edit": {
+      "button": "Edit event",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancelEdit": "Cancel editing"
+    },
+    "create": {
+      "button": "New event",
+      "title": "Create event",
+      "description": "Fill in the details to add it to the calendar.",
+      "nameLabel": "Name",
+      "locationLabel": "Location",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "timezoneHint": "Date and time use Brasília timezone (America/Sao_Paulo).",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "validation": "Enter a name, date, and valid time."
     }
   },
   "comandaService": {
@@ -1170,6 +1196,7 @@
     "descrevaInfracao": "Describe the infraction or reason for the penalty...",
     "exemplosInfracao": "Examples: Occasional delays, Inattention, Recidivism, Disrespect, etc.",
     "registrarPenalidadeButton": "Register Penalty",
+    "penalidades": "Penalties",
     "severidadeLeve": "🟡 Light (-5 points)",
     "severidadeMedia": "🟠 Medium (-10 points)",
     "severidadeGrave": "🔴 Severe (-20 points)",

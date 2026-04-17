@@ -10,19 +10,29 @@ import { Button } from "@/components/ui/button";
 import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase.js";
 import { formatCurrency } from "@/utils/formatCurrency";
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+
+const WHATSAPP_CHARGE_ALLOWED_EMAIL = "mortari@gentlemenmc.com.br";
+
+const CHARGE_VIA_WHATSAPP_DISABLED_TITLE: Record<string, string> = {
+  pt: "Apenas o financeiro (mortari) pode enviar links de cobrança.",
+  en: "Only finance (mortari) or admins can send charge links.",
+};
 
 interface Props {}
 
 export const CardCommandAll = forwardRef((_: Props, ref) => {
+  const locale = useLocale();
   const t = useTranslations('cardDrinksAll');
   const totalSum$ = useObservable(0);
   const debtData$ = useObservable<Array<{ name: string; sumPrice: number }>>([]);
   const members$ = useObservable<Array<{ user_name: string; phone: string; user_email?: string }>>([]);
+  const canChargeViaWhatsApp$ = useObservable(false);
 
   const totalSum = useValue(totalSum$);
   const debtData = useValue(debtData$);
   const members = useValue(members$);
+  const canChargeViaWhatsApp = useValue(canChargeViaWhatsApp$);
 
   const STORE_HANDLE = "gentlemenmc";
 
@@ -74,6 +84,30 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const checkCanCharge = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        canChargeViaWhatsApp$.set(false);
+        return;
+      }
+      const email = user.email?.trim().toLowerCase() ?? "";
+      if (email === WHATSAPP_CHARGE_ALLOWED_EMAIL) {
+        canChargeViaWhatsApp$.set(true);
+        return;
+      }
+      const { data: admins } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "admin");
+      canChargeViaWhatsApp$.set(!!admins?.length);
+    };
+    checkCanCharge();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const shortenUrl = async (url: string): Promise<string> => {
     try {
       const response = await fetch("/api/shorten", {
@@ -91,6 +125,7 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   };
 
   const handleCharge = async (name: string, amount: number) => {
+    if (!canChargeViaWhatsApp) return;
     const member = members.find((m) => m.user_name === name);
     if (!member) {
       message.error(t('memberPhoneNotFound'));
@@ -158,6 +193,13 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
               <CardFooter>
                 <Button
                   className="w-full"
+                  disabled={!canChargeViaWhatsApp}
+                  title={
+                    canChargeViaWhatsApp
+                      ? undefined
+                      : CHARGE_VIA_WHATSAPP_DISABLED_TITLE[locale] ??
+                        CHARGE_VIA_WHATSAPP_DISABLED_TITLE.pt
+                  }
                   onClick={() => handleCharge(item.name, item.sumPrice)}
                 >
                   {t('chargeViaWhatsApp')}

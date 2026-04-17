@@ -932,9 +932,35 @@
       "week": "Semana",
       "day": "Dia"
     },
-    "alerts": {
-      "clickedEvent": "Clicou em {title}.\nAbrirá {url} em uma nova aba",
-      "eventTitle": "{title}"
+    "loading": "Carregando eventos…",
+    "loadError": "Não foi possível carregar os eventos: {message}",
+    "detail": {
+      "title": "Detalhes do evento",
+      "name": "Nome",
+      "when": "Data e hora",
+      "location": "Local",
+      "locationEmpty": "Não informado",
+      "close": "Fechar"
+    },
+    "edit": {
+      "button": "Editar evento",
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "cancelEdit": "Cancelar edição"
+    },
+    "create": {
+      "button": "Novo evento",
+      "title": "Criar evento",
+      "description": "Preencha os dados para adicionar ao calendário.",
+      "nameLabel": "Nome",
+      "locationLabel": "Local",
+      "dateLabel": "Data",
+      "timeLabel": "Hora",
+      "timezoneHint": "Data e hora no fuso de Brasília.",
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "cancel": "Cancelar",
+      "validation": "Informe nome, data e hora válidos."
     }
   },
   "comandaService": {

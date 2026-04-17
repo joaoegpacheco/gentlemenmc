@@ -29,6 +29,9 @@ import { DashboardTab } from "../Dashboard/DashboardTab";
 import { ProspectsPage } from "../ProspectsPage/page";
 import ProspectValidationPage from "@/app/[locale]/admin/prospectos/validacao/page";
 
+/** Mesmo email autorizado a confirmar retorno de pagamento (PaymentReturnClient). */
+const PAYMENT_CONFIRM_TAB_COMMAND_EMAIL = "mortari@gentlemenmc.com.br";
+
 interface AdminData {
   id: string;
 }
@@ -49,6 +52,7 @@ export default function TabsComponent() {
   const activeTab$ = useObservable("1");
   const command$ = useObservable<boolean | null>(null);
   const birthdays$ = useObservable<Birthday[]>([]);
+  const userEmail$ = useObservable<string | null>(null);
 
   const admin = useValue(admin$);
   const manager = useValue(manager$);
@@ -58,6 +62,7 @@ export default function TabsComponent() {
   const caseType = useValue(caseType$);
   const activeTab = useValue(activeTab$);
   const birthdays = useValue(birthdays$);
+  const userEmail = useValue(userEmail$);
 
   const cardComandRef = useRef<any>(null);
   const comandAllTableRef = useRef<any>(null);
@@ -73,6 +78,8 @@ export default function TabsComponent() {
         window.location.href = "/";
         return;
       }
+
+      userEmail$.set(user.email?.trim().toLowerCase() ?? "");
 
       isBarUser$.set(user.email === "barmc@gentlemenmc.com.br");
       manager$.set(user.email === "robson@gentlemenmc.com.br");
@@ -167,6 +174,8 @@ export default function TabsComponent() {
     // Verificar se o usuário pode ver a aba de prospects
     const canSeeProspectsTab = caseType === "Half" || caseType === "Prospect";
     const canSeeCommandValidationTab = caseType === "Diretoria" || caseType === "Full-Revisor";
+    const canSeeConfirmPaymentTabAsCommand =
+      userEmail === PAYMENT_CONFIRM_TAB_COMMAND_EMAIL;
 
     if (admin) {
       const tabs = [
@@ -203,7 +212,9 @@ export default function TabsComponent() {
         { key: "6", label: t('statute'), children: <ByLaw /> },
         { key: "18", label: t('members'), children: <MembrosPage /> },
         { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
-        { key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> },
+        ...(canSeeConfirmPaymentTabAsCommand
+          ? [{ key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> } as const]
+          : []),
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         { key: "11", label: <LogoutButton /> },
       ];
