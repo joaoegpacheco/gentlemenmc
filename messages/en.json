@@ -752,7 +752,8 @@
       "createComanda": "Create Order"
     },
     "fallback": {
-      "noName": "No name"
+      "noName": "No name",
+      "directSale": "Direct sale"
     }
   },
   "comandas": {
