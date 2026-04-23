@@ -865,7 +865,10 @@
   },
   "adminEstoqueHistorico": {
     "errors": {
-      "errorFetchingLogs": "Error fetching logs"
+      "errorFetchingLogs": "Error fetching logs",
+      "datesRequiredForExcel": "Select start and end dates to export the Excel file.",
+      "endBeforeStart": "End date cannot be before start date.",
+      "errorExportingExcel": "Error generating the Excel spreadsheet."
     },
     "title": "📊 Stock History",
     "filters": {
@@ -875,7 +878,8 @@
     },
     "buttons": {
       "pdf": "PDF",
-      "csv": "CSV"
+      "csv": "CSV",
+      "excelSaidas": "Excel (exits)"
     },
     "table": {
       "date": "Date",
@@ -901,7 +905,15 @@
       "periodEnd": "Today",
       "drinkFilter": " | Drink: {drink}",
       "fileNamePDF": "stock_history.pdf",
-      "fileNameCSV": "stock_history.csv"
+      "fileNameCSV": "stock_history.csv",
+      "fileNameExcel": "stock_exits_members.xlsx",
+      "sheetGeral": "All stock exits",
+      "sheetMembros": "Member exits only",
+      "excelHeaders": {
+        "drinkName": "Drink",
+        "drink": "Drink",
+        "exitQty": "Exit quantity"
+      }
     }
   },
   "apiCreateUser": {
