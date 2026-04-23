@@ -865,7 +865,10 @@
   },
   "adminEstoqueHistorico": {
     "errors": {
-      "errorFetchingLogs": "Erro ao buscar logs"
+      "errorFetchingLogs": "Erro ao buscar logs",
+      "datesRequiredForExcel": "Selecione a data inicial e a data final para exportar o Excel.",
+      "endBeforeStart": "A data final não pode ser anterior à data inicial.",
+      "errorExportingExcel": "Erro ao gerar a planilha Excel."
     },
     "title": "📊 Histórico de Estoque",
     "filters": {
@@ -875,7 +878,8 @@
     },
     "buttons": {
       "pdf": "PDF",
-      "csv": "CSV"
+      "csv": "CSV",
+      "excelSaidas": "Excel (saídas)"
     },
     "table": {
       "date": "Data",
@@ -901,7 +905,15 @@
       "periodEnd": "Hoje",
       "drinkFilter": " | Bebida: {drink}",
       "fileNamePDF": "historico_estoque.pdf",
-      "fileNameCSV": "historico_estoque.csv"
+      "fileNameCSV": "historico_estoque.csv",
+      "fileNameExcel": "saidas_estoque_membros.xlsx",
+      "sheetGeral": "Saídas geral",
+      "sheetMembros": "Saídas só membros",
+      "excelHeaders": {
+        "drinkName": "Bebida",
+        "drink": "Bebida",
+        "exitQty": "Quantidade saída"
+      }
     }
   },
   "apiCreateUser": {
