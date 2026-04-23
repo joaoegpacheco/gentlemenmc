@@ -28,6 +28,18 @@ import type {
   DrinkAnalysis,
 } from "@/services/dashboardService";
 
+/** Recharts Tooltip passes ValueType, which can be undefined or an array. */
+function asTooltipNumber(value: unknown): number {
+  if (value == null) return 0;
+  if (typeof value === "number" && !Number.isNaN(value)) return value;
+  if (typeof value === "string") {
+    const n = Number(value);
+    return Number.isNaN(n) ? 0 : n;
+  }
+  if (Array.isArray(value)) return asTooltipNumber(value[0]);
+  return 0;
+}
+
 interface ChartsProps {
   monthlyRevenue: MonthlyRevenue[];
   topDrinks: TopDrink[];
@@ -113,7 +125,7 @@ export function Charts({
                 tickFormatter={(value) => `R$ ${value}`}
               />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => formatCurrency(asTooltipNumber(value))}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
@@ -194,7 +206,7 @@ export function Charts({
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value) => formatCurrency(asTooltipNumber(value))}
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
@@ -272,12 +284,13 @@ export function Charts({
                 }}
               />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  name === "revenue"
-                    ? formatCurrency(value)
-                    : `${value} units`,
-                  name === "revenue" ? "Receita" : "Quantidade",
-                ]}
+                formatter={(value, name) => {
+                  const n = asTooltipNumber(value);
+                  return [
+                    name === "revenue" ? formatCurrency(n) : `${n} units`,
+                    name === "revenue" ? "Receita" : "Quantidade",
+                  ];
+                }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
@@ -364,12 +377,17 @@ export function Charts({
                 }}
               />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  name === t('totalRevenue') || name === "receita_total"
-                    ? formatCurrency(value)
-                    : `${value} ${t('unitsLabel')}`,
-                  name === t('totalRevenue') || name === "receita_total" ? t('totalRevenue') : t('quantitySold'),
-                ]}
+                formatter={(value, name) => {
+                  const n = asTooltipNumber(value);
+                  return [
+                    name === t('totalRevenue') || name === "receita_total"
+                      ? formatCurrency(n)
+                      : `${n} ${t('unitsLabel')}`,
+                    name === t('totalRevenue') || name === "receita_total"
+                      ? t('totalRevenue')
+                      : t('quantitySold'),
+                  ];
+                }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
