@@ -35,6 +35,7 @@ import type { SupabaseAuthUser } from "@/types/auth";
 import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
 import { MEMBROS_ADMIN_SELECT } from "@/lib/membros-query";
+import { getMemberManagementPermissions } from "@/lib/member-permissions";
 
 type MemberStatus = "ativo" | "inativo" | "suspenso";
 
@@ -126,6 +127,8 @@ export default function MembrosPage() {
   const router = useRouter();
   const { isMobile } = useDeviceSizes();
 
+  const canDeleteOrSuspend = isAdmin || isCommand;
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -136,17 +139,16 @@ export default function MembrosPage() {
         return;
       }
 
-      const [adminsResult, commandResult] = await Promise.all([
-        supabase.from("admins").select("id").eq("id", user.id).eq("role", "admin"),
-        supabase.from("admins").select("id").eq("id", user.id).eq("role", "command"),
-      ]);
+      const permissions = await getMemberManagementPermissions(
+        supabase,
+        user.id,
+        user.email
+      );
 
-      const adminStatus = !!(adminsResult.data && adminsResult.data.length > 0);
-      const commandStatus = !!(commandResult.data && commandResult.data.length > 0);
-      isAdmin$.set(adminStatus);
-      isCommand$.set(commandStatus);
+      isAdmin$.set(permissions.isAdmin);
+      isCommand$.set(permissions.isCommand);
 
-      if (!adminStatus && !commandStatus) {
+      if (!permissions.canAccessMembersPage) {
         message.error(t('errors.accessDenied'));
         router.push("/comandas");
         return;
@@ -232,22 +234,13 @@ export default function MembrosPage() {
         return;
       }
 
-      const { data: admins } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "admin");
+      const permissions = await getMemberManagementPermissions(
+        supabase,
+        user.id,
+        user.email
+      );
 
-      const { data: command } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "command");
-
-      const isAdminUser = !!(admins && admins.length > 0);
-      const isCommandUser = !!(command && command.length > 0);
-
-      if (!isAdminUser && !isCommandUser) {
+      if (!permissions.canDeleteOrSuspend) {
         message.error(t('errors.accessDenied'));
         return;
       }
@@ -294,22 +287,13 @@ export default function MembrosPage() {
         return;
       }
 
-      const { data: admins } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "admin");
+      const permissions = await getMemberManagementPermissions(
+        supabase,
+        user.id,
+        user.email
+      );
 
-      const { data: command } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "command");
-
-      const isAdminUser = !!(admins && admins.length > 0);
-      const isCommandUser = !!(command && command.length > 0);
-
-      if (!isAdminUser && !isCommandUser) {
+      if (!permissions.canDeleteOrSuspend) {
         message.error(t('errors.accessDenied'));
         return;
       }
@@ -504,30 +488,34 @@ export default function MembrosPage() {
                       <Edit className="h-4 w-4 mr-1" />
                       {t('buttons.edit')}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        selectedMember$.set(member);
-                        blockDialogOpen$.set(true);
-                      }}
-                      className="flex-1 min-w-[80px]"
-                    >
-                      <Ban className="h-4 w-4 mr-1" />
-                      {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        selectedMember$.set(member);
-                        deleteDialogOpen$.set(true);
-                      }}
-                      className="flex-1 min-w-[80px] text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      {t('buttons.delete')}
-                    </Button>
+                    {canDeleteOrSuspend && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            selectedMember$.set(member);
+                            blockDialogOpen$.set(true);
+                          }}
+                          className="flex-1 min-w-[80px]"
+                        >
+                          <Ban className="h-4 w-4 mr-1" />
+                          {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            selectedMember$.set(member);
+                            deleteDialogOpen$.set(true);
+                          }}
+                          className="flex-1 min-w-[80px] text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          {t('buttons.delete')}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -635,30 +623,34 @@ export default function MembrosPage() {
                           <Edit className="h-4 w-4" />
                           {t('buttons.edit')}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            selectedMember$.set(member);
-                            blockDialogOpen$.set(true);
-                          }}
-                          className="gap-1"
-                        >
-                          <Ban className="h-4 w-4" />
-                          {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            selectedMember$.set(member);
-                            deleteDialogOpen$.set(true);
-                          }}
-                          className="gap-1 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {t('buttons.delete')}
-                        </Button>
+                        {canDeleteOrSuspend && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                selectedMember$.set(member);
+                                blockDialogOpen$.set(true);
+                              }}
+                              className="gap-1"
+                            >
+                              <Ban className="h-4 w-4" />
+                              {member.status === "suspenso" ? t('buttons.unblock') : t('buttons.block')}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                selectedMember$.set(member);
+                                deleteDialogOpen$.set(true);
+                              }}
+                              className="gap-1 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              {t('buttons.delete')}
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
