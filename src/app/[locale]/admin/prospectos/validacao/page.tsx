@@ -42,6 +42,12 @@ import { format, differenceInMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { Progress } from "@/components/ui/progress";
+import {
+  computeProspectStats,
+  countProspectPoints,
+  HALF_PATCH_REQUIREMENTS,
+  FULL_PATCH_REQUIREMENTS,
+} from "@/lib/prospect-points";
 
 interface Member {
   id?: number;
@@ -86,7 +92,7 @@ interface ProspectPenalty {
 const ACTIVITY_TYPES_CONFIG = {
   "presenca_proatividade": {
     key: "presencaProatividade",
-    points: 10,
+    points: 15,
     monthlyLimit: true,
   },
   "rodar_2_fds": {
@@ -96,7 +102,7 @@ const ACTIVITY_TYPES_CONFIG = {
   },
   "open_house_outros_mc": {
     key: "openHouseOutrosMc",
-    points: 5,
+    points: 2,
     monthlyLimit: false,
   },
   "acoes_filantropicas": {
@@ -114,111 +120,26 @@ const ACTIVITY_TYPES_CONFIG = {
     points: 5,
     monthlyLimit: false,
   },
-  "organizar_open_house": {
-    key: "organizarOpenHouse",
-    points: 5,
+  "organizar_open_house_evento_completo": {
+    key: "organizarOpenHouseEventoCompleto",
+    points: 8,
+    monthlyLimit: false,
+  },
+  "organizar_open_house_parte_evento": {
+    key: "organizarOpenHouseParteEvento",
+    points: 2,
     monthlyLimit: false,
   },
 } as const;
 
+const LEGACY_ACTIVITY_KEYS: Record<string, string> = {
+  organizar_open_house: "organizarOpenHouse",
+};
+
 type ActivityType = keyof typeof ACTIVITY_TYPES_CONFIG;
 
-const HALF_PATCH_REQUIREMENTS = { minMonths: 6, minPoints: 100 };
-const FULL_PATCH_REQUIREMENTS = { minMonths: 6, minPoints: 150 };
-
-interface ProspectStats {
-  totalPoints: number;
-  monthsAsProspect: number;
-  halfPatchPointsProgress: number;
-  halfPatchTimeProgress: number;
-  halfPatchPointsMet: boolean;
-  halfPatchTimeMet: boolean;
-  halfPatchEligible: boolean;
-  fullPatchPointsProgress: number;
-  fullPatchTimeProgress: number;
-  fullPatchPointsMet: boolean;
-  fullPatchTimeMet: boolean;
-  fullPatchEligible: boolean;
-  monthsAsHalf: number;
-  halfPatchDate: Date | null;
-}
-
-function computeStatsForMember(member: Member, activities: ProspectActivity[], penalties: ProspectPenalty[] = []): ProspectStats {
-  const startDate = member.created_at ? parseISO(member.created_at) : new Date();
-  const monthsAsProspect = differenceInMonths(new Date(), startDate);
-  const activityPoints = activities
-    .filter((a) => a.status === "validated")
-    .reduce((sum, a) => sum + a.points, 0);
-
-  // Penalties are already filtered by prospect_id before being passed to this function
-  // Only count validated penalties, rejected ones don't deduct points
-  const penaltyDeduction = penalties
-    .filter((p) => p.status === "validated")
-    .reduce((sum, p) => sum + Math.abs(p.points_deducted), 0);
-
-  const totalPoints = Math.max(0, activityPoints - penaltyDeduction);
-
-  const halfPatchPointsProgress = Math.min((totalPoints / HALF_PATCH_REQUIREMENTS.minPoints) * 100, 100);
-  const halfPatchTimeProgress = Math.min((monthsAsProspect / HALF_PATCH_REQUIREMENTS.minMonths) * 100, 100);
-  const halfPatchPointsMet = totalPoints >= HALF_PATCH_REQUIREMENTS.minPoints;
-  const halfPatchTimeMet = monthsAsProspect >= HALF_PATCH_REQUIREMENTS.minMonths;
-  const halfPatchEligible = halfPatchPointsMet && halfPatchTimeMet;
-
-  const isHalf = member.case_type === "Half";
-  let halfPatchDate: Date | null = null;
-  if (isHalf) {
-    if (member.half_date) {
-      halfPatchDate = parseISO(member.half_date);
-    } else {
-      const sortedActivities = [...activities]
-        .filter((a) => a.status === "validated")
-        .sort((a, b) => new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime());
-      let accumulatedPoints = 0;
-      for (const activity of sortedActivities) {
-        accumulatedPoints += activity.points;
-        const activityDate = parseISO(activity.activity_date);
-        const monthsSinceStart = differenceInMonths(activityDate, startDate);
-        if (accumulatedPoints >= HALF_PATCH_REQUIREMENTS.minPoints && monthsSinceStart >= HALF_PATCH_REQUIREMENTS.minMonths) {
-          halfPatchDate = activityDate;
-          break;
-        }
-      }
-      if (!halfPatchDate) {
-        const minHalfDate = new Date(startDate);
-        minHalfDate.setMonth(minHalfDate.getMonth() + HALF_PATCH_REQUIREMENTS.minMonths);
-        halfPatchDate = minHalfDate;
-      }
-    }
-  }
-
-  const monthsAsHalf = halfPatchDate
-    ? differenceInMonths(new Date(), halfPatchDate)
-    : halfPatchEligible
-      ? Math.max(0, monthsAsProspect - HALF_PATCH_REQUIREMENTS.minMonths)
-      : 0;
-
-  const fullPatchPointsProgress = Math.min((totalPoints / FULL_PATCH_REQUIREMENTS.minPoints) * 100, 100);
-  const fullPatchTimeProgress = Math.min((monthsAsHalf / FULL_PATCH_REQUIREMENTS.minMonths) * 100, 100);
-  const fullPatchPointsMet = totalPoints >= FULL_PATCH_REQUIREMENTS.minPoints;
-  const fullPatchTimeMet = monthsAsHalf >= FULL_PATCH_REQUIREMENTS.minMonths;
-  const fullPatchEligible = fullPatchPointsMet && fullPatchTimeMet;
-
-  return {
-    totalPoints,
-    monthsAsProspect,
-    halfPatchPointsProgress,
-    halfPatchTimeProgress,
-    halfPatchPointsMet,
-    halfPatchTimeMet,
-    halfPatchEligible,
-    fullPatchPointsProgress,
-    fullPatchTimeProgress,
-    fullPatchPointsMet,
-    fullPatchTimeMet,
-    fullPatchEligible,
-    monthsAsHalf,
-    halfPatchDate,
-  };
+function computeStatsForMember(member: Member, activities: ProspectActivity[], penalties: ProspectPenalty[] = []) {
+  return computeProspectStats(member, activities, penalties);
 }
 
 export default function ProspectValidationPage() {
@@ -645,6 +566,14 @@ export default function ProspectValidationPage() {
         return type;
       }
     }
+    const legacyKey = LEGACY_ACTIVITY_KEYS[type];
+    if (legacyKey) {
+      try {
+        return tValidation(`activityTypes.${legacyKey}.label`);
+      } catch {
+        return type;
+      }
+    }
     return type;
   };
 
@@ -848,19 +777,18 @@ export default function ProspectValidationPage() {
   // Calcular totais por prospect (apenas Half e Prospect)
   const prospectTotals = useMemo(() => {
     const totals: Record<string, number> = {};
-    const validProspectIds = new Set(
-      members
-        .filter((m) => m.case_type === "Half" || m.case_type === "Prospect")
-        .map((m) => m.user_id)
+    const validMembers = members.filter(
+      (m) => m.case_type === "Half" || m.case_type === "Prospect"
     );
 
-    activities
-      .filter((a) => a.status === "validated" && validProspectIds.has(a.prospect_id))
-      .forEach((activity) => {
-        totals[activity.prospect_id] = (totals[activity.prospect_id] || 0) + activity.points;
-      });
+    validMembers.forEach((member) => {
+      const memberActivities = activities.filter((a) => a.prospect_id === member.user_id);
+      const memberPenalties = penalties.filter((p) => p.prospect_id === member.user_id);
+      totals[member.user_id] = countProspectPoints(member, memberActivities, memberPenalties);
+    });
+
     return totals;
-  }, [activities, members]);
+  }, [activities, members, penalties]);
 
   // Lista de prospects/halves com estatísticas (todos, com ou sem validação)
   const prospectProgressList = useMemo(() => {
@@ -948,18 +876,25 @@ export default function ProspectValidationPage() {
             <div className="mt-4">
               <strong>{tValidation('pontosMensaisComportamento')}</strong>
               <ul className="list-disc list-inside ml-4 mt-1">
-                <li>{tValidation('presencaProatividade')}</li>
+                {Object.entries(ACTIVITY_TYPES_CONFIG)
+                  .filter(([, config]) => config.monthlyLimit)
+                  .map(([, config]) => (
+                    <li key={config.key}>
+                      {tValidation(`activityTypes.${config.key}.label`)}: {config.points} {tValidation('pts')} ({tValidation('max1xMes')})
+                    </li>
+                  ))}
               </ul>
             </div>
             <div className="mt-2">
               <strong>{tValidation('pontosAtividades')}</strong>
               <ul className="list-disc list-inside ml-4 mt-1">
-                <li>{tValidation('rodar2Fds')}</li>
-                <li>{tValidation('openHouseOutrosMc')}</li>
-                <li>{tValidation('acoesFilantropicas')}</li>
-                <li>{tValidation('viajarComClube')}</li>
-                <li>{tValidation('viajarSemClube')}</li>
-                <li>{tValidation('organizarOpenHouse')}</li>
+                {Object.entries(ACTIVITY_TYPES_CONFIG)
+                  .filter(([, config]) => !config.monthlyLimit)
+                  .map(([, config]) => (
+                    <li key={config.key}>
+                      {tValidation(`activityTypes.${config.key}.label`)}: {config.points} {tValidation('pts')}
+                    </li>
+                  ))}
               </ul>
             </div>
           </CardContent>
@@ -1032,8 +967,142 @@ export default function ProspectValidationPage() {
         </div>
       </div>
 
+      {/* Visão de progresso por Prospect / Half (mesma visão da ProspectsPage) */}
+      <div className="mt-6 space-y-4">
+        <h2 className="text-lg sm:text-xl font-semibold">{tValidation('resumoPontos')}</h2>
+        {prospectProgressList.length === 0 ? (
+          <p className="text-muted-foreground">{tValidation('nenhumPonto')}</p>
+        ) : (
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+            {prospectProgressList.map(({ member, stats, memberPenalties }) => (
+              <Card key={member.user_id} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{member.user_name}</CardTitle>
+                    <Badge variant="outline">{member.case_type === "Half" ? tProspects('halfPatch') : tProspects('prospect')}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Prospect: card Half Patch */}
+                  {member.case_type !== "Half" && (
+                    <>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">{tProspects('meritoPontos')}</span>
+                          <span className="text-sm font-bold">{stats.totalPoints} / {HALF_PATCH_REQUIREMENTS.minPoints}</span>
+                        </div>
+                        <Progress value={stats.halfPatchPointsProgress} className="h-3" />
+                        {stats.halfPatchPointsMet ? (
+                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {tProspects('faltamPontos', { points: HALF_PATCH_REQUIREMENTS.minPoints - stats.totalPoints })}
+                            {renderPenaltyInfo(memberPenalties)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">{tProspects('tempoCasaMeses')}</span>
+                          <span className="text-sm font-bold">{stats.monthsAsProspect} / {HALF_PATCH_REQUIREMENTS.minMonths}</span>
+                        </div>
+                        <Progress value={stats.halfPatchTimeProgress} className="h-3" />
+                        {stats.halfPatchTimeMet ? (
+                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {tProspects('faltamMeses', { months: HALF_PATCH_REQUIREMENTS.minMonths - stats.monthsAsProspect })}
+                          </div>
+                        )}
+                      </div>
+                      <div className="pt-2 border-t">
+                        {stats.halfPatchEligible ? (
+                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-950 rounded-lg">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-semibold text-green-700 dark:text-green-300">{tProspects('elegivelHalfPatch')}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                            <Target className="h-4 w-4" />
+                            <span className="text-sm">{tProspects('continueCaminhadaHalf2')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {/* Half: card Full Patch */}
+                  {member.case_type === "Half" && (
+                    <>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">{tProspects('meritoPontos')}</span>
+                          <span className="text-sm font-bold">{stats.totalPoints} / {FULL_PATCH_REQUIREMENTS.minPoints}</span>
+                        </div>
+                        <Progress value={stats.fullPatchPointsProgress} className="h-3" />
+                        {stats.fullPatchPointsMet ? (
+                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {tProspects('faltamPontos', { points: FULL_PATCH_REQUIREMENTS.minPoints - stats.totalPoints })}
+                            {renderPenaltyInfo(memberPenalties)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">{tProspects('tempoComoHalfMeses')}</span>
+                          <span className="text-sm font-bold">{stats.monthsAsHalf} / {FULL_PATCH_REQUIREMENTS.minMonths}</span>
+                        </div>
+                        <Progress value={stats.fullPatchTimeProgress} className="h-3" />
+                        {stats.fullPatchTimeMet ? (
+                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {tProspects('faltamMesesComoHalf', { months: FULL_PATCH_REQUIREMENTS.minMonths - stats.monthsAsHalf })}
+                          </div>
+                        )}
+                        {stats.halfPatchDate && (
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {tProspects('virouHalfEm')} {format(stats.halfPatchDate, "dd/MM/yyyy", { locale: ptBR })}
+                          </div>
+                        )}
+                      </div>
+                      <div className="pt-2 border-t">
+                        {stats.fullPatchEligible ? (
+                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-950 rounded-lg">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-semibold text-green-700 dark:text-green-300">{tProspects('elegivelFullPatch')}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                            <Target className="h-4 w-4" />
+                            <span className="text-sm">{tProspects('continueCaminhadaFull2')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Tabela de Atividades */}
-      <Card>
+      <Card style={{ marginTop: '20px' }}>
         <CardHeader>
           <CardTitle>{tValidation('historicoAtividades')}</CardTitle>
         </CardHeader>
@@ -1253,140 +1322,6 @@ export default function ProspectValidationPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Visão de progresso por Prospect / Half (mesma visão da ProspectsPage) */}
-      <div className="mt-6 space-y-4">
-        <h2 className="text-lg sm:text-xl font-semibold">{tValidation('resumoPontos')}</h2>
-        {prospectProgressList.length === 0 ? (
-          <p className="text-muted-foreground">{tValidation('nenhumPonto')}</p>
-        ) : (
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            {prospectProgressList.map(({ member, stats, memberPenalties }) => (
-              <Card key={member.user_id} className="overflow-hidden">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{member.user_name}</CardTitle>
-                    <Badge variant="outline">{member.case_type === "Half" ? tProspects('halfPatch') : tProspects('prospect')}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Prospect: card Half Patch */}
-                  {member.case_type !== "Half" && (
-                    <>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">{tProspects('meritoPontos')}</span>
-                          <span className="text-sm font-bold">{stats.totalPoints} / {HALF_PATCH_REQUIREMENTS.minPoints}</span>
-                        </div>
-                        <Progress value={stats.halfPatchPointsProgress} className="h-3" />
-                        {stats.halfPatchPointsMet ? (
-                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {tProspects('faltamPontos', { points: HALF_PATCH_REQUIREMENTS.minPoints - stats.totalPoints })}
-                            {renderPenaltyInfo(memberPenalties)}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">{tProspects('tempoCasaMeses')}</span>
-                          <span className="text-sm font-bold">{stats.monthsAsProspect} / {HALF_PATCH_REQUIREMENTS.minMonths}</span>
-                        </div>
-                        <Progress value={stats.halfPatchTimeProgress} className="h-3" />
-                        {stats.halfPatchTimeMet ? (
-                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {tProspects('faltamMeses', { months: HALF_PATCH_REQUIREMENTS.minMonths - stats.monthsAsProspect })}
-                          </div>
-                        )}
-                      </div>
-                      <div className="pt-2 border-t">
-                        {stats.halfPatchEligible ? (
-                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-950 rounded-lg">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm font-semibold text-green-700 dark:text-green-300">{tProspects('elegivelHalfPatch')}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                            <Target className="h-4 w-4" />
-                            <span className="text-sm">{tProspects('continueCaminhadaHalf2')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                  {/* Half: card Full Patch */}
-                  {member.case_type === "Half" && (
-                    <>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">{tProspects('meritoPontos')}</span>
-                          <span className="text-sm font-bold">{stats.totalPoints} / {FULL_PATCH_REQUIREMENTS.minPoints}</span>
-                        </div>
-                        <Progress value={stats.fullPatchPointsProgress} className="h-3" />
-                        {stats.fullPatchPointsMet ? (
-                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {tProspects('faltamPontos', { points: FULL_PATCH_REQUIREMENTS.minPoints - stats.totalPoints })}
-                            {renderPenaltyInfo(memberPenalties)}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">{tProspects('tempoComoHalfMeses')}</span>
-                          <span className="text-sm font-bold">{stats.monthsAsHalf} / {FULL_PATCH_REQUIREMENTS.minMonths}</span>
-                        </div>
-                        <Progress value={stats.fullPatchTimeProgress} className="h-3" />
-                        {stats.fullPatchTimeMet ? (
-                          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="font-semibold">{tProspects('requisitoAtingido')}</span>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {tProspects('faltamMesesComoHalf', { months: FULL_PATCH_REQUIREMENTS.minMonths - stats.monthsAsHalf })}
-                          </div>
-                        )}
-                        {stats.halfPatchDate && (
-                          <div className="text-xs text-muted-foreground mt-2">
-                            {tProspects('virouHalfEm')} {format(stats.halfPatchDate, "dd/MM/yyyy", { locale: ptBR })}
-                          </div>
-                        )}
-                      </div>
-                      <div className="pt-2 border-t">
-                        {stats.fullPatchEligible ? (
-                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-950 rounded-lg">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm font-semibold text-green-700 dark:text-green-300">{tProspects('elegivelFullPatch')}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                            <Target className="h-4 w-4" />
-                            <span className="text-sm">{tProspects('continueCaminhadaFull2')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Dialog de Registro */}
       <Dialog open={formDialogOpen} onOpenChange={formDialogOpen$.set}>

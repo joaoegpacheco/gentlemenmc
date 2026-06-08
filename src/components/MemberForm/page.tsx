@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useObservable } from "@legendapp/state/react";
+import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +29,7 @@ import { Upload } from "@/components/ui/upload";
 import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase";
 import { Loader2 } from "lucide-react";
+import { getMemberManagementPermissions } from "@/lib/member-permissions";
 
 const MEMBER_CASE_TYPES = [
   "__none__",
@@ -88,6 +89,8 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
   const photoFile$ = useObservable<File | null>(null);
   const uploading$ = useObservable(false);
   const photoPreview$ = useObservable<string | null>(member?.foto_url || null);
+  const canChangeCaseType$ = useObservable(false);
+  const canChangeCaseType = useValue(canChangeCaseType$);
 
   // Função para normalizar email - adiciona @gentlemenmc.com.br se não tiver
   const normalizeEmail = (email: string): string => {
@@ -151,7 +154,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
 
   // Se está criando novo membro, senha é obrigatória
   // Se está editando, senha é opcional
-  const memberSchema = !member
+  const memberSchema = (!member
     ? z.object({
         ...baseSchema,
         password: z.string()
@@ -164,7 +167,16 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
           .min(6, tMembers('validation.passwordMinChars'))
           .optional()
           .or(z.literal("")),
+      })
+  ).superRefine((data, ctx) => {
+    if (data.case_type === "Half" && !data.half_date?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: tMembers("validation.halfDateRequired"),
+        path: ["half_date"],
       });
+    }
+  });
 
   type MemberFormValues = z.infer<typeof memberSchema>;
 
@@ -213,6 +225,23 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       photoPreview$.set(member.foto_url || null);
     }
   }, [member, form, photoPreview$]);
+
+  useEffect(() => {
+    const loadPermissions = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return;
+
+      const permissions = await getMemberManagementPermissions(
+        supabase,
+        user.id,
+        user.email
+      );
+      canChangeCaseType$.set(permissions.canChangeCaseType);
+    };
+
+    void loadPermissions();
+  }, [canChangeCaseType$]);
 
   const handlePhotoChange = ({ file }: { file: File | null }) => {
     if (file) {
@@ -297,17 +326,14 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         return;
       }
 
-      // Verificar se é admin
-      const { data: admins } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "admin");
+      // Verificar permissões
+      const permissions = await getMemberManagementPermissions(
+        supabase,
+        user.id,
+        user.email
+      );
 
-      const isAdmin = !!(admins && admins.length > 0);
-      const isBarMC = user.email === "barmc@gentlemenmc.com.br";
-
-      if (!isAdmin && !isBarMC) {
+      if (!permissions.canManageMembers) {
         message.error(tMembers('onlyAdminsCanManage'));
         uploading$.set(false);
         return;
@@ -764,9 +790,12 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
                   field.onChange(v);
                   if (v !== "Half") {
                     form.setValue("half_date", "");
+                  } else if (!form.getValues("half_date")?.trim()) {
+                    form.setValue("half_date", new Date().toISOString().slice(0, 10));
                   }
                 }}
                 value={field.value}
+                disabled={!canChangeCaseType}
               >
                 <FormControl>
                   <SelectTrigger>
