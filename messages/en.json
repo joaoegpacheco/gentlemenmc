@@ -323,7 +323,8 @@
       "emailDomain": "Email must be from domain @gentlemenmc.com.br",
       "phoneRequired": "Phone is required",
       "passwordRequired": "Password is required",
-      "passwordMinChars": "Password must have at least 6 characters"
+      "passwordMinChars": "Password must have at least 6 characters",
+      "halfDateRequired": "Enter the Half Patch date when changing the vest type"
     },
     "photoPreviewAlt": "Photo preview",
     "emailPlaceholderName": "name",
@@ -370,7 +371,7 @@
     "caseTypeFullRevisor": "Full-Revisor",
     "caseTypeFull": "Full Patch",
     "halfDateLabel": "Half Patch date",
-    "halfDateHint": "Date the member became Half (used in the prospects flow).",
+    "halfDateHint": "Date the member became Half. Points before this date do not count toward Full Patch.",
     "cpfLabel": "CPF",
     "dateOfBirthLabel": "Date of birth",
     "motorcycleLabel": "Motorcycle",
@@ -1085,6 +1086,14 @@
       "organizarOpenHouse": {
         "label": "Organize/Work club open house",
         "description": "Organized or worked at the club's open house"
+      },
+      "organizarOpenHouseEventoCompleto": {
+        "label": "Organize/work at our Open House for the entire event",
+        "description": "Organized or worked at the club's open house for the entire event"
+      },
+      "organizarOpenHouseParteEvento": {
+        "label": "Organize/work at our Open House for part of the event",
+        "description": "Organized or worked at the club's open house for part of the event"
       }
     }
   },
@@ -1103,7 +1112,8 @@
     "acoesFilantropicas": "Philanthropic Actions: 5 pts",
     "viajarComClube": "Travel with the club: 10 pts",
     "viajarSemClube": "Travel/Represent without the club: 5 pts",
-    "organizarOpenHouse": "Organize/Work open house: 5 pts",
+    "organizarOpenHouseEventoCompleto": "Organize/work at our Open House for the entire event: 8 pts",
+    "organizarOpenHouseParteEvento": "Organize/work at our Open House for part of the event: 2 pts",
     "buscarAtividades": "Search activities...",
     "historicoAtividades": "Activity History",
     "carregando": "Loading...",
@@ -1265,6 +1275,14 @@
       "organizarOpenHouse": {
         "label": "Organize/Work club open house",
         "description": "Organized or worked at the club's open house"
+      },
+      "organizarOpenHouseEventoCompleto": {
+        "label": "Organize/work at our Open House for the entire event",
+        "description": "Organized or worked at the club's open house for the entire event"
+      },
+      "organizarOpenHouseParteEvento": {
+        "label": "Organize/work at our Open House for part of the event",
+        "description": "Organized or worked at the club's open house for part of the event"
       }
     }
   }
