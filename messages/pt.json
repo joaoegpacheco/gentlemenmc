@@ -323,7 +323,8 @@
       "emailDomain": "Email deve ser do domínio @gentlemenmc.com.br",
       "phoneRequired": "Telefone é obrigatório",
       "passwordRequired": "Senha é obrigatória",
-      "passwordMinChars": "Senha deve ter no mínimo 6 caracteres"
+      "passwordMinChars": "Senha deve ter no mínimo 6 caracteres",
+      "halfDateRequired": "Informe a data do Half Patch ao trocar o colete"
     },
     "photoPreviewAlt": "Preview da foto",
     "emailPlaceholderName": "nome",
@@ -370,7 +371,7 @@
     "caseTypeFullRevisor": "Full-Revisor",
     "caseTypeFull": "Full Patch",
     "halfDateLabel": "Data Half Patch",
-    "halfDateHint": "Data em que o membro virou Half (usado no fluxo de prospects).",
+    "halfDateHint": "Data em que o membro virou Half. Pontos anteriores a esta data não contam para o Full Patch.",
     "cpfLabel": "CPF",
     "dateOfBirthLabel": "Data de nascimento",
     "motorcycleLabel": "Moto",
@@ -1085,6 +1086,14 @@
       "organizarOpenHouse": {
         "label": "Organizar/Trabalhar open house do clube",
         "description": "Organizou ou trabalhou no open house do clube"
+      },
+      "organizarOpenHouseEventoCompleto": {
+        "label": "Organizar/trabalhar em nosso Open House durante todo o evento",
+        "description": "Organizou ou trabalhou no open house do clube durante todo o evento"
+      },
+      "organizarOpenHouseParteEvento": {
+        "label": "Organizar/trabalhar em nosso Open House apenas parte do evento",
+        "description": "Organizou ou trabalhou no open house do clube apenas parte do evento"
       }
     }
   },
@@ -1103,7 +1112,8 @@
     "acoesFilantropicas": "Ações Filantrópicas: 5 pts",
     "viajarComClube": "Viajar com o clube: 10 pts",
     "viajarSemClube": "Viajar/Representar sem o clube: 5 pts",
-    "organizarOpenHouse": "Organizar/Trabalhar open house: 5 pts",
+    "organizarOpenHouseEventoCompleto": "Organizar/trabalhar em nosso Open House durante todo o evento: 8 pts",
+    "organizarOpenHouseParteEvento": "Organizar/trabalhar em nosso Open House apenas parte do evento: 2 pts",
     "buscarAtividades": "Buscar atividades...",
     "historicoAtividades": "Histórico de Atividades",
     "carregando": "Carregando...",
@@ -1265,6 +1275,14 @@
       "organizarOpenHouse": {
         "label": "Organizar/Trabalhar open house do clube",
         "description": "Organizou ou trabalhou no open house do clube"
+      },
+      "organizarOpenHouseEventoCompleto": {
+        "label": "Organizar/trabalhar em nosso Open House durante todo o evento",
+        "description": "Organizou ou trabalhou no open house do clube durante todo o evento"
+      },
+      "organizarOpenHouseParteEvento": {
+        "label": "Organizar/trabalhar em nosso Open House apenas parte do evento",
+        "description": "Organizou ou trabalhou no open house do clube apenas parte do evento"
       }
     }
   }
