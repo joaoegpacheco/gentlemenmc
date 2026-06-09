@@ -102,7 +102,7 @@ const ACTIVITY_TYPES_CONFIG = {
   },
   "open_house_outros_mc": {
     key: "openHouseOutrosMc",
-    points: 2,
+    points: 4,
     monthlyLimit: false,
   },
   "acoes_filantropicas": {
@@ -120,20 +120,42 @@ const ACTIVITY_TYPES_CONFIG = {
     points: 5,
     monthlyLimit: false,
   },
-  "organizar_open_house_evento_completo": {
-    key: "organizarOpenHouseEventoCompleto",
+  "organizar_open_house_caixa": {
+    key: "organizarOpenHouseCaixa",
+    points: 10,
+    monthlyLimit: false,
+  },
+  "organizar_open_house_cozinha": {
+    key: "organizarOpenHouseCozinha",
+    points: 10,
+    monthlyLimit: false,
+  },
+  "organizar_open_house_bar_chopp": {
+    key: "organizarOpenHouseBarChopp",
     points: 8,
     monthlyLimit: false,
   },
-  "organizar_open_house_parte_evento": {
-    key: "organizarOpenHouseParteEvento",
-    points: 2,
+  "organizar_open_house_portaria": {
+    key: "organizarOpenHousePortaria",
+    points: 8,
+    monthlyLimit: false,
+  },
+  "organizar_open_house_seguranca": {
+    key: "organizarOpenHouseSeguranca",
+    points: 4,
+    monthlyLimit: false,
+  },
+  "organizar_open_house_bwc_copos_lixos": {
+    key: "organizarOpenHouseBwcCoposLixos",
+    points: 4,
     monthlyLimit: false,
   },
 } as const;
 
 const LEGACY_ACTIVITY_KEYS: Record<string, string> = {
   organizar_open_house: "organizarOpenHouse",
+  organizar_open_house_evento_completo: "organizarOpenHouseEventoCompleto",
+  organizar_open_house_parte_evento: "organizarOpenHouseParteEvento",
 };
 
 type ActivityType = keyof typeof ACTIVITY_TYPES_CONFIG;
