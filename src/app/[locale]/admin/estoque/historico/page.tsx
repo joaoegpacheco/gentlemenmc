@@ -18,8 +18,13 @@ import { message } from "@/lib/message";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import dayjs from "dayjs";
-import { getEstoqueLogsWithDrinkNames } from "@/services/estoqueService";
-import { Download, FileText } from "lucide-react";
+import {
+  getAggregatedSaidasEstoqueLog,
+  getAggregatedSaidasMembrosBebidas,
+  getEstoqueLogsWithDrinkNames,
+} from "@/services/estoqueService";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -156,6 +161,49 @@ export default function HistoricoEstoquePage() {
     document.body.removeChild(link);
   };
 
+  const exportarExcelSaidas = async () => {
+    if (!startDate || !endDate) {
+      message.warning(t("errors.datesRequiredForExcel"));
+      return;
+    }
+    if (dayjs(endDate).isBefore(dayjs(startDate), "day")) {
+      message.warning(t("errors.endBeforeStart"));
+      return;
+    }
+    try {
+      const [geral, membros] = await Promise.all([
+        getAggregatedSaidasEstoqueLog(startDate, endDate),
+        getAggregatedSaidasMembrosBebidas(startDate, endDate),
+      ]);
+
+      const wb = XLSX.utils.book_new();
+
+      const headGeral = [
+        t("export.excelHeaders.drinkName"),
+        t("export.excelHeaders.exitQty"),
+      ];
+      const wsGeral = XLSX.utils.aoa_to_sheet([
+        headGeral,
+        ...geral.map((row) => [row.drink_name, row.quantidade_saida]),
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsGeral, t("export.sheetGeral"));
+
+      const headMembros = [
+        t("export.excelHeaders.drink"),
+        t("export.excelHeaders.exitQty"),
+      ];
+      const wsMembros = XLSX.utils.aoa_to_sheet([
+        headMembros,
+        ...membros.map((row) => [row.drink, row.quantidade_saida]),
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsMembros, t("export.sheetMembros"));
+
+      XLSX.writeFile(wb, t("export.fileNameExcel"));
+    } catch {
+      message.error(t("errors.errorExportingExcel"));
+    }
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">{t('title')}</h2>
@@ -204,6 +252,10 @@ export default function HistoricoEstoquePage() {
         <Button onClick={exportarCSV}>
           <Download className="mr-2 h-4 w-4" />
           {t('buttons.csv')}
+        </Button>
+        <Button variant="secondary" onClick={() => void exportarExcelSaidas()}>
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
+          {t("buttons.excelSaidas")}
         </Button>
       </div>
 

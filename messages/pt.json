@@ -323,7 +323,8 @@
       "emailDomain": "Email deve ser do domínio @gentlemenmc.com.br",
       "phoneRequired": "Telefone é obrigatório",
       "passwordRequired": "Senha é obrigatória",
-      "passwordMinChars": "Senha deve ter no mínimo 6 caracteres"
+      "passwordMinChars": "Senha deve ter no mínimo 6 caracteres",
+      "halfDateRequired": "Informe a data do Half Patch ao trocar o colete"
     },
     "photoPreviewAlt": "Preview da foto",
     "emailPlaceholderName": "nome",
@@ -370,7 +371,7 @@
     "caseTypeFullRevisor": "Full-Revisor",
     "caseTypeFull": "Full Patch",
     "halfDateLabel": "Data Half Patch",
-    "halfDateHint": "Data em que o membro virou Half (usado no fluxo de prospects).",
+    "halfDateHint": "Data em que o membro virou Half. Pontos anteriores a esta data não contam para o Full Patch.",
     "cpfLabel": "CPF",
     "dateOfBirthLabel": "Data de nascimento",
     "motorcycleLabel": "Moto",
@@ -396,7 +397,8 @@
     "shots": "Doses",
     "wines": "Vinhos",
     "snacks": "Snacks",
-    "cigars": "Cigarros"
+    "cigars": "Cigarros",
+    "zeroBeers": "Cervejas zero"
   },
   "placeholders": {
     "selectMember": "Selecione um membro",
@@ -704,6 +706,7 @@
       "cervejas": "Cervejas",
       "comidas": "Comidas",
       "cervejasPremium": "Cervejas Premium",
+      "cervejasZero": "Cervejas zero",
       "refrigerantes": "Refrigerantes",
       "bebidasNaoAlcoolicas": "Bebidas Não Alcoólicas",
       "energetico": "Energético",
@@ -750,7 +753,8 @@
       "createComanda": "Criar Comanda"
     },
     "fallback": {
-      "noName": "Sem nome"
+      "noName": "Sem nome",
+      "directSale": "Venda direta"
     }
   },
   "comandas": {
@@ -862,7 +866,10 @@
   },
   "adminEstoqueHistorico": {
     "errors": {
-      "errorFetchingLogs": "Erro ao buscar logs"
+      "errorFetchingLogs": "Erro ao buscar logs",
+      "datesRequiredForExcel": "Selecione a data inicial e a data final para exportar o Excel.",
+      "endBeforeStart": "A data final não pode ser anterior à data inicial.",
+      "errorExportingExcel": "Erro ao gerar a planilha Excel."
     },
     "title": "📊 Histórico de Estoque",
     "filters": {
@@ -872,7 +879,8 @@
     },
     "buttons": {
       "pdf": "PDF",
-      "csv": "CSV"
+      "csv": "CSV",
+      "excelSaidas": "Excel (saídas)"
     },
     "table": {
       "date": "Data",
@@ -898,7 +906,15 @@
       "periodEnd": "Hoje",
       "drinkFilter": " | Bebida: {drink}",
       "fileNamePDF": "historico_estoque.pdf",
-      "fileNameCSV": "historico_estoque.csv"
+      "fileNameCSV": "historico_estoque.csv",
+      "fileNameExcel": "saidas_estoque_membros.xlsx",
+      "sheetGeral": "Saídas geral",
+      "sheetMembros": "Saídas só membros",
+      "excelHeaders": {
+        "drinkName": "Bebida",
+        "drink": "Bebida",
+        "exitQty": "Quantidade saída"
+      }
     }
   },
   "apiCreateUser": {
@@ -1070,6 +1086,14 @@
       "organizarOpenHouse": {
         "label": "Organizar/Trabalhar open house do clube",
         "description": "Organizou ou trabalhou no open house do clube"
+      },
+      "organizarOpenHouseEventoCompleto": {
+        "label": "Organizar/trabalhar em nosso Open House durante todo o evento",
+        "description": "Organizou ou trabalhou no open house do clube durante todo o evento"
+      },
+      "organizarOpenHouseParteEvento": {
+        "label": "Organizar/trabalhar em nosso Open House apenas parte do evento",
+        "description": "Organizou ou trabalhou no open house do clube apenas parte do evento"
       }
     }
   },
@@ -1088,7 +1112,8 @@
     "acoesFilantropicas": "Ações Filantrópicas: 5 pts",
     "viajarComClube": "Viajar com o clube: 10 pts",
     "viajarSemClube": "Viajar/Representar sem o clube: 5 pts",
-    "organizarOpenHouse": "Organizar/Trabalhar open house: 5 pts",
+    "organizarOpenHouseEventoCompleto": "Organizar/trabalhar em nosso Open House durante todo o evento: 8 pts",
+    "organizarOpenHouseParteEvento": "Organizar/trabalhar em nosso Open House apenas parte do evento: 2 pts",
     "buscarAtividades": "Buscar atividades...",
     "historicoAtividades": "Histórico de Atividades",
     "carregando": "Carregando...",
@@ -1250,6 +1275,14 @@
       "organizarOpenHouse": {
         "label": "Organizar/Trabalhar open house do clube",
         "description": "Organizou ou trabalhou no open house do clube"
+      },
+      "organizarOpenHouseEventoCompleto": {
+        "label": "Organizar/trabalhar em nosso Open House durante todo o evento",
+        "description": "Organizou ou trabalhou no open house do clube durante todo o evento"
+      },
+      "organizarOpenHouseParteEvento": {
+        "label": "Organizar/trabalhar em nosso Open House apenas parte do evento",
+        "description": "Organizou ou trabalhou no open house do clube apenas parte do evento"
       }
     }
   }

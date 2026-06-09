@@ -59,6 +59,9 @@ export default function CreateComandaPage() {
     cervejas: t('categories.cervejas'),
     comidas: t('categories.comidas'),
     // cervejasPremium: t('categories.cervejasPremium'),
+    cervejasZero: t('categories.cervejasZero'),
+    "cervejas zero": t('categories.cervejasZero'),
+    cervejas_zero: t('categories.cervejasZero'),
     refrigerantes: t('categories.refrigerantes'),
     bebidasNaoAlcoolicas: t('categories.bebidasNaoAlcoolicas'),
     energetico: t('categories.energetico'),
@@ -192,16 +195,18 @@ export default function CreateComandaPage() {
           return;
         }
 
-        message.success("Venda direta realizada com sucesso");
+        message.success(t("success.directSaleSuccess"));
       } else {
-        message.success("Comanda criada com sucesso");
+        message.success(t("success.comandaCreatedSuccess"));
+      }
 
-        if (typeof window !== "undefined") {
-          const payload = { guestName: guestName || "Sem nome", items };
-          window.setTimeout(() => {
-            void printComandaHTML(payload);
-          }, 0);
-        }
+      if (typeof window !== "undefined") {
+        const nameForPrint = isDirectSale
+          ? (guestName.trim() || t("fallback.directSale"))
+          : (guestName || t("fallback.noName"));
+        window.setTimeout(() => {
+          void printComandaHTML({ guestName: nameForPrint, items });
+        }, 0);
       }
 
       // Limpa formulário

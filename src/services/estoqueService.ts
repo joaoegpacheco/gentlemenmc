@@ -1,7 +1,141 @@
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { format } from "date-fns";
 import { supabase } from "@/hooks/use-supabase";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+/**
+ * Fuso para literais `::date` ao filtrar tabelas **que não** são `estoque_log` (ex.: `bebidas`).
+ * Ajuste com `NEXT_PUBLIC_PG_DATE_SESSION_TZ` se o Postgres usar outro `TimeZone` nessas colunas.
+ */
+const PG_DATE_SESSION_TZ =
+  process.env.NEXT_PUBLIC_PG_DATE_SESSION_TZ ?? "UTC";
+
+/**
+ * `estoque_log.created_at` é `timestamptz` alinhado ao uso de
+ * `timezone('America/Sao_Paulo'::text, now())` no banco — os cortes de período para **geral**
+ * usam sempre este fuso (não {@link PG_DATE_SESSION_TZ}).
+ */
+const ESTOQUE_LOG_DATE_TZ = "America/Sao_Paulo";
+
+/**
+ * `estoque_log`: `el.created_at >= 'início'::date AND el.created_at <= 'fim'::date`
+ * em {@link ESTOQUE_LOG_DATE_TZ} — o `<=` usa a **meia-noite inicial** do dia `fim` (como o Postgres
+ * promove `'Y-M-D'::date` para `timestamptz`), não o fim civil do dia nem `<` no dia seguinte.
+ */
+function reportRangeEstoqueLogPostgresDateCompare(
+  startDate: Date,
+  endDate: Date
+): { gteIso: string; lteIso: string } {
+  const ymdStart = format(startDate, "yyyy-MM-dd");
+  const ymdEnd = format(endDate, "yyyy-MM-dd");
+  const gteIso = dayjs
+    .tz(ymdStart, ESTOQUE_LOG_DATE_TZ)
+    .startOf("day")
+    .toISOString();
+  const lteIso = dayjs
+    .tz(ymdEnd, ESTOQUE_LOG_DATE_TZ)
+    .startOf("day")
+    .toISOString();
+  return { gteIso, lteIso };
+}
+
+/**
+ * Espelha `created_at >= 'início'::date AND created_at <= 'fim'::date`:
+ * ambos os limites são a **meia-noite inicial** de cada dia civil em {@link PG_DATE_SESSION_TZ},
+ * não o fim do dia nem `CAST(created_at AS date)` (por isso difere de `<= fim` “o dia inteiro”).
+ */
+function reportRangeBebidasPostgresDateCompare(
+  startDate: Date,
+  endDate: Date
+): { gteIso: string; lteIso: string } {
+  const ymdStart = format(startDate, "yyyy-MM-dd");
+  const ymdEnd = format(endDate, "yyyy-MM-dd");
+  const gteIso = dayjs
+    .tz(ymdStart, PG_DATE_SESSION_TZ)
+    .startOf("day")
+    .toISOString();
+  const lteIso = dayjs
+    .tz(ymdEnd, PG_DATE_SESSION_TZ)
+    .startOf("day")
+    .toISOString();
+  return { gteIso, lteIso };
+}
+
+function drinkNameFromJoin(
+  drinks: { name: string } | { name: string }[] | null | undefined
+): string | null {
+  const row = Array.isArray(drinks) ? drinks[0] : drinks;
+  const n = row?.name?.trim();
+  return n || null;
+}
 
 const DRINK_UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** PostgREST costuma limitar ~1000 linhas por request; sem paginar, `sum` no cliente fica errado. */
+const SUPABASE_SELECT_PAGE_SIZE = 1000;
+
+type EstoqueLogSaidaRow = {
+  quantity: unknown;
+  drinks: { name: string } | { name: string }[] | null;
+};
+
+async function fetchAllEstoqueLogSaidasForAggregate(
+  gteIso: string,
+  lteIso: string
+): Promise<EstoqueLogSaidaRow[]> {
+  const all: EstoqueLogSaidaRow[] = [];
+  let from = 0;
+  for (;;) {
+    const to = from + SUPABASE_SELECT_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("estoque_log")
+      .select("quantity, drinks!inner(name)")
+      .eq("type", "saida")
+      .gte("created_at", gteIso)
+      .lte("created_at", lteIso)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error) throw error;
+    if (!data?.length) break;
+    all.push(...(data as EstoqueLogSaidaRow[]));
+    if (data.length < SUPABASE_SELECT_PAGE_SIZE) break;
+    from += SUPABASE_SELECT_PAGE_SIZE;
+  }
+  return all;
+}
+
+async function fetchAllBebidasForAggregate(
+  gteIso: string,
+  lteIso: string
+): Promise<Array<{ drink: unknown; quantity: unknown }>> {
+  const all: Array<{ drink: unknown; quantity: unknown }> = [];
+  let from = 0;
+  for (;;) {
+    const to = from + SUPABASE_SELECT_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("bebidas")
+      .select("drink, quantity")
+      .gte("created_at", gteIso)
+      .lte("created_at", lteIso)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error) throw error;
+    if (!data?.length) break;
+    all.push(...data);
+    if (data.length < SUPABASE_SELECT_PAGE_SIZE) break;
+    from += SUPABASE_SELECT_PAGE_SIZE;
+  }
+  return all;
+}
 
 export type EstoqueLogWithDrinkName = {
   id: string;
@@ -73,6 +207,86 @@ export async function getEstoqueLogsWithDrinkNames(options?: {
       user: row.user != null ? String(row.user) : undefined,
     };
   });
+}
+
+export type SaidaAgregadaPorBebida = {
+  drink_name: string;
+  quantidade_saida: number;
+};
+
+/**
+ * Saídas agregadas por bebida a partir de `estoque_log` (tipo saida), no período.
+ * Espelha o SQL com `join drinks`, `type = 'saida'`,
+ * `el.created_at >= início::date`, `el.created_at <= fim::date` (sem `CAST` na coluna)
+ * e `sum(el.quantity)`; fuso {@link ESTOQUE_LOG_DATE_TZ}.
+ */
+export async function getAggregatedSaidasEstoqueLog(
+  startDate: Date,
+  endDate: Date
+): Promise<SaidaAgregadaPorBebida[]> {
+  const { gteIso, lteIso } = reportRangeEstoqueLogPostgresDateCompare(
+    startDate,
+    endDate
+  );
+
+  const logs = await fetchAllEstoqueLogSaidasForAggregate(gteIso, lteIso);
+  if (!logs.length) return [];
+
+  const totals: Record<string, number> = {};
+  for (const row of logs) {
+    const r = row as {
+      quantity: unknown;
+      drinks: { name: string } | { name: string }[] | null;
+    };
+    const drinkName = drinkNameFromJoin(r.drinks);
+    if (!drinkName) continue;
+    const q = Number(r.quantity);
+    if (!Number.isFinite(q)) continue;
+    totals[drinkName] = (totals[drinkName] || 0) + q;
+  }
+
+  return Object.entries(totals)
+    .map(([drink_name, quantidade_saida]) => ({
+      drink_name,
+      quantidade_saida,
+    }))
+    .sort((a, b) => b.quantidade_saida - a.quantidade_saida);
+}
+
+export type SaidaMembroAgregada = {
+  drink: string;
+  quantidade_saida: number;
+};
+
+/**
+ * Agregado na tabela `bebidas` (membros): sem filtrar `paid`.
+ * Janela como `created_at >= start::date AND created_at <= end::date` no Postgres
+ * (teto em meia-noite **inicial** do dia final em {@link PG_DATE_SESSION_TZ}, não como `CAST(... AS date)`).
+ */
+export async function getAggregatedSaidasMembrosBebidas(
+  startDate: Date,
+  endDate: Date
+): Promise<SaidaMembroAgregada[]> {
+  const { gteIso, lteIso } = reportRangeBebidasPostgresDateCompare(
+    startDate,
+    endDate
+  );
+
+  const data = await fetchAllBebidasForAggregate(gteIso, lteIso);
+  if (!data.length) return [];
+
+  const totals: Record<string, number> = {};
+  for (const row of data) {
+    const d = (row.drink as string)?.trim();
+    if (!d) continue;
+    const q = Number(row.quantity);
+    if (!Number.isFinite(q)) continue;
+    totals[d] = (totals[d] || 0) + q;
+  }
+
+  return Object.entries(totals)
+    .map(([drink, quantidade_saida]) => ({ drink, quantidade_saida }))
+    .sort((a, b) => b.quantidade_saida - a.quantidade_saida);
 }
 
 /*

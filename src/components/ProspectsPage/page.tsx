@@ -30,8 +30,13 @@ import {
   Scale,
 } from "lucide-react";
 import type { SupabaseAuthUser } from "@/types/auth";
-import { format, differenceInMonths, parseISO } from "date-fns";
+import { format, parseISO, startOfDay, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import {
+  computeProspectStats,
+  HALF_PATCH_REQUIREMENTS,
+  FULL_PATCH_REQUIREMENTS,
+} from "@/lib/prospect-points";
 
 interface ProspectActivity {
   id?: number;
@@ -75,19 +80,10 @@ const ACTIVITY_TYPE_KEYS = {
   "acoes_filantropicas": "acoesFilantropicas",
   "viajar_com_clube": "viajarComClube",
   "viajar_sem_clube": "viajarSemClube",
-  "organizar_open_house": "organizarOpenHouse",
+  "organizar_open_house_evento_completo": "organizarOpenHouseEventoCompleto",
+  "organizar_open_house_parte_evento": "organizarOpenHouseParteEvento",
+  organizar_open_house: "organizarOpenHouse",
 } as const;
-
-// Requisitos
-const HALF_PATCH_REQUIREMENTS = {
-  minMonths: 6, // 6 meses como Prospect
-  minPoints: 100,
-};
-
-const FULL_PATCH_REQUIREMENTS = {
-  minMonths: 6, // 6 meses como Half Patch
-  minPoints: 150,
-};
 
 export function ProspectsPage() {
   const t = useTranslations('common');
@@ -190,99 +186,34 @@ export function ProspectsPage() {
       return null;
     }
 
-    const startDate = member.created_at ? parseISO(member.created_at) : new Date();
-    const monthsAsProspect = differenceInMonths(new Date(), startDate);
+    const baseStats = computeProspectStats(member, activities, penalties);
 
-    // Calcular pontos totais (apenas atividades validadas)
-    const activityPoints = activities
-      .filter((a) => a.status === "validated")
-      .reduce((sum, a) => sum + a.points, 0);
-    
-    // Subtrair penalidades
-    const penaltyDeduction = penalties.reduce((sum, p) => sum + Math.abs(p.points_deducted), 0);
-    const totalPoints = Math.max(0, activityPoints - penaltyDeduction);
-
-    // Verificar requisitos Half Patch
-    const halfPatchPointsProgress = Math.min((totalPoints / HALF_PATCH_REQUIREMENTS.minPoints) * 100, 100);
-    const halfPatchTimeProgress = Math.min((monthsAsProspect / HALF_PATCH_REQUIREMENTS.minMonths) * 100, 100);
-    const halfPatchPointsMet = totalPoints >= HALF_PATCH_REQUIREMENTS.minPoints;
-    const halfPatchTimeMet = monthsAsProspect >= HALF_PATCH_REQUIREMENTS.minMonths;
-    const halfPatchEligible = halfPatchPointsMet && halfPatchTimeMet;
-
-    // Verificar requisitos Full Patch
-    // Se já é Half, usar half_date da tabela membros ou calcular a partir das atividades
-    const isHalf = member.case_type === "Half";
-    let halfPatchDate: Date | null = null;
-    if (isHalf) {
-      if (member.half_date) {
-        halfPatchDate = parseISO(member.half_date);
-      } else {
-        // Fallback: calcular pela lógica de atividades (100 pts + 6 meses)
-        const sortedActivities = [...activities]
-          .filter((a) => a.status === "validated")
-          .sort((a, b) => new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime());
-        let accumulatedPoints = 0;
-        for (const activity of sortedActivities) {
-          accumulatedPoints += activity.points;
-          const activityDate = parseISO(activity.activity_date);
-          const monthsSinceStart = differenceInMonths(activityDate, startDate);
-          if (accumulatedPoints >= HALF_PATCH_REQUIREMENTS.minPoints && monthsSinceStart >= HALF_PATCH_REQUIREMENTS.minMonths) {
-            halfPatchDate = activityDate;
-            break;
-          }
-        }
-        if (!halfPatchDate) {
-          const minHalfDate = new Date(startDate);
-          minHalfDate.setMonth(minHalfDate.getMonth() + HALF_PATCH_REQUIREMENTS.minMonths);
-          halfPatchDate = minHalfDate;
-        }
-      }
-    }
-    
-    // Calcular tempo como Half Patch
-    const monthsAsHalf = halfPatchDate 
-      ? differenceInMonths(new Date(), halfPatchDate)
-      : halfPatchEligible
-      ? Math.max(0, monthsAsProspect - HALF_PATCH_REQUIREMENTS.minMonths)
-      : 0;
-    
-    const fullPatchPointsProgress = Math.min((totalPoints / FULL_PATCH_REQUIREMENTS.minPoints) * 100, 100);
-    const fullPatchTimeProgress = Math.min((monthsAsHalf / FULL_PATCH_REQUIREMENTS.minMonths) * 100, 100);
-    
-    const fullPatchPointsMet = totalPoints >= FULL_PATCH_REQUIREMENTS.minPoints;
-    const fullPatchTimeMet = monthsAsHalf >= FULL_PATCH_REQUIREMENTS.minMonths;
-    const fullPatchEligible = fullPatchPointsMet && fullPatchTimeMet;
-
-    // Atividades por mês (últimos 6 meses)
     const activitiesByMonth: Record<string, number> = {};
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const halfCutoff = baseStats.halfPatchDate
+      ? startOfDay(baseStats.halfPatchDate)
+      : null;
 
     activities
-      .filter((a) => a.status === "validated" && new Date(a.activity_date) >= sixMonthsAgo)
+      .filter((a) => {
+        if (a.status !== "validated" || new Date(a.activity_date) < sixMonthsAgo) {
+          return false;
+        }
+        if (member.case_type === "Half" && halfCutoff) {
+          return !isBefore(startOfDay(parseISO(a.activity_date)), halfCutoff);
+        }
+        return true;
+      })
       .forEach((activity) => {
         const monthKey = format(parseISO(activity.activity_date), "yyyy-MM", { locale: ptBR });
         activitiesByMonth[monthKey] = (activitiesByMonth[monthKey] || 0) + activity.points;
       });
 
     return {
-      startDate,
-      monthsAsProspect,
-      totalPoints,
-      halfPatchPointsProgress,
-      halfPatchTimeProgress,
-      halfPatchPointsMet,
-      halfPatchTimeMet,
-      halfPatchEligible,
-      fullPatchPointsProgress,
-      fullPatchTimeProgress,
-      fullPatchPointsMet,
-      fullPatchTimeMet,
-      fullPatchEligible,
+      startDate: member.created_at ? parseISO(member.created_at) : new Date(),
+      ...baseStats,
       activitiesByMonth,
-      monthsAsHalf,
-      halfPatchDate,
-      penaltyDeduction,
     };
   }, [member, activities, penalties]);
 

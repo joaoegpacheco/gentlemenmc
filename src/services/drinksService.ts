@@ -1,5 +1,32 @@
 import { supabase } from "@/hooks/use-supabase.js";
 
+/** Ordem de exibição (1…n) por nome da categoria; nomes de coluna variam no Supabase. */
+async function loadCategorySortOrderByName(): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  for (const table of ["categories", "drink_categories"] as const) {
+    const { data, error } = await supabase.from(table).select("*");
+    if (error || !data?.length) continue;
+
+    for (const row of data as Record<string, unknown>[]) {
+      const name = row.name;
+      if (typeof name !== "string" || !name) continue;
+      const raw =
+        row.order_by ??
+        row.orderBy ??
+        row.orderby ??
+        row.sort_order ??
+        row.position;
+      const n =
+        raw != null && raw !== ""
+          ? Number(raw)
+          : Number.MAX_SAFE_INTEGER;
+      map.set(name, Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER);
+    }
+    return map;
+  }
+  return map;
+}
+
 type CreateDrinkInput = {
   name: string;
   categoryId: string;
@@ -61,6 +88,8 @@ export async function getDrinks() {
 }
 
 export async function getDrinksByCategory() {
+  const sortByCategoryName = await loadCategorySortOrderByName();
+
   const { data, error } = await supabase
     .from("drinks")
     .select(`
@@ -80,7 +109,12 @@ export async function getDrinksByCategory() {
     `);
 
   if (error) {
-    console.error("Erro ao buscar drinks:", error);
+    console.error(
+      "Erro ao buscar drinks:",
+      error,
+      "message" in error ? (error as { message?: string }).message : "",
+      JSON.stringify(error),
+    );
     return {};
   }
 
@@ -89,15 +123,19 @@ export async function getDrinksByCategory() {
   data?.forEach((drink: any) => {
     const categoryName = drink.categories?.name || "Outros";
     const categoryId = drink.categories?.id ?? drink.category_id ?? "";
+    const orderBy = sortByCategoryName.get(categoryName) ?? Number.MAX_SAFE_INTEGER;
 
     if (!result[categoryName]) {
       result[categoryName] = {
         id: categoryId,
+        orderBy,
         items: [],
         guests: {},
         members: {},
         stock: {},
       };
+    } else if (orderBy < (result[categoryName].orderBy ?? Number.MAX_SAFE_INTEGER)) {
+      result[categoryName].orderBy = orderBy;
     }
 
     result[categoryName].items.push({
@@ -114,7 +152,24 @@ export async function getDrinksByCategory() {
       drink.estoque?.[0]?.quantity ?? 0;
   });
 
-  return result;
+  const sortedEntries = Object.entries(result).sort((a, b) => {
+    const va = a[1] as { orderBy?: number };
+    const vb = b[1] as { orderBy?: number };
+    const ao = va.orderBy ?? Number.MAX_SAFE_INTEGER;
+    const bo = vb.orderBy ?? Number.MAX_SAFE_INTEGER;
+    if (ao !== bo) return ao - bo;
+    return a[0].localeCompare(b[0], "pt-BR");
+  });
+
+  const sortedResult: typeof result = {};
+  for (const [key, value] of sortedEntries) {
+    const { orderBy: _orderBy, ...rest } = value as Record<string, unknown> & {
+      orderBy?: number;
+    };
+    sortedResult[key] = rest as (typeof result)[string];
+  }
+
+  return sortedResult;
 }
 
 export function getGuestsPrices(drinksByCategory: any) {

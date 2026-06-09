@@ -62,6 +62,9 @@ export default function CreateComandaPage() {
     cervejas: t('categories.cervejas'),
     comidas: t('categories.comidas'),
     // cervejasPremium: t('categories.cervejasPremium'),
+    cervejasZero: t('categories.cervejasZero'),
+    "cervejas zero": t('categories.cervejasZero'),
+    cervejas_zero: t('categories.cervejasZero'),
     refrigerantes: t('categories.refrigerantes'),
     bebidasNaoAlcoolicas: t('categories.bebidasNaoAlcoolicas'),
     energetico: t('categories.energetico'),
@@ -131,7 +134,7 @@ export default function CreateComandaPage() {
   }, []);
 
   const handleCreateComanda = async () => {
-    if (!guestName) {
+    if (!isDirectSale && !guestName) {
       message.error(t('errors.guestNameRequired'));
       return;
     }
@@ -174,6 +177,7 @@ export default function CreateComandaPage() {
         guestPhone: guestPhone || undefined,
         items,
         errorMessage: t('errors.comandaMustHaveGuestNameMemberNameAndPhone'),
+        skipValidation: isDirectSale,
       });
 
       // Se for venda direta, marca a comanda como paga
@@ -197,13 +201,15 @@ export default function CreateComandaPage() {
         message.success(t('success.directSaleSuccess'));
       } else {
         message.success(t('success.comandaCreatedSuccess'));
+      }
 
-        if (typeof window !== "undefined") {
-          const payload = { guestName: guestName || t('fallback.noName'), items };
-          window.setTimeout(() => {
-            void printComandaHTML(payload);
-          }, 0);
-        }
+      if (typeof window !== "undefined") {
+        const nameForPrint = isDirectSale
+          ? (guestName.trim() || t("fallback.directSale"))
+          : (guestName || t("fallback.noName"));
+        window.setTimeout(() => {
+          void printComandaHTML({ guestName: nameForPrint, items });
+        }, 0);
       }
 
       // Limpa formulário
@@ -215,7 +221,6 @@ export default function CreateComandaPage() {
 
       // Atualiza todo o estoque após criar a comanda
       const stockMap = await getAllStock();
-      drinkStock$.set(stockMap);
       drinkStock$.set(stockMap);
     } catch (error: any) {
       message.error(`Erro: ${error.message || "Erro ao processar"}`);
