@@ -1060,19 +1060,23 @@
     "severidade": "Severity",
     "activityTypes": {
       "presencaProatividade": {
-        "label": "Presence + Proactivity",
-        "description": "Arrived on time, helped without being asked, correct posture"
+        "label": "100% attendance at Wednesday HQ meetings + Proactivity",
+        "description": "Acting without needing to be asked"
+      },
+      "auxiliarCompras": {
+        "label": "MC purchases lead/assistant",
+        "description": "Led or assisted with MC purchases during the month"
       },
       "rodar2Fds": {
-        "label": "Ride at least 2 weekends",
+        "label": "Ride at least 2 weekends in the month",
         "description": "Rode at least 2 weekends in the month"
       },
       "openHouseOutrosMc": {
-        "label": "Open House other MCs (representing)",
-        "description": "Represented the club at other MCs' open house"
+        "label": "Attend other MCs' Open House",
+        "description": "Attended other MCs' open house representing the club"
       },
       "acoesFilantropicas": {
-        "label": "Philanthropic Actions",
+        "label": "Participate in philanthropic actions",
         "description": "Participated in philanthropic actions"
       },
       "viajarComClube": {
@@ -1080,8 +1084,8 @@
         "description": "Participated in official club trip"
       },
       "viajarSemClube": {
-        "label": "Travel/Represent without the club",
-        "description": "Traveled or represented the club alone"
+        "label": "Travel and represent the club individually",
+        "description": "Traveled or represented the club individually"
       },
       "organizarOpenHouse": {
         "label": "Organize/Work club open house",
@@ -1130,12 +1134,13 @@
     "fullPatchRule": "Full Patch: 6 months as Half + 150 minimum points",
     "pontosMensais": "Monthly Points (behavior):",
     "pontosAtividades": "Activity Points (events):",
-    "presencaProatividade": "Presence + Proactivity: 10 pts (maximum 1x per month)",
-    "rodar2Fds": "Ride at least 2 weekends: 5 pts",
-    "openHouseOutrosMc": "Open House other MCs: 5 pts",
-    "acoesFilantropicas": "Philanthropic Actions: 5 pts",
+    "presencaProatividade": "100% attendance at Wednesday HQ meetings + Proactivity: 15 pts (maximum 1x per month)",
+    "auxiliarCompras": "MC purchases lead/assistant: 10 pts (maximum 1x per month)",
+    "rodar2Fds": "Ride at least 2 weekends in the month: 5 pts",
+    "openHouseOutrosMc": "Attend other MCs' Open House: 5 pts",
+    "acoesFilantropicas": "Participate in philanthropic actions: 5 pts",
     "viajarComClube": "Travel with the club: 10 pts",
-    "viajarSemClube": "Travel/Represent without the club: 5 pts",
+    "viajarSemClube": "Travel and represent the club individually: 5 pts",
     "organizarOpenHouseCaixa": "Organize/work open house — 💰 Cash register: 10 pts",
     "organizarOpenHouseCozinha": "Organize/work open house — 👨🏻‍🍳 Kitchen: 10 pts",
     "organizarOpenHouseBarChopp": "Organize/work open house — 🍻 Bar/Draft beer: 8 pts",
@@ -1277,19 +1282,23 @@
     "motivoRejeicao": "Rejection Reason",
     "activityTypes": {
       "presencaProatividade": {
-        "label": "Presence + Proactivity",
-        "description": "Arrived on time, helped without being asked, correct posture"
+        "label": "100% attendance at Wednesday HQ meetings + Proactivity",
+        "description": "Acting without needing to be asked"
+      },
+      "auxiliarCompras": {
+        "label": "MC purchases lead/assistant",
+        "description": "Led or assisted with MC purchases during the month"
       },
       "rodar2Fds": {
-        "label": "Ride at least 2 weekends",
+        "label": "Ride at least 2 weekends in the month",
         "description": "Rode at least 2 weekends in the month"
       },
       "openHouseOutrosMc": {
-        "label": "Open House other MCs (representing)",
-        "description": "Represented the club at other MCs' open house"
+        "label": "Attend other MCs' Open House",
+        "description": "Attended other MCs' open house representing the club"
       },
       "acoesFilantropicas": {
-        "label": "Philanthropic Actions",
+        "label": "Participate in philanthropic actions",
         "description": "Participated in philanthropic actions"
       },
       "viajarComClube": {
@@ -1297,8 +1306,8 @@
         "description": "Participated in official club trip"
       },
       "viajarSemClube": {
-        "label": "Travel/Represent without the club",
-        "description": "Traveled or represented the club alone"
+        "label": "Travel and represent the club individually",
+        "description": "Traveled or represented the club individually"
       },
       "organizarOpenHouse": {
         "label": "Organize/Work club open house",

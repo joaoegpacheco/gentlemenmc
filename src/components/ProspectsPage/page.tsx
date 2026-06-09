@@ -75,6 +75,7 @@ interface Member {
 // Tipos de atividades serão traduzidos dinamicamente
 const ACTIVITY_TYPE_KEYS = {
   "presenca_proatividade": "presencaProatividade",
+  "auxiliar_compras": "auxiliarCompras",
   "rodar_2_fds": "rodar2Fds",
   "open_house_outros_mc": "openHouseOutrosMc",
   "acoes_filantropicas": "acoesFilantropicas",
