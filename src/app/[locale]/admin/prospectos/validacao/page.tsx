@@ -95,6 +95,11 @@ const ACTIVITY_TYPES_CONFIG = {
     points: 15,
     monthlyLimit: true,
   },
+  "auxiliar_compras": {
+    key: "auxiliarCompras",
+    points: 10,
+    monthlyLimit: true,
+  },
   "rodar_2_fds": {
     key: "rodar2Fds",
     points: 5,
@@ -102,7 +107,7 @@ const ACTIVITY_TYPES_CONFIG = {
   },
   "open_house_outros_mc": {
     key: "openHouseOutrosMc",
-    points: 4,
+    points: 5,
     monthlyLimit: false,
   },
   "acoes_filantropicas": {
