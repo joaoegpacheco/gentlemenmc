@@ -1060,19 +1060,23 @@
     "severidade": "Severidade",
     "activityTypes": {
       "presencaProatividade": {
-        "label": "Presença + Proatividade",
-        "description": "Chegou no horário, ajudou sem ser mandado, postura correta"
+        "label": "Presença em 100% das quartas na sede + Proatividade",
+        "description": "Agir sem precisar ser solicitado"
+      },
+      "auxiliarCompras": {
+        "label": "Responsável/auxiliar compras do MC",
+        "description": "Responsável ou auxiliar nas compras do MC no mês"
       },
       "rodar2Fds": {
-        "label": "Rodar pelo menos 2 FDS",
+        "label": "Rodar pelo menos 2 fds no mês",
         "description": "Rodou pelo menos 2 finais de semana no mês"
       },
       "openHouseOutrosMc": {
-        "label": "Open House outros MC (representando)",
-        "description": "Representou o clube em open house de outros MCs"
+        "label": "Participar de Open House de outros MCs",
+        "description": "Participou de open house de outros MCs representando o clube"
       },
       "acoesFilantropicas": {
-        "label": "Ações Filantrópicas",
+        "label": "Participar de ações filantrópicas",
         "description": "Participou de ações filantrópicas"
       },
       "viajarComClube": {
@@ -1080,8 +1084,8 @@
         "description": "Participou de viagem oficial do clube"
       },
       "viajarSemClube": {
-        "label": "Viajar/Representar sem o clube",
-        "description": "Viajou ou representou o clube sozinho"
+        "label": "Viajar e representar o clube individualmente",
+        "description": "Viajou ou representou o clube individualmente"
       },
       "organizarOpenHouse": {
         "label": "Organizar/Trabalhar open house do clube",
@@ -1130,12 +1134,13 @@
     "fullPatchRule": "Full Patch: 6 meses como Half + 150 pontos mínimos",
     "pontosMensais": "Pontos Mensais (comportamento):",
     "pontosAtividades": "Pontos por Atividades (eventos):",
-    "presencaProatividade": "Presença + Proatividade: 10 pts (máximo 1x por mês)",
-    "rodar2Fds": "Rodar pelo menos 2 FDS: 5 pts",
-    "openHouseOutrosMc": "Open House outros MC: 5 pts",
-    "acoesFilantropicas": "Ações Filantrópicas: 5 pts",
+    "presencaProatividade": "Presença em 100% das quartas na sede + Proatividade: 15 pts (máximo 1x por mês)",
+    "auxiliarCompras": "Responsável/auxiliar compras do MC: 10 pts (máximo 1x por mês)",
+    "rodar2Fds": "Rodar pelo menos 2 fds no mês: 5 pts",
+    "openHouseOutrosMc": "Participar de Open House de outros MCs: 5 pts",
+    "acoesFilantropicas": "Participar de ações filantrópicas: 5 pts",
     "viajarComClube": "Viajar com o clube: 10 pts",
-    "viajarSemClube": "Viajar/Representar sem o clube: 5 pts",
+    "viajarSemClube": "Viajar e representar o clube individualmente: 5 pts",
     "organizarOpenHouseCaixa": "Organizar/trabalhar open house — 💰 Caixa: 10 pts",
     "organizarOpenHouseCozinha": "Organizar/trabalhar open house — 👨🏻‍🍳 Cozinha: 10 pts",
     "organizarOpenHouseBarChopp": "Organizar/trabalhar open house — 🍻 Bar/Chopp: 8 pts",
@@ -1277,19 +1282,23 @@
     "motivoRejeicao": "Motivo de Rejeição",
     "activityTypes": {
       "presencaProatividade": {
-        "label": "Presença + Proatividade",
-        "description": "Chegou no horário, ajudou sem ser mandado, postura correta"
+        "label": "Presença em 100% das quartas na sede + Proatividade",
+        "description": "Agir sem precisar ser solicitado"
+      },
+      "auxiliarCompras": {
+        "label": "Responsável/auxiliar compras do MC",
+        "description": "Responsável ou auxiliar nas compras do MC no mês"
       },
       "rodar2Fds": {
-        "label": "Rodar pelo menos 2 FDS",
+        "label": "Rodar pelo menos 2 fds no mês",
         "description": "Rodou pelo menos 2 finais de semana no mês"
       },
       "openHouseOutrosMc": {
-        "label": "Open House outros MC (representando)",
-        "description": "Representou o clube em open house de outros MCs"
+        "label": "Participar de Open House de outros MCs",
+        "description": "Participou de open house de outros MCs representando o clube"
       },
       "acoesFilantropicas": {
-        "label": "Ações Filantrópicas",
+        "label": "Participar de ações filantrópicas",
         "description": "Participou de ações filantrópicas"
       },
       "viajarComClube": {
@@ -1297,8 +1306,8 @@
         "description": "Participou de viagem oficial do clube"
       },
       "viajarSemClube": {
-        "label": "Viajar/Representar sem o clube",
-        "description": "Viajou ou representou o clube sozinho"
+        "label": "Viajar e representar o clube individualmente",
+        "description": "Viajou ou representou o clube individualmente"
       },
       "organizarOpenHouse": {
         "label": "Organizar/Trabalhar open house do clube",
