@@ -1087,6 +1087,30 @@
         "label": "Organize/Work club open house",
         "description": "Organized or worked at the club's open house"
       },
+      "organizarOpenHouseCaixa": {
+        "label": "💰 Cash register",
+        "description": "Organized or worked at the cash register at the club's open house"
+      },
+      "organizarOpenHouseCozinha": {
+        "label": "👨🏻‍🍳 Kitchen",
+        "description": "Organized or worked in the kitchen at the club's open house"
+      },
+      "organizarOpenHouseBarChopp": {
+        "label": "🍻 Bar/Draft beer",
+        "description": "Organized or worked at the bar/draft beer station at the club's open house"
+      },
+      "organizarOpenHousePortaria": {
+        "label": "🕵🏻‍♂️ Reception",
+        "description": "Organized or worked at reception at the club's open house"
+      },
+      "organizarOpenHouseSeguranca": {
+        "label": "👮🏻‍♂️ Security",
+        "description": "Organized or worked in security at the club's open house"
+      },
+      "organizarOpenHouseBwcCoposLixos": {
+        "label": "🧹 Restrooms/cups/trash",
+        "description": "Organized or worked with restrooms, cups, and trash at the club's open house"
+      },
       "organizarOpenHouseEventoCompleto": {
         "label": "Organize/work at our Open House for the entire event",
         "description": "Organized or worked at the club's open house for the entire event"
@@ -1112,8 +1136,12 @@
     "acoesFilantropicas": "Philanthropic Actions: 5 pts",
     "viajarComClube": "Travel with the club: 10 pts",
     "viajarSemClube": "Travel/Represent without the club: 5 pts",
-    "organizarOpenHouseEventoCompleto": "Organize/work at our Open House for the entire event: 8 pts",
-    "organizarOpenHouseParteEvento": "Organize/work at our Open House for part of the event: 2 pts",
+    "organizarOpenHouseCaixa": "Organize/work open house — 💰 Cash register: 10 pts",
+    "organizarOpenHouseCozinha": "Organize/work open house — 👨🏻‍🍳 Kitchen: 10 pts",
+    "organizarOpenHouseBarChopp": "Organize/work open house — 🍻 Bar/Draft beer: 8 pts",
+    "organizarOpenHousePortaria": "Organize/work open house — 🕵🏻‍♂️ Reception: 8 pts",
+    "organizarOpenHouseSeguranca": "Organize/work open house — 👮🏻‍♂️ Security: 4 pts",
+    "organizarOpenHouseBwcCoposLixos": "Organize/work open house — 🧹 Restrooms/cups/trash: 4 pts",
     "buscarAtividades": "Search activities...",
     "historicoAtividades": "Activity History",
     "carregando": "Loading...",
@@ -1275,6 +1303,30 @@
       "organizarOpenHouse": {
         "label": "Organize/Work club open house",
         "description": "Organized or worked at the club's open house"
+      },
+      "organizarOpenHouseCaixa": {
+        "label": "💰 Cash register",
+        "description": "Organized or worked at the cash register at the club's open house"
+      },
+      "organizarOpenHouseCozinha": {
+        "label": "👨🏻‍🍳 Kitchen",
+        "description": "Organized or worked in the kitchen at the club's open house"
+      },
+      "organizarOpenHouseBarChopp": {
+        "label": "🍻 Bar/Draft beer",
+        "description": "Organized or worked at the bar/draft beer station at the club's open house"
+      },
+      "organizarOpenHousePortaria": {
+        "label": "🕵🏻‍♂️ Reception",
+        "description": "Organized or worked at reception at the club's open house"
+      },
+      "organizarOpenHouseSeguranca": {
+        "label": "👮🏻‍♂️ Security",
+        "description": "Organized or worked in security at the club's open house"
+      },
+      "organizarOpenHouseBwcCoposLixos": {
+        "label": "🧹 Restrooms/cups/trash",
+        "description": "Organized or worked with restrooms, cups, and trash at the club's open house"
       },
       "organizarOpenHouseEventoCompleto": {
         "label": "Organize/work at our Open House for the entire event",

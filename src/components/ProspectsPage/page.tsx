@@ -80,9 +80,15 @@ const ACTIVITY_TYPE_KEYS = {
   "acoes_filantropicas": "acoesFilantropicas",
   "viajar_com_clube": "viajarComClube",
   "viajar_sem_clube": "viajarSemClube",
-  "organizar_open_house_evento_completo": "organizarOpenHouseEventoCompleto",
-  "organizar_open_house_parte_evento": "organizarOpenHouseParteEvento",
+  "organizar_open_house_caixa": "organizarOpenHouseCaixa",
+  "organizar_open_house_cozinha": "organizarOpenHouseCozinha",
+  "organizar_open_house_bar_chopp": "organizarOpenHouseBarChopp",
+  "organizar_open_house_portaria": "organizarOpenHousePortaria",
+  "organizar_open_house_seguranca": "organizarOpenHouseSeguranca",
+  "organizar_open_house_bwc_copos_lixos": "organizarOpenHouseBwcCoposLixos",
   organizar_open_house: "organizarOpenHouse",
+  organizar_open_house_evento_completo: "organizarOpenHouseEventoCompleto",
+  organizar_open_house_parte_evento: "organizarOpenHouseParteEvento",
 } as const;
 
 export function ProspectsPage() {
