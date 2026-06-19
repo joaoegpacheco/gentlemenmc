@@ -39,6 +39,14 @@ export function ThemeProvider({
     }
   }, [])
 
+  // next-themes injects an inline <script> to prevent theme flash on SSR.
+  // Next.js 16 warns when that script is re-rendered on the client — use
+  // type="application/json" so React skips it without affecting SSR execution.
+  const scriptProps =
+    typeof window !== "undefined"
+      ? ({ type: "application/json" } as const)
+      : undefined
+
   return (
     <NextThemesProvider
       {...props}
@@ -46,6 +54,7 @@ export function ThemeProvider({
       enableSystem
       defaultTheme="system"
       disableTransitionOnChange
+      scriptProps={scriptProps}
     >
       <ThemeWatcher />
       {children}
