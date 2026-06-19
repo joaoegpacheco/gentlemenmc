@@ -453,6 +453,7 @@
   },
   "cardDrinks": {
     "filterByUser": "Filter by user",
+    "allMembers": "All members",
     "markedDrinksToday": "Drinks marked today ({date})",
     "unpaidTotal": "Unpaid total: {amount}",
     "noDrinksMarked": "No drinks marked",

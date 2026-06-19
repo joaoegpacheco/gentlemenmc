@@ -35,11 +35,24 @@ interface AdminData {
   id: string;
 }
 
+const GENERAL_ADMIN_EMAILS = [
+  "robson@gentlemenmc.com.br",
+  "rodrigo@gentlemenmc.com.br",
+] as const;
+
+function isGeneralAdminEmail(email?: string | null): boolean {
+  const normalized = email?.trim().toLowerCase() ?? "";
+  return GENERAL_ADMIN_EMAILS.includes(
+    normalized as (typeof GENERAL_ADMIN_EMAILS)[number]
+  );
+}
+
 export const CardCommand = forwardRef((_, ref) => {
   const t = useTranslations('cardDrinks');
   const tCommon = useTranslations('common');
   const userData$ = useObservable<{ id: string; email?: string } | null>(null);
   const isAdmin$ = useObservable(false);
+  const isGeneralAdmin$ = useObservable(false);
   const isBarMC$ = useObservable(false);
   const selectedUUID$ = useObservable<string | null>(null);
   const members$ = useObservable<Member[]>([]);
@@ -49,6 +62,7 @@ export const CardCommand = forwardRef((_, ref) => {
 
   const userData = useValue(userData$);
   const isAdmin = useValue(isAdmin$);
+  const isGeneralAdmin = useValue(isGeneralAdmin$);
   const isBarMC = useValue(isBarMC$);
   const selectedUUID = useValue(selectedUUID$);
   const members = useValue(members$);
@@ -81,15 +95,22 @@ export const CardCommand = forwardRef((_, ref) => {
       .eq("role", "admin");
 
     const adminStatus = !!(admins && admins.length > 0);
-    isAdmin$.set(adminStatus);
+    const generalAdmin = isGeneralAdminEmail(user.email);
+    isGeneralAdmin$.set(generalAdmin);
+    isAdmin$.set(adminStatus || generalAdmin);
 
-    if (adminStatus) {
+    if (adminStatus || generalAdmin) {
       const { data: membersData } = await supabase
         .from("membros")
         .select("user_id, user_name")
         .order("user_name", { ascending: true });
 
       members$.set(membersData || []);
+    }
+
+    // Admin geral: vê todas as marcações (sem filtrar por UUID próprio)
+    if (generalAdmin) {
+      return;
     }
 
     selectedUUID$.set(user.id);
@@ -129,6 +150,8 @@ export const CardCommand = forwardRef((_, ref) => {
       } else if (uuid) {
         // Admin normal ou usuário comum → filtra pelo UUID
         query = query.eq("uuid", uuid);
+      } else if (isGeneralAdmin) {
+        // Admin geral sem membro selecionado → todas as marcações
       } else {
         // Se não há UUID e não é BarMC, não busca nada
         drinksData$.set([]);
@@ -149,7 +172,7 @@ export const CardCommand = forwardRef((_, ref) => {
       totalAmount$.set(total);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isBarMC]
+    [isBarMC, isGeneralAdmin]
   );
 
   useImperativeHandle(ref, () => ({
@@ -164,22 +187,30 @@ export const CardCommand = forwardRef((_, ref) => {
   useEffect(() => {
     if (!userData) return; // Aguarda os dados do usuário
     
-    if (isBarMC) {
-      fetchDrinks(null); // Busca todos os usuários
+    if (isBarMC || isGeneralAdmin) {
+      fetchDrinks(selectedUUID);
     } else if (selectedUUID) {
       fetchDrinks(selectedUUID);
     }
-  }, [selectedUUID, isBarMC, fetchDrinks, userData]);
+  }, [selectedUUID, isBarMC, isGeneralAdmin, fetchDrinks, userData]);
 
   return (
     <div>
       {!isBarMC && isAdmin && (
         <div className="mb-4">
-          <Select value={selectedUUID || ""} onValueChange={(value) => selectedUUID$.set(value)}>
+          <Select
+            value={selectedUUID ?? (isGeneralAdmin ? "all" : "")}
+            onValueChange={(value) =>
+              selectedUUID$.set(value === "all" ? null : value)
+            }
+          >
             <SelectTrigger className="w-[300px]">
               <SelectValue placeholder={t('filterByUser')} />
             </SelectTrigger>
             <SelectContent>
+              {isGeneralAdmin && (
+                <SelectItem value="all">{t('allMembers')}</SelectItem>
+              )}
               {members.map((m) => (
                 <SelectItem key={m.user_id} value={m.user_id}>
                   {m.user_name}
@@ -208,7 +239,7 @@ export const CardCommand = forwardRef((_, ref) => {
             <Card key={item.id || `${item.created_at}-${item.drink}-${item.name}-${item.uuid}`}>
               <CardHeader>
                 <CardTitle>
-                  {isBarMC ? (
+                  {isBarMC || (isGeneralAdmin && !selectedUUID) ? (
                     <>
                       {item.drink}
                       <br />

@@ -82,7 +82,10 @@ export default function TabsComponent() {
       userEmail$.set(user.email?.trim().toLowerCase() ?? "");
 
       isBarUser$.set(user.email === "barmc@gentlemenmc.com.br");
-      manager$.set(user.email === "robson@gentlemenmc.com.br");
+      manager$.set(
+        user.email === "robson@gentlemenmc.com.br" ||
+          user.email === "rodrigo@gentlemenmc.com.br"
+      );
       isFacilitiesUser$.set(user.email === "guiotto@gentlemenmc.com.br");
 
       try {
