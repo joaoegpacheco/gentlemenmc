@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -9,7 +10,6 @@ import { CardCommandAll } from "@/components/CardDrinksAll/page";
 // import { InvoiceTable } from "@/components/InvoiceTable/page";
 // import { InvoiceForm } from "@/components/InvoiceForm/page";
 // import { ChangePasswordForm } from "@/components/ChangePasswordForm/page";
-import OverviewFinancePage from "@/components/OverviewFinancePage/page";
 import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
 import CalendarEvents from "../Calendar/page";
@@ -17,17 +17,36 @@ import ByLaw from "../ByLaw/page";
 import { FormMonthlyFee } from "../FormMonthlyFee/page";
 import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
-import CreateComandaPage from "@/app/[locale]/nova-comanda/page";
 import { OpenComandasPageContent } from "@/components/OpenComandasPageContent/page";
 import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/page";
-import EstoquePage from "@/app/[locale]/admin/estoque/page";
-import HistoricoEstoquePage from "@/app/[locale]/admin/estoque/historico/page";
 // import { CreditManager } from "../CreditManager/page";
-import MembrosPage from "@/app/[locale]/admin/membros/page";
 import { UserProfileTab } from "../UserProfileTab/page";
-import { DashboardTab } from "../Dashboard/DashboardTab";
 import { ProspectsPage } from "../ProspectsPage/page";
-import ProspectValidationPage from "@/app/[locale]/admin/prospectos/validacao/page";
+
+function TabPanelLoader() {
+  const tCommon = useTranslations("common");
+  return (
+    <p className="py-8 text-center text-sm text-muted-foreground">
+      {tCommon("loading")}
+    </p>
+  );
+}
+
+const dynamicTab = (loader: () => Promise<{ default: React.ComponentType }>) =>
+  dynamic(loader, { loading: TabPanelLoader, ssr: false });
+
+const CreateComandaPage = dynamicTab(() => import("@/app/[locale]/nova-comanda/page"));
+const EstoqueGlobalPage = dynamicTab(() => import("@/app/[locale]/admin/estoque-global/page"));
+const HistoricoEstoqueGlobalPage = dynamicTab(() => import("@/app/[locale]/admin/estoque-global/historico/page"));
+const EstoquePage = dynamicTab(() => import("@/app/[locale]/admin/estoque/page"));
+const HistoricoEstoquePage = dynamicTab(() => import("@/app/[locale]/admin/estoque/historico/page"));
+const PerdasConsumoPage = dynamicTab(() => import("@/app/[locale]/admin/estoque/perdas/page"));
+const MembrosPage = dynamicTab(() => import("@/app/[locale]/admin/membros/page"));
+const DashboardTab = dynamicTab(() =>
+  import("@/components/Dashboard/DashboardTab").then((m) => ({ default: m.DashboardTab }))
+);
+const OverviewFinancePage = dynamicTab(() => import("@/components/OverviewFinancePage/page"));
+const ProspectValidationPage = dynamicTab(() => import("@/app/[locale]/admin/prospectos/validacao/page"));
 
 /** Mesmo email autorizado a confirmar retorno de pagamento (PaymentReturnClient). */
 const PAYMENT_CONFIRM_TAB_COMMAND_EMAIL = "mortari@gentlemenmc.com.br";
@@ -68,6 +87,7 @@ export default function TabsComponent() {
   const comandAllTableRef = useRef<any>(null);
   const comandOpenTableRef = useRef<any>(null);
   const paidComandasTableRef = useRef<any>(null);
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => new Set(["1"]));
 
   useEffect(() => {
     const checkIfUserIsAdmin = async () => {
@@ -165,6 +185,15 @@ export default function TabsComponent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
+
   const handleTabChange = (key: string) => {
     activeTab$.set(key);
     if (key === "2") cardComandRef.current?.refreshData();
@@ -193,7 +222,10 @@ export default function TabsComponent() {
         { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
         { key: "13", label: t('openOrders'), children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
         { key: "17", label: t('orderHistory'), children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
+        { key: "16", label: t('globalStock'), children: <EstoqueGlobalPage /> },
+        { key: "24", label: t('globalStockHistory'), children: <HistoricoEstoqueGlobalPage /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         { key: "23", label: "Financeiro", children: <OverviewFinancePage /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
@@ -216,7 +248,10 @@ export default function TabsComponent() {
         { key: "18", label: t('members'), children: <MembrosPage /> },
         { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
         ...(canSeeConfirmPaymentTabAsCommand
-          ? [{ key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> } as const]
+          ? [{ key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> } as const,
+            { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> } as const
+          ]
+
           : []),
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         { key: "11", label: <LogoutButton /> },
@@ -241,7 +276,10 @@ export default function TabsComponent() {
         { key: "1", label: t('mark'), children: <FormCommand /> },
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
+        { key: "16", label: t('globalStock'), children: <EstoqueGlobalPage /> },
+        { key: "24", label: t('globalStockHistory'), children: <HistoricoEstoqueGlobalPage /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
@@ -260,7 +298,10 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        { key: "16", label: t('globalStock'), children: <EstoqueGlobalPage /> },
+        { key: "24", label: t('globalStockHistory'), children: <HistoricoEstoqueGlobalPage /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
+        { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         { key: "17", label: t('orderHistory'), children: <PaidComandasPageContent ref={paidComandasTableRef} /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
@@ -333,7 +374,7 @@ export default function TabsComponent() {
         </TabsList>
         {tabs.filter((tab) => tab.children).map((tab) => (
           <TabsContent key={tab.key} value={tab.key}>
-            {tab.children}
+            {visitedTabs.has(tab.key) ? tab.children : null}
           </TabsContent>
         ))}
       </Tabs>
