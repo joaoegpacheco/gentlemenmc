@@ -263,7 +263,10 @@
     "openOrders": "Comandas em Aberto",
     "orderHistory": "Histórico de Comandas",
     "stock": "Estoque",
+    "globalStock": "Estoque Global",
+    "globalStockHistory": "Histórico Global",
     "stockHistory": "Histórico de Estoque",
+    "stockLosses": "Perdas",
     "myProfile": "Meu Perfil",
     "guestOrder": "Comanda Convidado",
     "prospects": "Minha Caminhada",
@@ -416,7 +419,7 @@
     "informValidValue": "Informe um valor válido",
     "stockUpdated": "Estoque atualizado!",
     "errorUpdatingStock": "Erro ao atualizar estoque",
-    "stockControl": "📦 Controle de Estoque",
+    "stockControl": "📦 Estoque de Consumo",
     "addOrUpdateDrink": "Adicionar ou atualizar bebida",
     "selectDrink": "Selecione uma bebida",
     "searchDrink": "Buscar bebida...",
@@ -426,7 +429,132 @@
     "searchStock": "Buscar bebida no estoque",
     "drinkColumn": "Bebida",
     "quantityColumn": "Quantidade",
-    "showingItems": "Mostrando {start} - {end} de {total} itens"
+    "showingItems": "Mostrando {start} - {end} de {total} itens",
+    "consumptionDescription": "Bebidas disponíveis para marcar e vender. Reposição: transfira do estoque global.",
+    "transferFromGlobal": "Transferir do estoque global",
+    "transferToConsumption": "Transferir para consumo",
+    "transferHint": "Selecione a bebida e a quantidade. Será retirado do global e liberado para venda.",
+    "transferredFromGlobal": "Transferido! Agora disponível para marcar/vender.",
+    "insufficientGlobalStock": "Quantidade insuficiente no estoque global",
+    "globalAvailable": "No estoque global: {quantity} un.",
+    "availableForSale": "Disponível para marcar/vender",
+    "emptyConsumption": "Nenhuma bebida no estoque de consumo. Transfira do global.",
+    "editConsumption": "Corrigir quantidade no bar",
+    "saveEdit": "Salvar",
+    "actions": "Ações",
+    "selectCategory": "Categoria",
+    "registerLoss": "Registrar perda",
+    "registerLossButton": "Registrar perda",
+    "lossHint": "Bebidas pegas sem marcar/vender. Baixa o estoque de consumo e registra o prejuízo.",
+    "lossNotes": "Observação",
+    "lossNotesPlaceholder": "Opcional",
+    "lossRegistered": "Perda registrada! Estoque de consumo atualizado ({remaining} restantes).",
+    "consumptionAvailable": "No estoque de consumo: {quantity} un.",
+    "lossError": "Erro ao registrar perda",
+    "lossInsufficientStock": "Quantidade insuficiente no estoque de consumo",
+    "lossPreviewCost": "Prejuízo (custo)",
+    "lossPreviewMember": "Valor não faturado (membro)",
+    "lossPreviewGuest": "Valor não faturado (convidado)"
+  },
+  "stockLosses": {
+    "title": "📉 Perdas de Consumo",
+    "description": "Bebidas consumidas sem marcação/venda. Compare o custo perdido com o que poderia ter sido faturado.",
+    "errors": {
+      "fetch": "Erro ao buscar perdas"
+    },
+    "filters": {
+      "startDate": "Data inicial",
+      "endDate": "Data final",
+      "drink": "Filtrar por bebida"
+    },
+    "summary": {
+      "totalCost": "Total perdido (custo)",
+      "totalMember": "Não faturado (preço membro)",
+      "totalGuest": "Não faturado (preço convidado)",
+      "units": "{count} unidades",
+      "memberHint": "Receita potencial se vendido a membros",
+      "guestHint": "Receita potencial se vendido a convidados"
+    },
+    "byDrink": "Resumo por bebida",
+    "history": "Histórico de perdas",
+    "table": {
+      "date": "Data",
+      "drink": "Bebida",
+      "quantity": "Qtd",
+      "totalCost": "Custo",
+      "totalMember": "Membro",
+      "totalGuest": "Convidado",
+      "user": "Registrado por",
+      "notes": "Obs.",
+      "empty": "Nenhuma perda registrada"
+    }
+  },
+  "globalStock": {
+    "title": "🏭 Estoque Global",
+    "description": "Tudo que está guardado/estocado. Ainda não pode ser marcado ou vendido.",
+    "addToGlobal": "Guardar no estoque global",
+    "transferHint": "Libera bebidas do armazém para o bar (consumo).",
+    "errorFetchingStock": "Erro ao buscar estoque global",
+    "informDrinkAndQuantity": "Informe a bebida e quantidade válida",
+    "informCategoryAndName": "Informe categoria e nome da nova bebida",
+    "stockUpdated": "Estoque global atualizado!",
+    "stockAdded": "Entrada registrada no estoque global!",
+    "errorUpdatingStock": "Erro ao atualizar estoque global",
+    "addOrUpdateDrink": "Adicionar ou atualizar no estoque global",
+    "selectCategory": "Selecione categoria",
+    "selectDrink": "Selecione bebida",
+    "newDrink": "Nova bebida",
+    "drinkNamePlaceholder": "Nome da bebida",
+    "quantity": "Quantidade",
+    "costPrice": "Preço Custo",
+    "memberPrice": "Preço Membro",
+    "guestPrice": "Preço Convidado",
+    "update": "Atualizar",
+    "searchStock": "Buscar bebida no estoque global",
+    "drinkColumn": "Bebida",
+    "quantityColumn": "Quantidade",
+    "actions": "Ações"
+  },
+  "adminEstoqueGlobalHistorico": {
+    "errors": {
+      "errorFetchingLogs": "Erro ao buscar logs do estoque global"
+    },
+    "title": "📊 Histórico do Estoque Global",
+    "filters": {
+      "startDate": "Data inicial",
+      "endDate": "Data final",
+      "filterByDrink": "Filtrar por bebida"
+    },
+    "buttons": {
+      "pdf": "PDF",
+      "csv": "CSV"
+    },
+    "table": {
+      "date": "Data",
+      "drink": "Bebida",
+      "type": "Tipo",
+      "quantity": "Quantidade",
+      "user": "Usuário",
+      "noLogsFound": "Nenhum log encontrado"
+    },
+    "types": {
+      "entrada": "Entrada",
+      "saida": "Saída"
+    },
+    "balance": {
+      "finalBalanceByDrink": "📦 Saldo final por bebida (período filtrado):",
+      "unit": "unidade",
+      "units": "unidades"
+    },
+    "export": {
+      "pdfTitle": "Histórico do Estoque Global",
+      "period": "Período: {start} até {end}{drink}",
+      "periodStart": "Início",
+      "periodEnd": "Hoje",
+      "drinkFilter": " | Bebida: {drink}",
+      "fileNamePDF": "historico_estoque_global.pdf",
+      "fileNameCSV": "historico_estoque_global.csv"
+    }
   },
   "overview": {
     "financialOverview": "Visão Financeira",

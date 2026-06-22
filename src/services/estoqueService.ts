@@ -343,7 +343,45 @@ export async function logEstoque(
 }
 
 /*
-Adicionar ou atualizar estoque
+Transferir do armazém (estoque global) para o bar (estoque de consumo).
+Retira automaticamente do global — o que está no bar em teoria já saiu do armazém.
+*/
+export async function transferirParaEstoqueConsumo(
+  drinkId: string,
+  quantity: number,
+  valuePrice: number | null = null,
+  errorMessages?: {
+    invalidDrinkOrQuantity?: string;
+    insufficientGlobalStock?: string;
+  }
+) {
+  const qty = Number(quantity);
+  if (!drinkId || !Number.isFinite(qty) || qty <= 0) {
+    throw new Error(
+      errorMessages?.invalidDrinkOrQuantity || "Bebida ou quantidade inválida"
+    );
+  }
+
+  const { error } = await supabase.rpc("transferir_estoque_global_para_consumo", {
+    p_drink_id: drinkId,
+    p_quantity: qty,
+    p_value_price: valuePrice,
+  });
+
+  if (error) {
+    const msg = error.message || "";
+    if (msg.toLowerCase().includes("global insuficiente")) {
+      throw new Error(
+        errorMessages?.insufficientGlobalStock || "Estoque global insuficiente"
+      );
+    }
+    throw new Error(msg || "Erro ao transferir para estoque de consumo");
+  }
+}
+
+/*
+Adicionar ou atualizar estoque de consumo diretamente (ex.: rollback de comanda).
+Não altera o estoque global.
 */
 export async function addOrUpdateEstoque(
   drinkId: string,

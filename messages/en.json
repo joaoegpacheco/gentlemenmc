@@ -263,7 +263,10 @@
     "openOrders": "Open Orders",
     "orderHistory": "Order History",
     "stock": "Stock",
+    "globalStock": "Global Stock",
+    "globalStockHistory": "Global History",
     "stockHistory": "Stock History",
+    "stockLosses": "Losses",
     "myProfile": "My Profile",
     "guestOrder": "Guest Order",
     "prospects": "My Journey",
@@ -416,7 +419,7 @@
     "informValidValue": "Please provide a valid value",
     "stockUpdated": "Stock updated!",
     "errorUpdatingStock": "Error updating stock",
-    "stockControl": "📦 Stock Control",
+    "stockControl": "📦 Consumption Stock",
     "addOrUpdateDrink": "Add or update drink",
     "selectDrink": "Select a drink",
     "searchDrink": "Search drink...",
@@ -426,7 +429,132 @@
     "searchStock": "Search drink in stock",
     "drinkColumn": "Drink",
     "quantityColumn": "Quantity",
-    "showingItems": "Showing {start} - {end} of {total} items"
+    "showingItems": "Showing {start} - {end} of {total} items",
+    "consumptionDescription": "Drinks available to mark and sell. Restock by transferring from global stock.",
+    "transferFromGlobal": "Transfer from global stock",
+    "transferToConsumption": "Transfer to consumption",
+    "transferHint": "Select drink and quantity. It will be removed from global and made available for sale.",
+    "transferredFromGlobal": "Transferred! Now available to mark/sell.",
+    "insufficientGlobalStock": "Insufficient quantity in global stock",
+    "globalAvailable": "In global stock: {quantity} units",
+    "availableForSale": "Available to mark/sell",
+    "emptyConsumption": "No drinks in consumption stock. Transfer from global.",
+    "editConsumption": "Adjust bar quantity",
+    "saveEdit": "Save",
+    "actions": "Actions",
+    "selectCategory": "Category",
+    "registerLoss": "Register loss",
+    "registerLossButton": "Register loss",
+    "lossHint": "Drinks taken without marking/selling. Deducts consumption stock and records the loss.",
+    "lossNotes": "Notes",
+    "lossNotesPlaceholder": "Optional",
+    "lossRegistered": "Loss registered! Consumption stock updated ({remaining} remaining).",
+    "consumptionAvailable": "In consumption stock: {quantity} units",
+    "lossError": "Error registering loss",
+    "lossInsufficientStock": "Insufficient consumption stock",
+    "lossPreviewCost": "Loss (cost)",
+    "lossPreviewMember": "Unbilled value (member)",
+    "lossPreviewGuest": "Unbilled value (guest)"
+  },
+  "stockLosses": {
+    "title": "📉 Consumption Losses",
+    "description": "Drinks consumed without marking/sale. Compare cost lost vs potential revenue.",
+    "errors": {
+      "fetch": "Error fetching losses"
+    },
+    "filters": {
+      "startDate": "Start date",
+      "endDate": "End date",
+      "drink": "Filter by drink"
+    },
+    "summary": {
+      "totalCost": "Total lost (cost)",
+      "totalMember": "Unbilled (member price)",
+      "totalGuest": "Unbilled (guest price)",
+      "units": "{count} units",
+      "memberHint": "Potential revenue if sold to members",
+      "guestHint": "Potential revenue if sold to guests"
+    },
+    "byDrink": "Summary by drink",
+    "history": "Loss history",
+    "table": {
+      "date": "Date",
+      "drink": "Drink",
+      "quantity": "Qty",
+      "totalCost": "Cost",
+      "totalMember": "Member",
+      "totalGuest": "Guest",
+      "user": "Registered by",
+      "notes": "Notes",
+      "empty": "No losses recorded"
+    }
+  },
+  "globalStock": {
+    "title": "🏭 Global Stock",
+    "description": "Everything stored/warehoused. Not yet available to mark or sell.",
+    "addToGlobal": "Add to global stock",
+    "transferHint": "Release drinks from warehouse to bar (consumption).",
+    "errorFetchingStock": "Error fetching global stock",
+    "informDrinkAndQuantity": "Please provide drink and valid quantity",
+    "informCategoryAndName": "Please provide category and new drink name",
+    "stockUpdated": "Global stock updated!",
+    "stockAdded": "Entry registered in global stock!",
+    "errorUpdatingStock": "Error updating global stock",
+    "addOrUpdateDrink": "Add or update in global stock",
+    "selectCategory": "Select category",
+    "selectDrink": "Select drink",
+    "newDrink": "New drink",
+    "drinkNamePlaceholder": "Drink name",
+    "quantity": "Quantity",
+    "costPrice": "Cost Price",
+    "memberPrice": "Member Price",
+    "guestPrice": "Guest Price",
+    "update": "Update",
+    "searchStock": "Search drink in global stock",
+    "drinkColumn": "Drink",
+    "quantityColumn": "Quantity",
+    "actions": "Actions"
+  },
+  "adminEstoqueGlobalHistorico": {
+    "errors": {
+      "errorFetchingLogs": "Error fetching global stock logs"
+    },
+    "title": "📊 Global Stock History",
+    "filters": {
+      "startDate": "Start date",
+      "endDate": "End date",
+      "filterByDrink": "Filter by drink"
+    },
+    "buttons": {
+      "pdf": "PDF",
+      "csv": "CSV"
+    },
+    "table": {
+      "date": "Date",
+      "drink": "Drink",
+      "type": "Type",
+      "quantity": "Quantity",
+      "user": "User",
+      "noLogsFound": "No logs found"
+    },
+    "types": {
+      "entrada": "Entry",
+      "saida": "Exit"
+    },
+    "balance": {
+      "finalBalanceByDrink": "📦 Final balance by drink (filtered period):",
+      "unit": "unit",
+      "units": "units"
+    },
+    "export": {
+      "pdfTitle": "Global Stock History",
+      "period": "Period: {start} to {end}{drink}",
+      "periodStart": "Start",
+      "periodEnd": "Today",
+      "drinkFilter": " | Drink: {drink}",
+      "fileNamePDF": "global_stock_history.pdf",
+      "fileNameCSV": "global_stock_history.csv"
+    }
   },
   "overview": {
     "financialOverview": "Financial Overview",
