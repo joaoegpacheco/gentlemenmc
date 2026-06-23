@@ -121,16 +121,14 @@ function capitalize(str: string): string {
  */
 export function useBreadcrumbs(customItems?: BreadcrumbItem[]) {
   const pathname = usePathname();
-  const [items, setItems] = React.useState<BreadcrumbItem[]>(
-    customItems || generateBreadcrumbsFromPath(pathname || '')
+  const pathItems = React.useMemo(
+    () => generateBreadcrumbsFromPath(pathname || ''),
+    [pathname]
   );
+  const [overrideItems, setOverrideItems] = React.useState<BreadcrumbItem[] | null>(null);
 
-  React.useEffect(() => {
-    if (!customItems) {
-      setItems(generateBreadcrumbsFromPath(pathname || ''));
-    }
-  }, [pathname, customItems]);
+  const items = customItems ?? overrideItems ?? pathItems;
 
-  return { items, setItems };
+  return { items, setItems: setOverrideItems };
 }
 
