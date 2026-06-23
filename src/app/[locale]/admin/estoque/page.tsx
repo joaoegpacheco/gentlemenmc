@@ -63,11 +63,6 @@ export default function EstoquePage() {
   const [lossDrink, setLossDrink] = useState("");
   const [lossQty, setLossQty] = useState(1);
   const [lossNotes, setLossNotes] = useState("");
-  const [lossPreview, setLossPreview] = useState<{
-    cost: number;
-    member: number;
-    guest: number;
-  } | null>(null);
   const [consumptionAvailable, setConsumptionAvailable] = useState<number | null>(null);
 
   async function fetchStock() {
@@ -92,13 +87,15 @@ export default function EstoquePage() {
   }, []);
 
   const categories = useMemo(() => {
-    return Object.entries(drinksByCategory || {}).map(([catName, catData]) => {
-      const category = catData as { id?: string };
-      return {
-        id: category.id ?? "",
-        name: catName,
-      };
-    });
+    return Object.entries(drinksByCategory || {})
+      .map(([catName, catData]) => {
+        const category = catData as { id?: string };
+        return {
+          id: category.id ?? "",
+          name: catName,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [drinksByCategory]);
 
   const drinksFromCategory = useMemo(() => {
@@ -108,7 +105,8 @@ export default function EstoquePage() {
     };
     return (Object.values(drinksByCategory || {}) as CategoryWithItems[])
       .flatMap((cat) => cat.items || [])
-      .filter((d) => d.category_id === categoria);
+      .filter((d) => d.category_id === categoria)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [categoria, drinksByCategory]);
 
   const drinksFromCategoryLoss = useMemo(() => {
@@ -125,35 +123,29 @@ export default function EstoquePage() {
     };
     return (Object.values(drinksByCategory || {}) as CategoryWithItems[])
       .flatMap((cat) => cat.items || [])
-      .filter((d) => d.category_id === lossCategoria);
+      .filter((d) => d.category_id === lossCategoria)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [lossCategoria, drinksByCategory]);
 
-  useEffect(() => {
-    if (!lossDrink || !lossCategoria) {
-      setLossPreview(null);
-      return;
-    }
+  const lossPreview = useMemo(() => {
+    if (!lossDrink || !lossCategoria) return null;
     const item = drinksFromCategoryLoss.find((d) => d.id === lossDrink);
-    if (!item) {
-      setLossPreview(null);
-      return;
-    }
+    if (!item) return null;
     const catName = categories.find((c) => c.id === lossCategoria)?.name;
     const memberPrice = catName ? drinksByCategory?.[catName]?.members?.[item.name] ?? 0 : 0;
     const guestPrice = catName ? drinksByCategory?.[catName]?.guests?.[item.name] ?? 0 : 0;
     const q = lossQty > 0 ? lossQty : 0;
-    setLossPreview({
+    return {
       cost: (item.cost_price ?? 0) * q,
       member: memberPrice * q,
       guest: guestPrice * q,
-    });
+    };
   }, [lossDrink, lossQty, lossCategoria, drinksFromCategoryLoss, categories, drinksByCategory]);
 
+  const effectiveConsumptionAvailable = lossDrink ? consumptionAvailable : null;
+
   useEffect(() => {
-    if (!lossDrink) {
-      setConsumptionAvailable(null);
-      return;
-    }
+    if (!lossDrink) return;
     getEstoqueByDrink(lossDrink)
       .then(setConsumptionAvailable)
       .catch(() => setConsumptionAvailable(null));
@@ -165,12 +157,10 @@ export default function EstoquePage() {
   );
 
   const [globalAvailable, setGlobalAvailable] = useState<number | null>(null);
+  const effectiveGlobalAvailable = drink && !editingId ? globalAvailable : null;
 
   useEffect(() => {
-    if (!drink || editingId) {
-      setGlobalAvailable(null);
-      return;
-    }
+    if (!drink || editingId) return;
     getEstoqueGlobalByDrink(drink)
       .then(setGlobalAvailable)
       .catch(() => setGlobalAvailable(null));
@@ -237,13 +227,12 @@ export default function EstoquePage() {
         insufficientStock: t("lossInsufficientStock"),
       });
       message.success(t("lossRegistered", {
-        remaining: Math.max(0, (consumptionAvailable ?? 0) - lossQty),
+        remaining: Math.max(0, (effectiveConsumptionAvailable ?? 0) - lossQty),
       }));
       setLossDrink("");
       setLossCategoria("");
       setLossQty(1);
       setLossNotes("");
-      setLossPreview(null);
       await fetchStock();
     } catch (err: unknown) {
       message.error(err instanceof Error ? err.message : t("lossError"));
@@ -365,9 +354,9 @@ export default function EstoquePage() {
                 {loading ? tCommon("loading") : t("transferToConsumption")}
               </Button>
             </div>
-            {globalAvailable !== null && drink && (
+            {effectiveGlobalAvailable !== null && drink && (
               <p className="text-sm text-muted-foreground mt-3">
-                {t("globalAvailable", { quantity: globalAvailable })}
+                {t("globalAvailable", { quantity: effectiveGlobalAvailable })}
               </p>
             )}
           </>
@@ -442,15 +431,15 @@ export default function EstoquePage() {
                 lossLoading ||
                 !lossDrink ||
                 lossQty <= 0 ||
-                (consumptionAvailable !== null && lossQty > consumptionAvailable)
+                (effectiveConsumptionAvailable !== null && lossQty > effectiveConsumptionAvailable)
               }
             >
               {lossLoading ? tCommon("loading") : t("registerLossButton")}
             </Button>
           </div>
-          {consumptionAvailable !== null && lossDrink && (
+          {effectiveConsumptionAvailable !== null && lossDrink && (
             <p className="text-sm text-muted-foreground mt-3">
-              {t("consumptionAvailable", { quantity: consumptionAvailable })}
+              {t("consumptionAvailable", { quantity: effectiveConsumptionAvailable })}
             </p>
           )}
           {lossPreview && lossDrink && (
