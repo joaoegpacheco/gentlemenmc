@@ -82,13 +82,15 @@ export default function EstoqueGlobalPage() {
   }, []);
 
   const categories = useMemo(() => {
-    return Object.entries(drinksByCategory || {}).map(([catName, catData]) => {
-      const category = catData as { id?: string };
-      return {
-        id: category.id ?? "",
-        name: catName,
-      };
-    });
+    return Object.entries(drinksByCategory || {})
+      .map(([catName, catData]) => {
+        const category = catData as { id?: string };
+        return {
+          id: category.id ?? "",
+          name: catName,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [drinksByCategory]);
 
   const drinksFromCategory = useMemo(() => {
@@ -98,7 +100,8 @@ export default function EstoqueGlobalPage() {
     };
     return (Object.values(drinksByCategory || {}) as CategoryWithItems[])
       .flatMap((cat) => cat.items || [])
-      .filter((d) => d.category_id === categoria);
+      .filter((d) => d.category_id === categoria)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [categoria, drinksByCategory]);
 
   const brlFormatter = new Intl.NumberFormat("pt-BR", {
@@ -221,6 +224,10 @@ export default function EstoqueGlobalPage() {
       transferring$.set(false);
     }
   };
+
+  const sortedStock = useMemo(() => {
+    return [...stock].sort((a, b) => a.drink_name.localeCompare(b.drink_name));
+  }, [stock]);
 
   const filteredStock = useMemo(() => {
     return stock
@@ -374,7 +381,7 @@ export default function EstoqueGlobalPage() {
               className="border rounded-md p-2 w-56 mt-1 block"
             >
               <option value="">{t("selectDrink")}</option>
-              {stock.map((item) => (
+              {sortedStock.map((item) => (
                 <option key={item.drink_id} value={item.drink_id}>
                   {item.drink_name} ({item.quantity})
                 </option>
