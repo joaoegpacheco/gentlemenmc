@@ -65,11 +65,6 @@ export function DashboardTab() {
   const drinkAnalysis = useValue(drinkAnalysis$);
   const analysisPeriod = useValue(analysisPeriod$);
 
-  useEffect(() => {
-    loadDashboardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const loadDashboardData = async () => {
     loading$.set(true);
     try {
@@ -112,6 +107,11 @@ export function DashboardTab() {
       loading$.set(false);
     }
   };
+
+  useEffect(() => {
+    loadDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRefresh = async () => {
     refreshing$.set(true);
