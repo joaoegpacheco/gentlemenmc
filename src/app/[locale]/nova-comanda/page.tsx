@@ -31,6 +31,7 @@ import { appStore$ } from "@/stores/appStore";
 export default function CreateComandaPage() {
   const { drinksPricesGuests, drinksPricesMembers, drinksByCategory } = useDrinks();
   const t = useTranslations('novaComanda');
+  const tCategories = useTranslations('categories');
   const tEstoqueService = useTranslations('estoqueService');
   const items$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
   const guestName$ = useObservable<string>("");
@@ -56,19 +57,18 @@ export default function CreateComandaPage() {
 
   // Mapeamento de categorias para nomes amigáveis
   const categoryLabels: Record<string, string> = {
-    cervejas: t('categories.cervejas'),
-    comidas: t('categories.comidas'),
-    // cervejasPremium: t('categories.cervejasPremium'),
-    cervejasZero: t('categories.cervejasZero'),
-    "cervejas zero": t('categories.cervejasZero'),
-    cervejas_zero: t('categories.cervejasZero'),
-    refrigerantes: t('categories.refrigerantes'),
-    bebidasNaoAlcoolicas: t('categories.bebidasNaoAlcoolicas'),
-    energetico: t('categories.energetico'),
-    doses: t('categories.doses'),
-    vinhos: t('categories.vinhos'),
-    snacks: t('categories.snacks'),
-    cigarros: t('categories.cigarros'),
+    cervejas: tCategories('beers'),
+    comidas: tCategories('comidas'),
+    cervejasZero: tCategories('zeroBeers'),
+    "cervejas zero": tCategories('zeroBeers'),
+    cervejas_zero: tCategories('zeroBeers'),
+    refrigerantes: tCategories('softDrinks'),
+    bebidasNaoAlcoolicas: tCategories('nonAlcoholic'),
+    energetico: tCategories('energy'),
+    doses: tCategories('shots'),
+    vinhos: tCategories('wines'),
+    snacks: tCategories('snacks'),
+    cigarros: tCategories('cigars'),
   };
 
   // Obter lista de categorias
@@ -215,7 +215,6 @@ export default function CreateComandaPage() {
       guestPhone$.set("");
       selectedUUID$.set("");
       isDirectSale$.set(false);
-      festaParticular$.set(false);
 
       // Atualiza todo o estoque após criar a comanda
       const stockMap = await getAllStock();
