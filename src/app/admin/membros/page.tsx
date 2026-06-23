@@ -129,6 +129,26 @@ export default function MembrosPage() {
 
   const canDeleteOrSuspend = isAdmin || isCommand;
 
+  const fetchMembers = async () => {
+    loading$.set(true);
+    try {
+      const { data, error } = await supabase
+        .from("membros")
+        .select(MEMBROS_ADMIN_SELECT)
+        .order("user_name", { ascending: true });
+
+      if (error) {
+        message.error(t('errors.errorLoadingMembers'));
+      } else {
+        members$.set((data ?? []) as unknown as Member[]);
+      }
+    } catch (err) {
+      message.error(t('errors.errorFetchingMembers'));
+    } finally {
+      loading$.set(false);
+    }
+  };
+
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -160,26 +180,6 @@ export default function MembrosPage() {
     checkAdmin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  const fetchMembers = async () => {
-    loading$.set(true);
-    try {
-      const { data, error } = await supabase
-        .from("membros")
-        .select(MEMBROS_ADMIN_SELECT)
-        .order("user_name", { ascending: true });
-
-      if (error) {
-        message.error(t('errors.errorLoadingMembers'));
-      } else {
-        members$.set((data ?? []) as unknown as Member[]);
-      }
-    } catch (err) {
-      message.error(t('errors.errorFetchingMembers'));
-    } finally {
-      loading$.set(false);
-    }
-  };
 
   const filteredMembers = useMemo(() => {
     if (!search) return members;
