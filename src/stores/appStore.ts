@@ -1,4 +1,8 @@
 import { observable } from "@legendapp/state";
+import { syncObservable } from "@legendapp/state/sync";
+import { ObservablePersistSessionStorage } from "@legendapp/state/persist-plugins/local-storage";
+
+const FESTA_PARTICULAR_STORAGE_KEY = "gentlemen-festaParticular";
 
 // Global application store
 export const appStore$ = observable({
@@ -20,4 +24,13 @@ export const appStore$ = observable({
     festaParticular: false,
   },
 });
+
+if (typeof window !== "undefined") {
+  syncObservable(appStore$.switches.festaParticular, {
+    persist: {
+      name: FESTA_PARTICULAR_STORAGE_KEY,
+      plugin: ObservablePersistSessionStorage,
+    },
+  });
+}
 
