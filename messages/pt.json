@@ -108,7 +108,7 @@
     "consumptionTrend": "Tendência de Consumo (Últimos 6 Meses)",
     "quantity": "Quantidade",
     "revenue": "Receita",
-    "units": "units",
+    "units": "unidades",
     "drinkInvestmentAnalysis": "Análise de Investimento em Bebidas",
     "investmentAnalysisDescription": "Comparação entre receita total e volume de vendas por bebida",
     "lastWeek": "Última Semana",
@@ -245,6 +245,7 @@
     "name": "Nome",
     "actions": "Ações",
     "noImage": "Sem imagem",
+    "noInvoices": "Nenhuma nota fiscal encontrada",
     "sendReceipt": "Enviar Comprovante",
     "selectReceipt": "Selecionar Comprovante",
     "remove": "Remover",
@@ -255,7 +256,7 @@
     "mark": "Marcar",
     "viewMarks": "Ver marcações",
     "events": "Eventos",
-    "statute": "Estatuto",
+    "statute": "Estatuto e Regimento",
     "members": "Membros",
     "dashboard": "Dashboard",
     "confirmPayment": "Confirmar pagamento",
@@ -272,6 +273,13 @@
     "prospects": "Minha Caminhada",
     "birthdaysOfMonth": "Aniversariantes do mês:",
     "prospectValidation": "Validação Prospects"
+  },
+  "byLaw": {
+    "estatuto": "Estatuto",
+    "regimentoInterno": "Regimento Interno",
+    "pdfNotSupported": "Seu navegador não tem um plugin para PDF.",
+    "downloadLink": "Clique aqui",
+    "downloadFallback": "para baixar o arquivo."
   },
   "form": {
     "name": "Nome",
@@ -647,7 +655,7 @@
     "enterMessage": "Digite uma mensagem",
     "notificationSentSuccessfully": "Notificação enviada com sucesso!",
     "active": "Ativo",
-    "inactive": "Inactive",
+    "inactive": "Inativo",
     "suspended": "Suspenso",
     "registration": "Cadastro:",
     "edit": "Editar",
@@ -696,6 +704,7 @@
     "errorFetchingComandas": "Erro ao buscar comandas",
     "errorUpdatingComanda": "Erro ao atualizar comanda ou estoque",
     "drinkAdded": "Bebida adicionada",
+    "drinksAdded": "Bebidas adicionadas",
     "name": "Nome",
     "member": "Integrante",
     "phone": "Telefone",
@@ -831,19 +840,6 @@
   },
   "novaComanda": {
     "selectCategory": "Selecione uma categoria",
-    "categories": {
-      "cervejas": "Cervejas",
-      "comidas": "Comidas",
-      "cervejasPremium": "Cervejas Premium",
-      "cervejasZero": "Cervejas zero",
-      "refrigerantes": "Refrigerantes",
-      "bebidasNaoAlcoolicas": "Bebidas Não Alcoólicas",
-      "energetico": "Energético",
-      "doses": "Doses",
-      "vinhos": "Vinhos",
-      "snacks": "Snacks",
-      "cigarros": "Cigarros"
-    },
     "errors": {
       "guestNameRequired": "Informe nome do convidado",
       "addAtLeastOneItem": "Adicione ao menos 1 item",

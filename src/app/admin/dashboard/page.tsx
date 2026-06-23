@@ -74,10 +74,47 @@ export default function DashboardPage() {
   const drinkAnalysis = useValue(drinkAnalysis$);
   const analysisPeriod = useValue(analysisPeriod$);
 
-  useEffect(() => {
-    checkAdminAndLoadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const loadDashboardData = async () => {
+    loading$.set(true);
+    try {
+      const [
+        statsData,
+        monthlyRevenueData,
+        topDrinksData,
+        topMembersData,
+        recentPaidOrdersData,
+        membersWithHighestDebtData,
+        recentStockMovementsData,
+        consumptionTrendData,
+        drinkAnalysisData,
+      ] = await Promise.all([
+        getDashboardStats(),
+        getMonthlyRevenue(12, locale),
+        getTopDrinks(5, tDashboardService('fallback.noName')),
+        getTopMembers(5, tDashboardService('fallback.unknown')),
+        getRecentPaidOrders(10, tDashboardService('fallback.noName')),
+        getMembersWithHighestDebt(5, tDashboardService('fallback.unknown')),
+        getRecentStockMovements(10),
+        getConsumptionTrend(6, locale),
+        getDrinkAnalysisByPeriod(analysisPeriod$.get(), tDashboardService('fallback.noName')),
+      ]);
+
+      stats$.set(statsData);
+      monthlyRevenue$.set(monthlyRevenueData);
+      topDrinks$.set(topDrinksData);
+      topMembers$.set(topMembersData);
+      recentPaidOrders$.set(recentPaidOrdersData);
+      membersWithHighestDebt$.set(membersWithHighestDebtData);
+      recentStockMovements$.set(recentStockMovementsData);
+      consumptionTrend$.set(consumptionTrendData);
+      drinkAnalysis$.set(drinkAnalysisData);
+    } catch (error) {
+      console.error("Erro ao carregar dados do dashboard:", error);
+      message.error(t('errorLoadingData'));
+    } finally {
+      loading$.set(false);
+    }
+  };
 
   const checkAdminAndLoadData = async () => {
     try {
@@ -111,48 +148,10 @@ export default function DashboardPage() {
     }
   };
 
-  const loadDashboardData = async () => {
-    loading$.set(true);
-    try {
-      // Fetch all data in parallel
-      const [
-        statsData,
-        monthlyRevenueData,
-        topDrinksData,
-        topMembersData,
-        recentPaidOrdersData,
-        membersWithHighestDebtData,
-        recentStockMovementsData,
-        consumptionTrendData,
-        drinkAnalysisData,
-      ] = await Promise.all([
-        getDashboardStats(),
-        getMonthlyRevenue(12, locale),
-        getTopDrinks(5, tDashboardService('fallback.noName')),
-        getTopMembers(5, tDashboardService('fallback.unknown')),
-        getRecentPaidOrders(10, tDashboardService('fallback.noName')),
-        getMembersWithHighestDebt(5, tDashboardService('fallback.unknown')),
-        getRecentStockMovements(10),
-        getConsumptionTrend(6, locale),
-        getDrinkAnalysisByPeriod(analysisPeriod$.peek(), tDashboardService('fallback.noName')),
-      ]);
-
-      stats$.set(statsData);
-      monthlyRevenue$.set(monthlyRevenueData);
-      topDrinks$.set(topDrinksData);
-      topMembers$.set(topMembersData);
-      recentPaidOrders$.set(recentPaidOrdersData);
-      membersWithHighestDebt$.set(membersWithHighestDebtData);
-      recentStockMovements$.set(recentStockMovementsData);
-      consumptionTrend$.set(consumptionTrendData);
-      drinkAnalysis$.set(drinkAnalysisData);
-    } catch (error) {
-      console.error("Erro ao carregar dados do dashboard:", error);
-      message.error("Erro ao carregar dados do dashboard");
-    } finally {
-      loading$.set(false);
-    }
-  };
+  useEffect(() => {
+    checkAdminAndLoadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRefresh = async () => {
     refreshing$.set(true);

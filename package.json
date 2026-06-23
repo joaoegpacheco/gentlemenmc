@@ -1,6 +1,7 @@
 {
   "name": "gentlemen-mc",
   "homepage": "https://gentlemenmc.com.br/",
+  "author": "João Pacheco",
   "version": "2.0.0",
   "private": true,
   "scripts": {
@@ -55,7 +56,7 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.12.0",
     "uuid": "^11.1.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "npm:@e965/xlsx@0.20.3",
     "yarn": "^1.22.22",
     "zod": "^4.1.12"
   },
@@ -69,8 +70,11 @@
     "baseline-browser-mapping": "^2.10.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "postcss": "^8",
+    "postcss": "^8.5.10",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
   }
 }

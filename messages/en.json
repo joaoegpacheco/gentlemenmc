@@ -245,6 +245,7 @@
     "name": "Name",
     "actions": "Actions",
     "noImage": "No image",
+    "noInvoices": "No invoices found",
     "sendReceipt": "Send Receipt",
     "selectReceipt": "Select Receipt",
     "remove": "Remove",
@@ -255,7 +256,7 @@
     "mark": "Mark",
     "viewMarks": "View marks",
     "events": "Events",
-    "statute": "Statute",
+    "statute": "Statute and Regulations",
     "members": "Members",
     "dashboard": "Dashboard",
     "confirmPayment": "Confirm payment",
@@ -272,6 +273,13 @@
     "prospects": "My Journey",
     "birthdaysOfMonth": "Birthdays of the month:",
     "prospectValidation": "Prospect Validation"
+  },
+  "byLaw": {
+    "estatuto": "Statute",
+    "regimentoInterno": "Internal Regulations",
+    "pdfNotSupported": "Your browser does not have a PDF plugin.",
+    "downloadLink": "Click here",
+    "downloadFallback": "to download the file."
   },
   "form": {
     "name": "Name",
@@ -696,6 +704,7 @@
     "errorFetchingComandas": "Error fetching orders",
     "errorUpdatingComanda": "Error updating order or stock",
     "drinkAdded": "Drink added",
+    "drinksAdded": "Drinks added",
     "name": "Name",
     "member": "Member",
     "phone": "Phone",
@@ -831,19 +840,6 @@
   },
   "novaComanda": {
     "selectCategory": "Select a category",
-    "categories": {
-      "cervejas": "Beers",
-      "comidas": "Foods",
-      "cervejasPremium": "Premium Beers",
-      "cervejasZero": "Zero-alcohol beers",
-      "refrigerantes": "Soft Drinks",
-      "bebidasNaoAlcoolicas": "Non-Alcoholic Drinks",
-      "energetico": "Energy Drink",
-      "doses": "Shots",
-      "vinhos": "Wines",
-      "snacks": "Snacks",
-      "cigarros": "Cigarettes"
-    },
     "errors": {
       "guestNameRequired": "Please enter guest name",
       "addAtLeastOneItem": "Add at least 1 item",

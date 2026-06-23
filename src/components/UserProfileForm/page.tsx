@@ -38,6 +38,10 @@ interface UserProfileFormProps {
   onSuccess: () => void;
 }
 
+function buildPhotoFileName(userId: string, fileExt: string) {
+  return `${userId}_${Date.now()}.${fileExt}`;
+}
+
 export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProps) {
   const t = useTranslations('userProfileForm');
   
@@ -88,7 +92,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
       }
 
       const fileExt = photoFile.name.split(".").pop();
-      const fileName = `${member.user_id}_${Date.now()}.${fileExt}`;
+      const fileName = buildPhotoFileName(member.user_id, fileExt ?? "jpg");
 
       const { data: uploadData, error } = await supabase.storage
         .from("membros_fotos")

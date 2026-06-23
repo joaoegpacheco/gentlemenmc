@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase.js";
 import { useTranslations } from 'next-intl';
+import { useRouter } from "@/i18n/routing";
 
 type PasswordFormValues = {
   newPassword: string;
@@ -22,6 +23,7 @@ type PasswordFormValues = {
 
 export const ChangePasswordForm = () => {
   const t = useTranslations('changePassword');
+  const router = useRouter();
   
   const passwordSchema = z.object({
     newPassword: z.string().min(1, t('newPasswordRequired')),
@@ -42,7 +44,7 @@ export const ChangePasswordForm = () => {
 
       if (error) throw error;
       notification.success({ message: t('passwordChangedSuccessfully') });
-      window.location.href = "/comandas";
+      router.push("/comandas");
     } catch (error: any) {
       notification.error({
         message: t('errorChangingPassword', { message: error.message }),

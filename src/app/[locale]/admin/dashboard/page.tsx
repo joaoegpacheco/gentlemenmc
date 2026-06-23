@@ -70,49 +70,9 @@ export default function DashboardPage() {
   const drinkAnalysis = useValue(drinkAnalysis$);
   const analysisPeriod = useValue(analysisPeriod$);
 
-  useEffect(() => {
-    checkAdminAndLoadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const checkAdminAndLoadData = async () => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user as SupabaseAuthUser | null;
-
-      if (!user) {
-        router.push("/");
-        return;
-      }
-
-      const { data: admins } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("id", user.id)
-        .eq("role", "admin");
-
-      const adminStatus = !!(admins && admins.length > 0);
-      isAdmin$.set(adminStatus);
-
-      if (!adminStatus && user.email !== "barmc@gentlemenmc.com.br") {
-        message.error(
-          "Acesso negado. Apenas administradores podem acessar esta página."
-        );
-        router.push("/comandas");
-        return;
-      }
-
-      await loadDashboardData();
-    } catch (error) {
-      console.error("Erro ao verificar permissões:", error);
-      message.error("Erro ao carregar dashboard");
-    }
-  };
-
   const loadDashboardData = async () => {
     loading$.set(true);
     try {
-      // Fetch all data in parallel
       const [
         statsData,
         monthlyRevenueData,
@@ -151,6 +111,45 @@ export default function DashboardPage() {
       loading$.set(false);
     }
   };
+
+  const checkAdminAndLoadData = async () => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user as SupabaseAuthUser | null;
+
+      if (!user) {
+        router.push("/");
+        return;
+      }
+
+      const { data: admins } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", user.id)
+        .eq("role", "admin");
+
+      const adminStatus = !!(admins && admins.length > 0);
+      isAdmin$.set(adminStatus);
+
+      if (!adminStatus && user.email !== "barmc@gentlemenmc.com.br") {
+        message.error(
+          "Acesso negado. Apenas administradores podem acessar esta página."
+        );
+        router.push("/comandas");
+        return;
+      }
+
+      await loadDashboardData();
+    } catch (error) {
+      console.error("Erro ao verificar permissões:", error);
+      message.error("Erro ao carregar dashboard");
+    }
+  };
+
+  useEffect(() => {
+    checkAdminAndLoadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRefresh = async () => {
     refreshing$.set(true);

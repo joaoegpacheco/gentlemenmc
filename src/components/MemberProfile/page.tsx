@@ -100,11 +100,6 @@ export function MemberProfile({
   const pageSize = useValue(pageSize$);
   const { isMobile } = useDeviceSizes();
 
-  useEffect(() => {
-    fetchMemberData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [member.user_id]);
-
   const fetchMemberData = async () => {
     loading$.set(true);
     try {
@@ -132,6 +127,11 @@ export function MemberProfile({
       loading$.set(false);
     }
   };
+
+  useEffect(() => {
+    fetchMemberData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member.user_id]);
 
   const handleToggleStatus = async () => {
     const newStatus: MemberStatus =

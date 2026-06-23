@@ -230,14 +230,6 @@ export default function ProspectValidationPage() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    checkPermissions();
-    fetchProspects();
-    fetchActivities();
-    fetchPenalties();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const checkPermissions = async () => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user as SupabaseAuthUser | null;
@@ -359,6 +351,14 @@ export default function ProspectValidationPage() {
       penalties$.set([]);
     }
   };
+
+  useEffect(() => {
+    checkPermissions();
+    fetchProspects();
+    fetchActivities();
+    fetchPenalties();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredProspects = useMemo(() => {
     // Filtrar apenas "Half" e "Prospect", excluindo "Diretoria" e "Full"
