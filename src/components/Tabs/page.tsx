@@ -22,6 +22,10 @@ import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/pa
 // import { CreditManager } from "../CreditManager/page";
 import { UserProfileTab } from "../UserProfileTab/page";
 import { ProspectsPage } from "../ProspectsPage/page";
+import { appStore$ } from "@/stores/appStore";
+
+// Keep the app store in the main bundle so dynamically loaded tab panels share one singleton.
+void appStore$;
 
 function TabPanelLoader() {
   const tCommon = useTranslations("common");
@@ -185,17 +189,14 @@ export default function TabsComponent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    setVisitedTabs((prev) => {
-      if (prev.has(activeTab)) return prev;
-      const next = new Set(prev);
-      next.add(activeTab);
-      return next;
-    });
-  }, [activeTab]);
-
   const handleTabChange = (key: string) => {
     activeTab$.set(key);
+    setVisitedTabs((prev) => {
+      if (prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
     if (key === "2") cardComandRef.current?.refreshData();
     if (key === "10") comandAllTableRef.current?.refreshData();
     if (key === "13") comandOpenTableRef.current?.refreshData();
@@ -373,7 +374,12 @@ export default function TabsComponent() {
           })}
         </TabsList>
         {tabs.filter((tab) => tab.children).map((tab) => (
-          <TabsContent key={tab.key} value={tab.key}>
+          <TabsContent
+            key={tab.key}
+            value={tab.key}
+            forceMount={visitedTabs.has(tab.key) || undefined}
+            className="data-[state=inactive]:hidden"
+          >
             {visitedTabs.has(tab.key) ? tab.children : null}
           </TabsContent>
         ))}
