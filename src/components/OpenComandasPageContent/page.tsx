@@ -21,10 +21,10 @@ import {
 } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InputNumber } from "@/components/ui/input-number";
 import { Input } from "@/components/ui/input";
 import { message } from "@/lib/message";
 import { Spinner } from "@/components/ui/spinner";
+import { Trash2 } from "lucide-react";
 import { updateComanda } from "@/services/comandaService";
 import { consumirEstoque, devolverEstoque, getAllStock } from "@/services/estoqueService";
 import { supabase } from "@/hooks/use-supabase";
@@ -42,19 +42,19 @@ interface AdminData {
 }
 
 export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
-  const { drinksPricesGuests, drinksPricesMembers, drinksByCategory } = useDrinks();
+  const { drinksByCategory } = useDrinks();
   const t = useTranslations('openComandas');
   const tComandas = useTranslations('comandas');
   const tNova = useTranslations('novaComanda');
+  const tCategories = useTranslations('categories');
   const tEstoqueService = useTranslations('estoqueService');
   const comandas$ = useObservable<any[]>([]);
   const loading$ = useObservable(false);
   const selectedComanda$ = useObservable<any | null>(null);
-  const newDrink$ = useObservable<string>("");
+  const pendingItems$ = useObservable<{ drink: string; quantity: number; price: number }[]>([]);
   const selectedCategory$ = useObservable<string>("");
   const drinkStock$ = useObservable<Record<string, number>>({});
   const isBarMC$ = useObservable<boolean>(false);
-  const quantity$ = useObservable<number>(1);
   const payModalVisible$ = useObservable(false);
   const adminsList$ = useObservable<AdminData[]>([]);
   const selectedAdmin$ = useObservable<string | null>(null);
@@ -66,11 +66,10 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const comandas = useValue(comandas$);
   const loading = useValue(loading$);
   const selectedComanda = useValue(selectedComanda$);
-  const newDrink = useValue(newDrink$);
+  const pendingItems = useValue(pendingItems$);
   const selectedCategory = useValue(selectedCategory$);
   const drinkStock = useValue(drinkStock$);
   const isBarMC = useValue(isBarMC$);
-  const quantity = useValue(quantity$);
   const payModalVisible = useValue(payModalVisible$);
   const adminsList = useValue(adminsList$);
   const selectedAdmin = useValue(selectedAdmin$);
@@ -82,18 +81,18 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
   const { isMobile } = useDeviceSizes();
 
   const categoryLabels: Record<string, string> = {
-    cervejas: tNova('categories.cervejas'),
-    comidas: tNova('categories.comidas'),
-    cervejasZero: tNova('categories.cervejasZero'),
-    "cervejas zero": tNova('categories.cervejasZero'),
-    cervejas_zero: tNova('categories.cervejasZero'),
-    refrigerantes: tNova('categories.refrigerantes'),
-    bebidasNaoAlcoolicas: tNova('categories.bebidasNaoAlcoolicas'),
-    energetico: tNova('categories.energetico'),
-    doses: tNova('categories.doses'),
-    vinhos: tNova('categories.vinhos'),
-    snacks: tNova('categories.snacks'),
-    cigarros: tNova('categories.cigarros'),
+    cervejas: tCategories('beers'),
+    comidas: tCategories('comidas'),
+    cervejasZero: tCategories('zeroBeers'),
+    "cervejas zero": tCategories('zeroBeers'),
+    cervejas_zero: tCategories('zeroBeers'),
+    refrigerantes: tCategories('softDrinks'),
+    bebidasNaoAlcoolicas: tCategories('nonAlcoholic'),
+    energetico: tCategories('energy'),
+    doses: tCategories('shots'),
+    vinhos: tCategories('wines'),
+    snacks: tCategories('snacks'),
+    cigarros: tCategories('cigars'),
   };
 
   const categories = Object.keys(drinksByCategory);
@@ -102,6 +101,25 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     if (!category || !drinksByCategory[category as keyof typeof drinksByCategory]) return {};
     const cat = drinksByCategory[category as keyof typeof drinksByCategory];
     return festaParticular ? cat.members : cat.guests;
+  };
+
+  const getExistingQuantityInComanda = (drink: string) =>
+    selectedComanda?.comanda_itens.find((i: { bebida_nome: string }) => i.bebida_nome === drink)?.quantidade ?? 0;
+
+  const addDrinkToPending = (drink: string, price: number) => {
+    const exists = pendingItems.find((i) => i.drink === drink);
+    if (exists) {
+      pendingItems$.set((old) =>
+        old.map((i) => (i.drink === drink ? { ...i, quantity: i.quantity + 1 } : i))
+      );
+    } else {
+      pendingItems$.set((old) => [...old, { drink, quantity: 1, price }]);
+    }
+  };
+
+  const closeAddDrinkDialog = () => {
+    selectedComanda$.set(null);
+    pendingItems$.set([]);
   };
 
   useEffect(() => {
@@ -265,44 +283,64 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
     },
   }));
 
-  const handleAddDrink = async () => {
-    if (!selectedComanda || !newDrink) return;
+  const handleAddDrinks = async () => {
+    if (!selectedComanda || pendingItems.length === 0) return;
 
-    const existingItems = selectedComanda.comanda_itens;
-    const drinkExists = existingItems.find((i: any) => i.bebida_nome === newDrink);
-    let updatedItems;
-
-    if (drinkExists) {
-      updatedItems = existingItems.map((i: any) =>
-        i.bebida_nome === newDrink
-          ? { ...i, quantidade: i.quantidade + quantity }
-          : i
-      );
-    } else {
-      updatedItems = [
-        ...existingItems,
-        {
-          drink: newDrink,
-          quantity,
-          price: festaParticular ? drinksPricesMembers[newDrink] : drinksPricesGuests[newDrink],
-        },
-      ];
+    for (const item of pendingItems) {
+      const stock = drinkStock[item.drink] || 0;
+      const existingQty = getExistingQuantityInComanda(item.drink);
+      const available = stock - existingQty;
+      if (available < item.quantity) {
+        message.error(
+          tNova('errors.insufficientStock', {
+            drink: item.drink,
+            available: Math.max(0, available),
+            requested: item.quantity,
+          })
+        );
+        return;
+      }
     }
 
-    const mappedItems = updatedItems.map((i: any) => ({
-      id: i.id,
-      drink: i.bebida_nome || i.drink,
-      quantity: i.quantidade || i.quantity,
-      price: i.preco_unitario || i.price,
-    }));
+    let updatedItems = [...selectedComanda.comanda_itens];
 
-    let stockConsumed = false;
+    for (const pendingItem of pendingItems) {
+      const drinkExists = updatedItems.find((i: { bebida_nome: string }) => i.bebida_nome === pendingItem.drink);
+      if (drinkExists) {
+        updatedItems = updatedItems.map((i: { bebida_nome: string; quantidade: number }) =>
+          i.bebida_nome === pendingItem.drink
+            ? { ...i, quantidade: i.quantidade + pendingItem.quantity }
+            : i
+        );
+      } else {
+        updatedItems = [
+          ...updatedItems,
+          {
+            drink: pendingItem.drink,
+            quantity: pendingItem.quantity,
+            price: pendingItem.price,
+          },
+        ];
+      }
+    }
+
+    const mappedItems = updatedItems.flatMap((i: { id?: number; bebida_nome?: string; drink?: string; quantidade?: number; quantity?: number; preco_unitario?: number; price?: number }) => {
+      const drink = i.bebida_nome || i.drink;
+      const quantity = i.quantidade ?? i.quantity;
+      const price = i.preco_unitario ?? i.price;
+      if (!drink || quantity == null || price == null) return [];
+      return [{ id: i.id, drink, quantity, price }];
+    });
+
+    const consumed: { drink: string; quantity: number }[] = [];
     try {
-      await consumirEstoque(newDrink, quantity, {
-        invalidDrinkOrQuantity: tEstoqueService('errors.invalidDrinkOrQuantity'),
-        insufficientStock: tEstoqueService('errors.insufficientStock', { drink: newDrink }),
-      });
-      stockConsumed = true;
+      for (const item of pendingItems) {
+        await consumirEstoque(item.drink, item.quantity, {
+          invalidDrinkOrQuantity: tEstoqueService('errors.invalidDrinkOrQuantity'),
+          insufficientStock: tEstoqueService('errors.insufficientStock', { drink: item.drink }),
+        });
+        consumed.push({ drink: item.drink, quantity: item.quantity });
+      }
 
       await updateComanda({
         id: selectedComanda.id,
@@ -310,9 +348,9 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
         items: mappedItems,
       });
     } catch (err: unknown) {
-      if (stockConsumed) {
+      for (const c of consumed) {
         try {
-          await devolverEstoque(newDrink, quantity);
+          await devolverEstoque(c.drink, c.quantity);
         } catch {
           /* rollback best-effort */
         }
@@ -321,10 +359,8 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
       return;
     }
 
-    message.success(t('drinkAdded'));
-    selectedComanda$.set(null);
-    newDrink$.set("");
-    quantity$.set(1);
+    message.success(t('drinksAdded'));
+    closeAddDrinkDialog();
     try {
       drinkStock$.set(await getAllStock());
     } catch {
@@ -397,7 +433,10 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                           <Button 
                             variant="outline" 
                             className="flex-1"
-                            onClick={() => selectedComanda$.set(record)}
+                            onClick={() => {
+                              pendingItems$.set([]);
+                              selectedComanda$.set(record);
+                            }}
                           >
                             {t('addDrink')}
                           </Button>
@@ -466,7 +505,13 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                           <TableCell>R$ {record.total.toFixed(2)}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="outline" onClick={() => selectedComanda$.set(record)}>
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  pendingItems$.set([]);
+                                  selectedComanda$.set(record);
+                                }}
+                              >
                                 {t('addDrink')}
                               </Button>
                               {/* {!isBarMC && ( */}
@@ -492,7 +537,7 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
           </div>
         </>
       )}
-      <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && selectedComanda$.set(null)}>
+      <Dialog open={!!selectedComanda} onOpenChange={(open) => !open && closeAddDrinkDialog()}>
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle>{t('addDrinkToComanda', { name: selectedComanda?.nome_convidado })}</DialogTitle>
@@ -524,13 +569,17 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                       const hasStock = stock > 0;
                       const categoryDrinks = getDrinksForCategory(selectedCategory);
                       const price = categoryDrinks[drink] || 0;
+                      const itemInCart = pendingItems.find((i) => i.drink === drink);
+                      const quantityInCart = itemInCart?.quantity || 0;
+                      const existingQty = getExistingQuantityInComanda(drink);
+                      const canAddMore = stock > existingQty + quantityInCart;
                       return (
                         <div key={drink} className="flex flex-col items-center gap-1">
                           <Button
-                            variant={newDrink === drink ? "default" : "outline"}
+                            variant="outline"
                             className={!hasStock ? "opacity-50 cursor-not-allowed min-h-[4rem] whitespace-pre-wrap flex flex-col" : "min-h-[4rem] whitespace-pre-wrap flex flex-col"}
-                            disabled={!hasStock}
-                            onClick={() => newDrink$.set(drink)}
+                            disabled={!hasStock || !canAddMore}
+                            onClick={() => addDrinkToPending(drink, price)}
                           >
                             <span className="text-center leading-tight text-xs sm:text-sm">{drink}</span>
                             <span className="text-xs font-normal">
@@ -540,6 +589,11 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                           <span className={`text-xs font-semibold ${hasStock ? "text-green-600" : "text-red-600"}`}>
                             {tNova("labels.stock", { stock })}
                           </span>
+                          {quantityInCart > 0 && (
+                            <span className="text-xs text-blue-600 font-medium">
+                              {tNova("labels.inCart", { quantity: quantityInCart })}
+                            </span>
+                          )}
                         </div>
                       );
                     })}
@@ -569,13 +623,17 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                           const stock = drinkStock[drink] || 0;
                           const hasStock = stock > 0;
                           const price = categoryDrinks[drink] || 0;
+                          const itemInCart = pendingItems.find((i) => i.drink === drink);
+                          const quantityInCart = itemInCart?.quantity || 0;
+                          const existingQty = getExistingQuantityInComanda(drink);
+                          const canAddMore = stock > existingQty + quantityInCart;
                           return (
                             <div key={drink} className="flex flex-col items-center gap-1">
                               <Button
-                                variant={newDrink === drink ? "default" : "outline"}
+                                variant="outline"
                                 className={!hasStock ? "opacity-50 cursor-not-allowed min-h-[4rem] whitespace-pre-wrap flex flex-col" : "min-h-[4rem] whitespace-pre-wrap flex flex-col"}
-                                disabled={!hasStock}
-                                onClick={() => newDrink$.set(drink)}
+                                disabled={!hasStock || !canAddMore}
+                                onClick={() => addDrinkToPending(drink, price)}
                               >
                                 <span className="text-center leading-tight text-sm">{drink}</span>
                                 <span className="text-xs font-normal">
@@ -585,6 +643,11 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                               <span className={`text-xs font-semibold ${hasStock ? "text-green-600" : "text-red-600"}`}>
                                 {tNova("labels.stock", { stock })}
                               </span>
+                              {quantityInCart > 0 && (
+                                <span className="text-xs text-blue-600 font-medium">
+                                  {tNova("labels.inCart", { quantity: quantityInCart })}
+                                </span>
+                              )}
                             </div>
                           );
                         })}
@@ -594,18 +657,50 @@ export const OpenComandasPageContent = forwardRef((_: Props, ref) => {
                 })}
               </Tabs>
             )}
-            <InputNumber
-              min={1}
-              value={quantity}
-              onChange={(val) => quantity$.set(val ?? 1)}
-              placeholder={t('quantity')}
-            />
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{tNova('labels.drink')}</TableHead>
+                    <TableHead>{tNova('labels.quantity')}</TableHead>
+                    <TableHead>{tNova('labels.price')}</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        {tNova('labels.noItemsAdded')}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    pendingItems.map((item, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.drink}</TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell>R$ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => pendingItems$.set((old) => old.filter((i) => i.drink !== item.drink))}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => selectedComanda$.set(null)}>
+            <Button variant="outline" onClick={closeAddDrinkDialog}>
               {t('cancel')}
             </Button>
-            <Button onClick={handleAddDrink}>
+            <Button onClick={handleAddDrinks} disabled={pendingItems.length === 0}>
               {t('add')}
             </Button>
           </DialogFooter>
