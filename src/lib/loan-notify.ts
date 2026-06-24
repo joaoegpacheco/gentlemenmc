@@ -1,4 +1,4 @@
-const DEFAULT_NOTIFY_EMAILS = ["guiotto@gentlemenmc.com.br"];
+const DEFAULT_NOTIFY_EMAILS = ["robson@gentlemenmc.com.br"];
 
 export type LoanNotifyEvent = "loan" | "return";
 
