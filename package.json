@@ -9,7 +9,10 @@
     "dev:turbo": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:telegram": "node scripts/test-telegram-notify.mjs",
+    "telegram:chat-id": "node scripts/get-telegram-chat-id.mjs",
+    "vercel:env": "node scripts/vercel-env-setup.mjs"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
@@ -54,8 +57,8 @@
     "supabase": "^2.107.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "twilio": "^5.12.0",
     "uuid": "^11.1.0",
+    "vercel": "^54.16.0",
     "xlsx": "npm:@e965/xlsx@0.20.3",
     "yarn": "^1.22.22",
     "zod": "^4.1.12"
