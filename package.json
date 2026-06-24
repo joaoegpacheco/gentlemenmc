@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "test:telegram": "node scripts/test-telegram-notify.mjs",
     "telegram:chat-id": "node scripts/get-telegram-chat-id.mjs",
-    "vercel:env": "node scripts/vercel-env-setup.mjs"
+    "vercel:env": "node scripts/vercel-env-setup.mjs",
+    "vercel:env-loan-notify": "node scripts/vercel-env-setup.mjs --only EMPRESTIMO_NOTIFY_EMAILS"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
