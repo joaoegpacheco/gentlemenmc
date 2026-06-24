@@ -62,6 +62,20 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 - View monthly birthdays of club members
 - Birthday reminders in the main interface
 
+#### 🛠️ Tool Loan (Sede)
+- Borrow tools and equipment from the club headquarters
+- Photo upload with item description and sector selection
+- Loan policy agreement before checkout
+- View active loans and mark items as returned
+- In-app notifications when loans are registered or returned
+- Optional Telegram alerts to facilities staff
+
+#### 🔔 In-App Notifications
+- Notification bell in the main interface
+- Real-time updates via Supabase Realtime
+- Unread count badge and notification history
+- Deep links to relevant tabs (e.g. tool loans)
+
 #### 🛤️ Prospect journey (Prospects)
 - View your own prospect journey and progress
 - Track points and time toward Half Patch and Full Patch
@@ -88,7 +102,14 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 - Category-based product selection
 - Mobile-optimized interface
 
-#### 📦 Inventory Management
+#### 📦 Global Inventory Management
+- Central stock tracking separate from bar inventory
+- Add and update global inventory items
+- Global stock history with audit trail
+- Stock loss and consumption tracking (perdas)
+- Export inventory reports (PDF/CSV)
+
+#### 📦 Inventory Management (Bar)
 - Stock level tracking for all drinks
 - Add and update inventory items
 - Create and delete drinks in the catalog (admin)
@@ -196,6 +217,16 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 - Quick access to comanda creation
 - Streamlined checkout process
 
+### For Facilities Users
+
+#### 🏢 Facilities Operations
+- Member bookings and booking history
+- Events calendar access
+- Global and bar inventory management
+- Stock history and loss tracking
+- Tool loan management
+- User profile management
+
 ### For Bar Users
 
 #### 🍻 Bar Operations
@@ -250,6 +281,12 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
   - Dropdown menus
   - Popovers and tooltips
 
+#### 📱 Telegram Integration (Tool Loans)
+- Optional Telegram Bot alerts for new loans and returns
+- Configurable chat IDs for multiple recipients
+- Helper scripts to discover chat IDs and test notifications
+- Vercel environment setup script for deployment
+
 #### 🔍 Global Search
 - Search functionality across the system
 - Quick access to features and data
@@ -291,7 +328,7 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 ## Tech Stack
 
 ### Core Framework
-- **Framework:** Next.js 16.1.6 (App Router)
+- **Framework:** Next.js 16.2.x (App Router, Turbopack build)
 - **Language:** TypeScript 5
 - **React:** 18.x
 
@@ -333,7 +370,8 @@ This project is an internal system designed for the Gentlemen Motorcycle Club, p
 
 ### Payment & Notifications
 - **Payment Gateway:** InfinitePay
-- **Notifications:** react-toastify 10.0.5
+- **Notifications:** react-toastify 10.0.5, in-app notification bell (Supabase Realtime)
+- **Telegram:** Bot API for tool loan alerts (optional)
 
 ### Performance & Analytics
 - **Speed Insights:** @vercel/speed-insights 1.2.0
@@ -352,8 +390,11 @@ gentlemenmc/
 │   │   ├── [locale]/                 # Internationalized routes
 │   │   │   ├── admin/                # Admin pages
 │   │   │   │   ├── dashboard/       # Administrative dashboard
-│   │   │   │   ├── estoque/          # Inventory management
-│   │   │   │   │   └── historico/   # Stock history
+│   │   │   │   ├── estoque/          # Bar inventory management
+│   │   │   │   │   ├── historico/   # Stock history
+│   │   │   │   │   └── perdas/      # Stock losses & consumption
+│   │   │   │   ├── estoque-global/  # Global inventory management
+│   │   │   │   │   └── historico/   # Global stock history
 │   │   │   │   ├── membros/         # Member management
 │   │   │   │   └── prospectos/      # Prospect validation
 │   │   │   │       └── validacao/   # Validation & points (Command)
@@ -363,6 +404,8 @@ gentlemenmc/
 │   │   │   ├── payment-return/       # Payment callback handler
 │   │   │   └── page.tsx              # Home/login page
 │   │   ├── api/                      # API routes
+│   │   │   ├── emprestimos/         # Tool loan endpoints
+│   │   │   │   └── notify/          # Loan/return notifications
 │   │   │   └── members/             # Member-related endpoints
 │   │   │       ├── create-user/     # Create member account
 │   │   │       └── update-photo/    # Update profile photo
@@ -378,6 +421,8 @@ gentlemenmc/
 │   │   ├── ChangePasswordForm/      # Password change (when enabled)
 │   │   ├── CreditManager/           # Credit management (when enabled)
 │   │   ├── Dashboard/               # Dashboard components
+│   │   ├── NotificationBell/        # In-app notification bell
+│   │   ├── ToolLoanForm/            # Tool loan form, cards, and policy dialog
 │   │   ├── ProspectsPage/           # Prospect journey
 │   │   │   ├── Charts.tsx           # Analytics charts
 │   │   │   ├── DashboardTab.tsx    # Dashboard tab wrapper
@@ -445,10 +490,13 @@ gentlemenmc/
 │   │   ├── request.ts              # i18n request config
 │   │   └── routing.ts              # i18n routing config
 │   ├── lib/                         # Library utilities
+│   │   ├── authenticated-fetch.ts  # Authenticated API fetch helper
 │   │   ├── export-utils.ts         # Export utilities
+│   │   ├── loan-notify.ts          # Tool loan notification helpers
 │   │   ├── message.ts              # Message/notification utility
 │   │   ├── notification.ts         # Notification helpers
 │   │   ├── rate-limit.ts           # Rate limiting
+│   │   ├── telegram-notify.ts      # Telegram Bot API integration
 │   │   ├── utils.ts                # General utilities
 │   │   └── validations.ts          # Validation schemas
 │   ├── services/                    # API service functions
@@ -471,6 +519,12 @@ gentlemenmc/
 ├── messages/                        # Translation files
 │   ├── en.json                     # English translations
 │   └── pt.json                     # Portuguese translations
+├── scripts/                         # Utility scripts
+│   ├── get-telegram-chat-id.mjs   # Discover Telegram chat IDs
+│   ├── test-telegram-notify.mjs   # Test Telegram notifications
+│   └── vercel-env-setup.mjs       # Push env vars to Vercel
+├── supabase/                        # Supabase migrations
+│   └── migrations/                 # SQL migration files
 ├── public/                          # Static assets
 │   ├── estatuto.pdf               # Club statutes PDF
 │   └── images/                     # Images
@@ -561,6 +615,15 @@ Create a `.env.local` file with the following variables:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Required for server-side notifications (tool loans)
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Optional: Telegram alerts for tool loans
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=123456789
+# Multiple recipients: TELEGRAM_CHAT_ID=111,222
+# Disable Telegram loan alerts: ENABLE_TELEGRAM_LOAN_NOTIFY=false
 ```
 
 ### Run Development Server
@@ -594,9 +657,22 @@ npm start
 npm run lint
 ```
 
+### Utility Scripts
+
+```bash
+# Discover Telegram chat ID after messaging your bot with /start
+npm run telegram:chat-id
+
+# Send a test Telegram notification
+npm run test:telegram
+
+# Push Telegram/Supabase env vars to Vercel (requires vercel login)
+npm run vercel:env
+```
+
 ## User Roles
 
-The system supports four distinct user roles with different access levels:
+The system supports five distinct user roles with different access levels:
 
 ### Admin
 - **Full System Access:**
@@ -627,6 +703,15 @@ The system supports four distinct user roles with different access levels:
   - Manage open comandas
   - View and update stock levels
   - Access club statutes
+
+### Facilities User
+- **Facilities & Inventory Access:**
+  - Member bookings and history
+  - Events calendar
+  - Global and bar inventory management
+  - Stock history and loss tracking
+  - Tool loan management
+  - User profile management
 
 ### Member
 - **Standard Member Features:**
@@ -714,6 +799,12 @@ The project uses **Legend State** for reactive state management, providing:
   - Uploads photo to Supabase Storage
   - Updates member record with photo URL
 
+### Tool Loans
+- `POST /api/emprestimos/notify` - Send loan/return notifications
+  - Creates in-app notifications for relevant users
+  - Sends optional Telegram alerts to configured chat IDs
+  - Requires authenticated session
+
 ### Dashboard (Server-side)
 - Dashboard statistics aggregation
 - Monthly revenue calculations
@@ -734,6 +825,12 @@ The application is designed to be deployed on Vercel or any Node.js-compatible h
 ### Environment Variables Required
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-side notifications and admin operations)
+
+### Optional Environment Variables
+- `TELEGRAM_BOT_TOKEN` — Telegram bot token from @BotFather
+- `TELEGRAM_CHAT_ID` — One or more comma-separated chat IDs
+- `ENABLE_TELEGRAM_LOAN_NOTIFY` — Set to `false` to disable Telegram loan alerts
 
 ## License
 

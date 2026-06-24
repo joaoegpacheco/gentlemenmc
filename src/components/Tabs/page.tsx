@@ -22,6 +22,8 @@ import { PaidComandasPageContent } from "@/components/PaidComandasPageContent/pa
 // import { CreditManager } from "../CreditManager/page";
 import { UserProfileTab } from "../UserProfileTab/page";
 import { ProspectsPage } from "../ProspectsPage/page";
+import { ToolLoanForm } from "../ToolLoanForm/page";
+import { NotificationBell } from "../NotificationBell/page";
 import { appStore$ } from "@/stores/appStore";
 
 // Keep the app store in the main bundle so dynamically loaded tab panels share one singleton.
@@ -63,6 +65,14 @@ interface Birthday {
   name: string;
   fullDate: string;
   day: string;
+}
+
+type TabItem =
+  | { key: string; label: React.ReactNode; children: React.ReactNode }
+  | { key: string; label: React.ReactNode };
+
+function tabHasContent(tab: TabItem): tab is { key: string; label: React.ReactNode; children: React.ReactNode } {
+  return "children" in tab;
 }
 
 export default function TabsComponent() {
@@ -203,12 +213,14 @@ export default function TabsComponent() {
     if (key === "17") paidComandasTableRef.current?.refreshData();
   };
 
-  const getCurrentTabs = () => {
+  const getCurrentTabs = (): TabItem[] => {
     // Verificar se o usuário pode ver a aba de prospects
     const canSeeProspectsTab = caseType === "Half" || caseType === "Prospect";
     const canSeeCommandValidationTab = caseType === "Diretoria" || caseType === "Full-Revisor";
     const canSeeConfirmPaymentTabAsCommand =
       userEmail === PAYMENT_CONFIRM_TAB_COMMAND_EMAIL;
+
+    const toolLoanTab = { key: "26", label: t('toolLoan'), children: <ToolLoanForm /> };
 
     if (admin) {
       const tabs = [
@@ -217,6 +229,7 @@ export default function TabsComponent() {
         { key: "12", label: t('guestOrder'), children: <CreateComandaPage /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        toolLoanTab,
         { key: "18", label: t('members'), children: <MembrosPage /> },
         { key: "20", label: t('dashboard'), children: <DashboardTab /> },
         { key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> },
@@ -246,6 +259,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        toolLoanTab,
         { key: "18", label: t('members'), children: <MembrosPage /> },
         { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
         ...(canSeeConfirmPaymentTabAsCommand
@@ -283,6 +297,7 @@ export default function TabsComponent() {
         { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        toolLoanTab,
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         { key: "11", label: <LogoutButton /> },
       ];
@@ -299,6 +314,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        toolLoanTab,
         { key: "16", label: t('globalStock'), children: <EstoqueGlobalPage /> },
         { key: "24", label: t('globalStockHistory'), children: <HistoricoEstoqueGlobalPage /> },
         { key: "14", label: t('stock'), children: <EstoquePage /> },
@@ -321,6 +337,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        toolLoanTab,
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
@@ -348,17 +365,20 @@ export default function TabsComponent() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="px-5 pb-5">
-        <p className="text-sm">{t('birthdaysOfMonth')} </p>
-        <span className="text-sm font-semibold">
-          {birthdaysString}
-        </span>
+      <div className="px-5 pb-5 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm">{t('birthdaysOfMonth')} </p>
+          <span className="text-sm font-semibold">
+            {birthdaysString}
+          </span>
+        </div>
+        <NotificationBell onOpenToolLoanTab={() => handleTabChange("26")} />
       </div>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
           {tabs.map((tab) => {
             // Se não tem children, é provavelmente o LogoutButton
-            if (!tab.children) {
+            if (!tabHasContent(tab)) {
               return (
                 <div key={tab.key} className="flex-shrink-0 ml-auto">
                   {tab.label}
@@ -373,7 +393,7 @@ export default function TabsComponent() {
             );
           })}
         </TabsList>
-        {tabs.filter((tab) => tab.children).map((tab) => (
+        {tabs.filter(tabHasContent).map((tab) => (
           <TabsContent
             key={tab.key}
             value={tab.key}
