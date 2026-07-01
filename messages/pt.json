@@ -269,7 +269,28 @@
   "appNotifications": {
     "title": "Notificações",
     "empty": "Nenhuma notificação",
-    "markAllRead": "Marcar todas como lidas"
+    "markAllRead": "Marcar todas como lidas",
+    "viewInEvents": "Ver na aba Eventos"
+  },
+  "eventRsvp": {
+    "confirmPresence": "Confirmar presença",
+    "declinePresence": "Declinar presença",
+    "confirmTitle": "Confirmar presença",
+    "confirmDescription": "Informe se vai levar convidado(s).",
+    "confirmDescriptionNamed": "Confirme sua presença em {name}. Informe se vai levar convidado(s).",
+    "bringingGuests": "Vai levar convidado(s)?",
+    "yes": "Sim",
+    "no": "Não",
+    "guestNames": "Nomes dos convidados",
+    "guestNamePlaceholder": "Nome do convidado {number}",
+    "addGuest": "Adicionar convidado",
+    "chooseGuestOption": "Selecione se vai levar convidado(s).",
+    "guestNameRequired": "Informe o nome de pelo menos um convidado.",
+    "cancel": "Cancelar",
+    "saving": "Salvando…",
+    "saveError": "Não foi possível salvar sua resposta.",
+    "confirmSuccess": "Presença confirmada!",
+    "declineSuccess": "Presença declinada."
   },
   "adminLayout": {
     "main": "Principal",
@@ -1224,6 +1245,22 @@
       "saving": "Salvando…",
       "cancel": "Cancelar",
       "validation": "Informe nome, data e hora válidos."
+    },
+    "rsvp": {
+      "title": "Sua presença",
+      "loading": "Carregando…",
+      "noResponse": "Você ainda não respondeu.",
+      "statusConfirmed": "Presença confirmada.",
+      "statusDeclined": "Presença declinada.",
+      "guestsCount": "{count, plural, =1 {1 convidado} other {# convidados}}",
+      "confirmPresence": "Confirmar presença",
+      "declinePresence": "Declinar presença"
+    },
+    "attendees": {
+      "title": "Quem vai",
+      "loading": "Carregando confirmados…",
+      "empty": "Ninguém confirmou presença ainda.",
+      "guestOf": "{guest} (convidado de {member})"
     }
   },
   "comandaService": {
