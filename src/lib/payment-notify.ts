@@ -1,5 +1,33 @@
-/** Usuário in-app que recebe notificações de pagamento pendente. */
-export const FINANCE_IN_APP_NOTIFY_EMAIL = "mortari@gentlemenmc.com.br";
+const DEFAULT_FINANCE_IN_APP_NOTIFY_EMAILS = [
+  "mortari@gentlemenmc.com.br",
+  "pacheco@gentlemenmc.com.br",
+] as const;
+
+/** Usuários in-app que recebem notificações de pagamento pendente. */
+export function getFinanceInAppNotifyEmails(): string[] {
+  const raw = process.env.FINANCE_IN_APP_NOTIFY_EMAILS;
+  if (!raw?.trim()) return [...DEFAULT_FINANCE_IN_APP_NOTIFY_EMAILS];
+  return raw
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** Usuários autorizados a confirmar retorno de pagamento (InfinitePay). */
+export function getPaymentConfirmAllowedEmails(): string[] {
+  const raw = process.env.PAYMENT_CONFIRM_ALLOWED_EMAILS;
+  if (!raw?.trim()) return [...DEFAULT_FINANCE_IN_APP_NOTIFY_EMAILS];
+  return raw
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isPaymentConfirmAllowedEmail(email?: string | null): boolean {
+  const normalized = email?.trim().toLowerCase() ?? "";
+  if (!normalized) return false;
+  return getPaymentConfirmAllowedEmails().includes(normalized);
+}
 
 /** E-mail real do tesoureiro para comprovantes. */
 export const TREASURER_EMAIL = "treasurer@gentlemenmc.com.br";

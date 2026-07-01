@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
   buildPaymentIssueNotifyMessages,
-  FINANCE_IN_APP_NOTIFY_EMAIL,
+  getFinanceInAppNotifyEmails,
   type PaymentKind,
 } from "@/lib/payment-notify";
 
@@ -22,8 +22,8 @@ const notifySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const parsed = notifySchema.safeParse(body);
+    const requestBody = await request.json();
+    const parsed = notifySchema.safeParse(requestBody);
     if (!parsed.success) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
@@ -88,14 +88,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const financeMember = (members ?? []).find(
-      (m) =>
-        m.user_email?.trim().toLowerCase() === FINANCE_IN_APP_NOTIFY_EMAIL
-    );
+    const notifyEmails = new Set(getFinanceInAppNotifyEmails());
+    const recipientIds = [
+      ...new Set(
+        (members ?? [])
+          .filter(
+            (m) =>
+              m.user_id &&
+              m.user_email &&
+              notifyEmails.has(m.user_email.trim().toLowerCase())
+          )
+          .map((m) => m.user_id as string)
+      ),
+    ];
 
-    if (!financeMember?.user_id) {
+    if (recipientIds.length === 0) {
       return NextResponse.json(
-        { error: "Usuário financeiro não encontrado no app" },
+        { error: "Usuários financeiros não encontrados no app" },
         { status: 500 }
       );
     }
@@ -104,7 +113,7 @@ export async function POST(request: NextRequest) {
       parsed.data.memberName?.trim() || charge.customer_name?.trim() || "Membro";
     const paymentKind = parsed.data.paymentKind as PaymentKind | undefined;
 
-    const { title, body, notificationType } = buildPaymentIssueNotifyMessages({
+    const { title, body: notificationBody, notificationType } = buildPaymentIssueNotifyMessages({
       reason: parsed.data.reason,
       memberName,
       amount: parsed.data.amount,
@@ -114,32 +123,42 @@ export async function POST(request: NextRequest) {
 
     const referenceId = `${parsed.data.reason}:${parsed.data.orderNsu}`;
 
-    const { data: existing } = await admin
+    const { data: existingRows } = await admin
       .from("notificacoes_app")
-      .select("id")
-      .eq("user_id", financeMember.user_id)
+      .select("user_id")
+      .in("user_id", recipientIds)
       .eq("type", notificationType)
-      .eq("reference_id", referenceId)
-      .maybeSingle();
+      .eq("reference_id", referenceId);
 
-    if (existing) {
+    const alreadyNotified = new Set(
+      (existingRows ?? []).map((row) => row.user_id as string)
+    );
+    const pendingRecipientIds = recipientIds.filter((id) => !alreadyNotified.has(id));
+
+    if (pendingRecipientIds.length === 0) {
       return NextResponse.json({ success: true, notified: false, reason: "duplicate" });
     }
 
-    const { error: insertError } = await admin.from("notificacoes_app").insert({
-      user_id: financeMember.user_id,
+    const rows = pendingRecipientIds.map((userId) => ({
+      user_id: userId,
       title,
-      body,
+      body: notificationBody,
       type: notificationType,
       reference_id: referenceId,
-    });
+    }));
+
+    const { error: insertError } = await admin.from("notificacoes_app").insert(rows);
 
     if (insertError) {
       console.error("Erro ao criar notificação de pagamento:", insertError);
       return NextResponse.json({ error: "Erro ao criar notificação" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, notified: true });
+    return NextResponse.json({
+      success: true,
+      notified: true,
+      inApp: { count: rows.length, emails: [...notifyEmails] },
+    });
   } catch (error) {
     console.error("Erro ao notificar pagamento:", error);
     return NextResponse.json(

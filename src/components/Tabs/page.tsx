@@ -26,6 +26,7 @@ import { ToolLoanForm } from "../ToolLoanForm/page";
 import { NotificationBell } from "../NotificationBell/page";
 import { appStore$ } from "@/stores/appStore";
 import { syncEventNotifications } from "@/lib/sync-event-notifications";
+import { isPaymentConfirmAllowedEmail } from "@/lib/payment-notify";
 
 // Keep the app store in the main bundle so dynamically loaded tab panels share one singleton.
 void appStore$;
@@ -54,9 +55,6 @@ const DashboardTab = dynamicTab(() =>
 );
 const OverviewFinancePage = dynamicTab(() => import("@/components/OverviewFinancePage/page"));
 const ProspectValidationPage = dynamicTab(() => import("@/app/[locale]/admin/prospectos/validacao/page"));
-
-/** Mesmo email autorizado a confirmar retorno de pagamento (PaymentReturnClient). */
-const PAYMENT_CONFIRM_TAB_COMMAND_EMAIL = "mortari@gentlemenmc.com.br";
 
 interface AdminData {
   id: string;
@@ -227,8 +225,7 @@ export default function TabsComponent() {
     // Verificar se o usuário pode ver a aba de prospects
     const canSeeProspectsTab = caseType === "Half" || caseType === "Prospect";
     const canSeeCommandValidationTab = caseType === "Diretoria" || caseType === "Full-Revisor";
-    const canSeeConfirmPaymentTabAsCommand =
-      userEmail === PAYMENT_CONFIRM_TAB_COMMAND_EMAIL;
+    const canSeeConfirmPaymentTabAsCommand = isPaymentConfirmAllowedEmail(userEmail);
 
     const toolLoanTab = { key: "26", label: t('toolLoan'), children: <ToolLoanForm /> };
 

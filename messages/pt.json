@@ -687,7 +687,7 @@
     "checkoutItemDebt": "Bebidas Gentlemen - Conta aberta",
     "checkoutItemCredit": "Créditos Bar Gentlemen",
     "paymentNotice": "Antes de pagar: ao clicar nos botões abaixo, você será redirecionado ao checkout InfinitePay (PIX ou cartão). Após concluir o pagamento, permaneça na página da InfinitePay até ser redirecionado de volta — isso é necessário para registrar a transação no app.",
-    "paymentPostNotice": "Se a confirmação automática não ocorrer, clique em \"Não consegui concluir\" para avisar o financeiro no app (mortari) ou envie o comprovante por e-mail ao tesoureiro (treasurer@gentlemenmc.com.br):",
+    "paymentPostNotice": "Se a confirmação automática não ocorrer, clique em \"Não consegui concluir\" para avisar o financeiro no app ou envie o comprovante por e-mail ao tesoureiro (treasurer@gentlemenmc.com.br):",
     "reportIncompleteCheckout": "Não consegui concluir o pagamento",
     "notifyingFinance": "Avisando financeiro...",
     "financeNotified": "Financeiro avisado no app. Envie o comprovante por e-mail se já tiver pago.",

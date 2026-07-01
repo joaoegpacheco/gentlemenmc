@@ -687,7 +687,7 @@
     "checkoutItemDebt": "Gentlemen Drinks - Open bill",
     "checkoutItemCredit": "Gentlemen Bar Credits",
     "paymentNotice": "Before paying: clicking the buttons below opens InfinitePay checkout (PIX or card). After payment, stay on the InfinitePay page until you are redirected back — this is required to register the transaction in the app.",
-    "paymentPostNotice": "If automatic confirmation does not happen, click \"Could not complete payment\" to notify finance in the app (mortari) or email the receipt to the treasurer (treasurer@gentlemenmc.com.br):",
+    "paymentPostNotice": "If automatic confirmation does not happen, click \"Could not complete payment\" to notify finance in the app or email the receipt to the treasurer (treasurer@gentlemenmc.com.br):",
     "reportIncompleteCheckout": "Could not complete payment",
     "notifyingFinance": "Notifying finance...",
     "financeNotified": "Finance notified in the app. Email the receipt if you have already paid.",
