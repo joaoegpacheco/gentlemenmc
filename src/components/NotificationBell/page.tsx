@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Bell } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/hooks/use-supabase";
 import { Button } from "@/components/ui/button";
@@ -17,39 +17,54 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-
-interface AppNotification {
-  id: string;
-  title: string;
-  body: string;
-  type: string;
-  reference_id: string | null;
-  read_at: string | null;
-  created_at: string;
-}
+import {
+  fetchAppNotifications,
+  syncEventNotifications,
+  toastEventNotifications,
+  type EventNotificationRow,
+} from "@/lib/sync-event-notifications";
 
 interface NotificationBellProps {
   onOpenToolLoanTab?: () => void;
+  onOpenCalendarTab?: () => void;
+  /** Incrementado pelo Tabs após sync de eventos (login). */
+  syncVersion?: number;
 }
 
-export function NotificationBell({ onOpenToolLoanTab }: NotificationBellProps) {
+export function NotificationBell({
+  onOpenToolLoanTab,
+  onOpenCalendarTab,
+  syncVersion = 0,
+}: NotificationBellProps) {
   const t = useTranslations("appNotifications");
-  const [items, setItems] = useState<AppNotification[]>([]);
+  const locale = useLocale();
+  const [items, setItems] = useState<EventNotificationRow[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const unreadCount = items.filter((n) => !n.read_at).length;
 
-  const fetchNotifications = useCallback(async (uid: string) => {
-    const { data, error } = await supabase
-      .from("notificacoes_app")
-      .select("*")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (!error && data) setItems(data);
+  const loadItems = useCallback(async () => {
+    const rows = await fetchAppNotifications();
+    setItems(rows);
+    return rows;
   }, []);
+
+  const runEventSync = useCallback(
+    async (showToasts: boolean) => {
+      const result = await syncEventNotifications(locale === "en" ? "en" : "pt");
+      const rows = await loadItems();
+
+      if (showToasts && result.notifications.length > 0) {
+        toastEventNotifications(result.notifications, (opts) =>
+          toast({ title: opts.title, description: opts.description })
+        );
+      }
+
+      return { result, rows };
+    },
+    [loadItems, locale]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +75,7 @@ export function NotificationBell({ onOpenToolLoanTab }: NotificationBellProps) {
       if (!uid || cancelled) return;
 
       setUserId(uid);
-      await fetchNotifications(uid);
+      await loadItems();
       if (cancelled) return;
 
       if (channelRef.current) {
@@ -79,17 +94,20 @@ export function NotificationBell({ onOpenToolLoanTab }: NotificationBellProps) {
             filter: `user_id=eq.${uid}`,
           },
           (payload) => {
-            const row = payload.new as AppNotification;
+            const row = payload.new as EventNotificationRow;
             setItems((prev) => [row, ...prev].slice(0, 20));
-            toast({
-              title: row.title,
-              description: row.body,
-            });
+            toastEventNotifications([row], (opts) =>
+              toast({ title: opts.title, description: opts.description })
+            );
           }
         )
         .subscribe();
 
       channelRef.current = channel;
+
+      if (!cancelled) {
+        await runEventSync(true);
+      }
     };
 
     void init();
@@ -101,7 +119,12 @@ export function NotificationBell({ onOpenToolLoanTab }: NotificationBellProps) {
         channelRef.current = null;
       }
     };
-  }, [fetchNotifications]);
+  }, [loadItems, runEventSync]);
+
+  useEffect(() => {
+    if (syncVersion <= 0) return;
+    void runEventSync(true);
+  }, [syncVersion, runEventSync]);
 
   const markAsRead = async (id: string) => {
     const { error } = await supabase
@@ -133,10 +156,12 @@ export function NotificationBell({ onOpenToolLoanTab }: NotificationBellProps) {
     }
   };
 
-  const handleItemClick = async (item: AppNotification) => {
+  const handleItemClick = async (item: EventNotificationRow) => {
     if (!item.read_at) await markAsRead(item.id);
     if (item.type === "emprestimo_sede" || item.type === "emprestimo_sede_devolucao") {
       onOpenToolLoanTab?.();
+    } else if (item.type === "evento_dia") {
+      onOpenCalendarTab?.();
     }
   };
 
