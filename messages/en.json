@@ -269,7 +269,28 @@
   "appNotifications": {
     "title": "Notifications",
     "empty": "No notifications",
-    "markAllRead": "Mark all as read"
+    "markAllRead": "Mark all as read",
+    "viewInEvents": "View in Events tab"
+  },
+  "eventRsvp": {
+    "confirmPresence": "Confirm attendance",
+    "declinePresence": "Decline attendance",
+    "confirmTitle": "Confirm attendance",
+    "confirmDescription": "Let us know if you are bringing guest(s).",
+    "confirmDescriptionNamed": "Confirm your attendance for {name}. Let us know if you are bringing guest(s).",
+    "bringingGuests": "Will you bring guest(s)?",
+    "yes": "Yes",
+    "no": "No",
+    "guestNames": "Guest names",
+    "guestNamePlaceholder": "Guest name {number}",
+    "addGuest": "Add guest",
+    "chooseGuestOption": "Select whether you are bringing guest(s).",
+    "guestNameRequired": "Enter at least one guest name.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "saveError": "Could not save your response.",
+    "confirmSuccess": "Attendance confirmed!",
+    "declineSuccess": "Attendance declined."
   },
   "adminLayout": {
     "main": "Main",
@@ -1224,6 +1245,22 @@
       "saving": "Saving…",
       "cancel": "Cancel",
       "validation": "Enter a name, date, and valid time."
+    },
+    "rsvp": {
+      "title": "Your attendance",
+      "loading": "Loading…",
+      "noResponse": "You have not responded yet.",
+      "statusConfirmed": "Attendance confirmed.",
+      "statusDeclined": "Attendance declined.",
+      "guestsCount": "{count, plural, =1 {1 guest} other {# guests}}",
+      "confirmPresence": "Confirm attendance",
+      "declinePresence": "Decline attendance"
+    },
+    "attendees": {
+      "title": "Who is going",
+      "loading": "Loading confirmations…",
+      "empty": "No one has confirmed attendance yet.",
+      "guestOf": "{guest} (guest of {member})"
     }
   },
   "comandaService": {
