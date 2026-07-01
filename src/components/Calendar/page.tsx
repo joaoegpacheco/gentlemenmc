@@ -32,6 +32,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getAccessToken } from "@/lib/sync-event-notifications";
+import type { EventAttendee, EventRsvpRow } from "@/lib/event-rsvp";
+import {
+  EventRsvpDialog,
+  useEventRsvpActions,
+} from "@/components/EventRsvpDialog/page";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -185,6 +191,20 @@ const CalendarEvents = () => {
   const [createSubmitting, setCreateSubmitting] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  const [myRsvp, setMyRsvp] = useState<EventRsvpRow | null>(null);
+  const [myRsvpLoading, setMyRsvpLoading] = useState(false);
+  const [attendees, setAttendees] = useState<EventAttendee[]>([]);
+  const [attendeesLoading, setAttendeesLoading] = useState(false);
+  const {
+    dialogOpen,
+    setDialogOpen,
+    activeEventId,
+    activeEventName,
+    declining,
+    openConfirmDialog,
+    declinePresence,
+  } = useEventRsvpActions();
+
   const loadEvents = useCallback(async () => {
     setLoadError(null);
     setLoading(true);
@@ -264,7 +284,7 @@ const CalendarEvents = () => {
       }
       const { data } = await supabase
         .from("admins")
-        .select("id")
+        .select("id, role")
         .eq("id", user.id)
         .in("role", ["admin", "command"]);
       if (!cancelled) setCanEditEvents(!!data?.length);
@@ -272,6 +292,59 @@ const CalendarEvents = () => {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  const loadMyRsvp = useCallback(async (eventId: string) => {
+    setMyRsvpLoading(true);
+    const token = await getAccessToken();
+    if (!token) {
+      setMyRsvp(null);
+      setMyRsvpLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/events/rsvp?eventId=${encodeURIComponent(eventId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        setMyRsvp(null);
+        return;
+      }
+      const json = (await res.json()) as { rsvp?: EventRsvpRow | null };
+      setMyRsvp(json.rsvp ?? null);
+    } catch {
+      setMyRsvp(null);
+    } finally {
+      setMyRsvpLoading(false);
+    }
+  }, []);
+
+  const loadAttendees = useCallback(async (eventId: string) => {
+    setAttendeesLoading(true);
+    const token = await getAccessToken();
+    if (!token) {
+      setAttendees([]);
+      setAttendeesLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `/api/events/attendees?eventId=${encodeURIComponent(eventId)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        setAttendees([]);
+        return;
+      }
+      const json = (await res.json()) as { attendees?: EventAttendee[] };
+      setAttendees(json.attendees ?? []);
+    } catch {
+      setAttendees([]);
+    } finally {
+      setAttendeesLoading(false);
+    }
   }, []);
 
   const [detailEditing, setDetailEditing] = useState(false);
@@ -307,8 +380,17 @@ const CalendarEvents = () => {
       setDetailEditing(false);
       setEditError(null);
       setDetailOpen(true);
+
+      const dbId = ext.dbId ?? null;
+      if (dbId) {
+        void loadMyRsvp(dbId);
+        void loadAttendees(dbId);
+      } else {
+        setMyRsvp(null);
+        setAttendees([]);
+      }
     },
-    []
+    [loadAttendees, loadMyRsvp]
   );
 
   useEffect(() => {
@@ -569,6 +651,92 @@ const CalendarEvents = () => {
                       {selected.location || t("detail.locationEmpty")}
                     </p>
                   </div>
+
+                  {selected.dbId && (
+                    <div className="border-t pt-3 space-y-2">
+                      <p className="font-medium text-muted-foreground">
+                        {t("rsvp.title")}
+                      </p>
+                      {myRsvpLoading ? (
+                        <p className="text-muted-foreground">{t("rsvp.loading")}</p>
+                      ) : myRsvp?.status === "confirmed" ? (
+                        <p className="text-green-700 dark:text-green-400">
+                          {t("rsvp.statusConfirmed")}
+                          {myRsvp.guestNames.length > 0 && (
+                            <span className="block text-sm text-muted-foreground mt-1">
+                              {t("rsvp.guestsCount", {
+                                count: myRsvp.guestNames.length,
+                              })}
+                              {": "}
+                              {myRsvp.guestNames.join(", ")}
+                            </span>
+                          )}
+                        </p>
+                      ) : myRsvp?.status === "declined" ? (
+                        <p className="text-muted-foreground">
+                          {t("rsvp.statusDeclined")}
+                        </p>
+                      ) : (
+                        <p className="text-muted-foreground">{t("rsvp.noResponse")}</p>
+                      )}
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() =>
+                            openConfirmDialog(selected.dbId!, selected.name)
+                          }
+                        >
+                          {t("rsvp.confirmPresence")}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={declining}
+                          onClick={() => {
+                            void declinePresence(selected.dbId!, selected.name, () => {
+                              void loadMyRsvp(selected.dbId!);
+                            });
+                          }}
+                        >
+                          {t("rsvp.declinePresence")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {selected.dbId && (
+                    <div className="border-t pt-3 space-y-2">
+                      <p className="font-medium text-muted-foreground">
+                        {t("attendees.title")}
+                      </p>
+                      {attendeesLoading ? (
+                        <p className="text-muted-foreground">{t("attendees.loading")}</p>
+                      ) : attendees.length === 0 ? (
+                        <p className="text-muted-foreground">{t("attendees.empty")}</p>
+                      ) : (
+                        <ul className="list-disc pl-5 space-y-1">
+                          {attendees.flatMap((attendee) => {
+                            const lines = [
+                              <li key={attendee.userId}>{attendee.userName}</li>,
+                            ];
+                            for (const guestName of attendee.guestNames) {
+                              lines.push(
+                                <li key={`${attendee.userId}-${guestName}`} className="text-muted-foreground">
+                                  {t("attendees.guestOf", {
+                                    guest: guestName,
+                                    member: attendee.userName,
+                                  })}
+                                </li>
+                              );
+                            }
+                            return lines;
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -611,6 +779,21 @@ const CalendarEvents = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {activeEventId && (
+        <EventRsvpDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          eventId={activeEventId}
+          eventName={activeEventName}
+          onSuccess={() => {
+            if (selected?.dbId === activeEventId) {
+              void loadMyRsvp(activeEventId);
+              void loadAttendees(activeEventId);
+            }
+          }}
+        />
+      )}
 
       <Dialog
         open={createOpen}
