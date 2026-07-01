@@ -12,11 +12,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/utils/formatDateTime";
-import { CheckCircle2, Download, FileText, XCircle } from "lucide-react";
+import { CheckCircle2, Download, FileText, Info, XCircle } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useLocale, useTranslations } from "next-intl";
 import { message } from "@/lib/message";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { InputNumber } from "@/components/ui/input-number";
+import { Label } from "@/components/ui/label";
+import { createChargeAndOpenCheckout, type CheckoutMember } from "@/lib/infinitepay-checkout";
+import {
+  TREASURER_EMAIL,
+  savePendingCheckout,
+  loadPendingCheckout,
+} from "@/lib/payment-notify";
+import { notifyPaymentIssue } from "@/lib/notify-payment-issue-client";
 import {
   exportDrinksReportExcel,
   exportDrinksReportPDF,
@@ -47,6 +74,8 @@ const GENERAL_ADMIN_EMAILS = [
   "rodrigo@gentlemenmc.com.br",
 ] as const;
 
+const FINANCE_TREASURER_EMAIL = TREASURER_EMAIL;
+
 function isGeneralAdminEmail(email?: string | null): boolean {
   const normalized = email?.trim().toLowerCase() ?? "";
   return GENERAL_ADMIN_EMAILS.includes(
@@ -57,6 +86,16 @@ function isGeneralAdminEmail(email?: string | null): boolean {
 function getCurrentMonthValue() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+type PendingCheckout = {
+  amount: number;
+  itemName: string;
+  type: "debt" | "credit";
+};
+
+function buildReceiptMailto(subject: string, body: string): string {
+  return `mailto:${FINANCE_TREASURER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 export const CardCommand = forwardRef((_, ref) => {
@@ -71,8 +110,18 @@ export const CardCommand = forwardRef((_, ref) => {
   const totalAmount$ = useObservable<number>(0);
   const drinksData$ = useObservable<Drink[]>([]);
   const todayBR$ = useObservable<string>("");
+  const memberProfile$ = useObservable<CheckoutMember | null>(null);
   const [reportMonth, setReportMonth] = useState(getCurrentMonthValue);
   const [exporting, setExporting] = useState(false);
+  const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const [creditAmount, setCreditAmount] = useState(50);
+  const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
+  const [pendingCheckout, setPendingCheckout] = useState<PendingCheckout | null>(null);
+  const [openingCheckout, setOpeningCheckout] = useState(false);
+  const [reportingIncomplete, setReportingIncomplete] = useState(false);
+  const [pendingCheckoutStorage, setPendingCheckoutStorage] = useState(
+    () => loadPendingCheckout()
+  );
 
   const userData = useValue(userData$);
   const isAdmin = useValue(isAdmin$);
@@ -83,6 +132,10 @@ export const CardCommand = forwardRef((_, ref) => {
   const totalAmount = useValue(totalAmount$);
   const drinksData = useValue(drinksData$);
   const todayBR = useValue(todayBR$);
+  const memberProfile = useValue(memberProfile$);
+
+  const canSelfPay =
+    !isBarMC && !!userData && !!selectedUUID && selectedUUID === userData.id;
 
   const monthOptions = useMemo(() => {
     const formatter = new Intl.DateTimeFormat(locale, {
@@ -156,6 +209,16 @@ export const CardCommand = forwardRef((_, ref) => {
     const generalAdmin = isGeneralAdminEmail(user.email);
     isGeneralAdmin$.set(generalAdmin);
     isAdmin$.set(adminStatus || generalAdmin);
+
+    const { data: profile } = await supabase
+      .from("membros")
+      .select("user_name, phone, user_email")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profile) {
+      memberProfile$.set(profile);
+    }
 
     if (adminStatus || generalAdmin) {
       const { data: membersData } = await supabase
@@ -323,6 +386,107 @@ export const CardCommand = forwardRef((_, ref) => {
     [getReportContext, getReportLabels, t]
   );
 
+  const requestCheckout = (checkout: PendingCheckout) => {
+    setPendingCheckout(checkout);
+    setCheckoutConfirmOpen(true);
+  };
+
+  const handleConfirmCheckout = async () => {
+    if (!pendingCheckout || !memberProfile) return;
+
+    setOpeningCheckout(true);
+    try {
+      const result = await createChargeAndOpenCheckout(
+        memberProfile,
+        memberProfile.user_name,
+        pendingCheckout.amount,
+        pendingCheckout.itemName
+      );
+
+      if (!result.ok) {
+        message.error(
+          result.reason === "no_phone"
+            ? t("memberPhoneNotFound")
+            : t("errorCreatingCharge")
+        );
+        return;
+      }
+
+      savePendingCheckout({
+        orderNsu: result.orderNsu,
+        memberName: memberProfile.user_name,
+        amount: pendingCheckout.amount,
+        paymentKind: pendingCheckout.type,
+        createdAt: new Date().toISOString(),
+      });
+      setPendingCheckoutStorage(loadPendingCheckout());
+
+      setCheckoutConfirmOpen(false);
+      setPendingCheckout(null);
+    } finally {
+      setOpeningCheckout(false);
+    }
+  };
+
+  const handlePayOpenBill = () => {
+    if (totalAmount <= 0) {
+      message.warning(t("noOpenBill"));
+      return;
+    }
+    requestCheckout({
+      amount: totalAmount,
+      itemName: t("checkoutItemDebt"),
+      type: "debt",
+    });
+  };
+
+  const handleConfirmBuyCredits = () => {
+    if (creditAmount <= 0) {
+      message.error(t("invalidAmount"));
+      return;
+    }
+    setCreditDialogOpen(false);
+    requestCheckout({
+      amount: creditAmount,
+      itemName: t("checkoutItemCredit"),
+      type: "credit",
+    });
+  };
+
+  const memberName = memberProfile?.user_name ?? "";
+
+  const handleReportIncompleteCheckout = async () => {
+    const pending = loadPendingCheckout();
+    if (!pending) {
+      message.warning(t("noPendingCheckout"));
+      return;
+    }
+
+    setReportingIncomplete(true);
+    try {
+      const result = await notifyPaymentIssue({
+        orderNsu: pending.orderNsu,
+        reason: "incomplete_checkout",
+        paymentKind: pending.paymentKind,
+        memberName: pending.memberName,
+        amount: pending.amount,
+      });
+
+      if (!result.ok) {
+        message.error(result.error);
+        return;
+      }
+
+      if (result.notified) {
+        message.success(t("financeNotified"));
+      } else {
+        message.info(t("financeAlreadyNotified"));
+      }
+    } finally {
+      setReportingIncomplete(false);
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     refreshData: () => fetchDrinks(selectedUUID),
   }));
@@ -404,6 +568,73 @@ export const CardCommand = forwardRef((_, ref) => {
         </div>
       )}
 
+      {canSelfPay && (
+        <>
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
+            <div className="flex gap-3">
+              <Info className="mt-0.5 h-5 w-5 shrink-0" />
+              <p>{t("paymentNotice")}</p>
+            </div>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-3">
+            <Button
+              onClick={handlePayOpenBill}
+              disabled={totalAmount <= 0}
+            >
+              {t("payOpenBill")}
+            </Button>
+            <Button variant="outline" onClick={() => setCreditDialogOpen(true)}>
+              {t("buyCredits")}
+            </Button>
+          </div>
+
+          <div className="mb-4 rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
+            <p className="mb-3">{t("paymentPostNotice")}</p>
+            <div className="flex flex-wrap gap-2">
+              {pendingCheckoutStorage && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={reportingIncomplete}
+                  onClick={() => void handleReportIncompleteCheckout()}
+                >
+                  {reportingIncomplete
+                    ? t("notifyingFinance")
+                    : t("reportIncompleteCheckout")}
+                </Button>
+              )}
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={buildReceiptMailto(
+                    t("receiptEmailSubjectDebt", { name: memberName }),
+                    t("receiptEmailBody", {
+                      name: memberName,
+                      amount: formatCurrency(totalAmount),
+                    })
+                  )}
+                >
+                  {t("sendReceiptDebt")}
+                </a>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={buildReceiptMailto(
+                    t("receiptEmailSubjectCredit", { name: memberName }),
+                    t("receiptEmailBody", {
+                      name: memberName,
+                      amount: formatCurrency(creditAmount),
+                    })
+                  )}
+                >
+                  {t("sendReceiptCredit")}
+                </a>
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
       {userData && (
         <div className="mb-4 text-lg font-semibold">
           {isBarMC
@@ -473,6 +704,62 @@ export const CardCommand = forwardRef((_, ref) => {
           ))}
         </div>
       )}
+
+      <Dialog open={creditDialogOpen} onOpenChange={setCreditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("buyCreditsTitle")}</DialogTitle>
+            <DialogDescription>{t("buyCreditsDescription")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="credit-amount">{t("creditAmountLabel")}</Label>
+            <InputNumber
+              id="credit-amount"
+              value={creditAmount}
+              onChange={(val) => setCreditAmount(val ?? 0)}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreditDialogOpen(false)}>
+              {t("cancel")}
+            </Button>
+            <Button onClick={handleConfirmBuyCredits}>{t("goToCheckout")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={checkoutConfirmOpen} onOpenChange={setCheckoutConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("checkoutConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              {pendingCheckout && (
+                <span className="block">
+                  {t("checkoutConfirmAmount", {
+                    amount: formatCurrency(pendingCheckout.amount),
+                  })}
+                </span>
+              )}
+              <span className="block">{t("checkoutConfirmInstructions")}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={openingCheckout}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void handleConfirmCheckout();
+              }}
+              disabled={openingCheckout}
+            >
+              {openingCheckout ? t("openingCheckout") : t("goToCheckout")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 });
