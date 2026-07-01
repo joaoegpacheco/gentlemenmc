@@ -14,8 +14,10 @@ export const LogoutButton: React.FC<ButtonProps> = ({ asChild, variant, size, cl
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      // Remover o cookie authToken
+      // Remover cookies de autenticação
       document.cookie = "authToken=; path=/; max-age=0;";
+      document.cookie = "refreshToken=; path=/; max-age=0;";
+      sessionStorage.removeItem("event-notify-toasted");
 
       notification.success({
         message: t('logoutSuccess'),
