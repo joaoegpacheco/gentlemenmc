@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { supabase } from "@/hooks/use-supabase";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Image from 'next/image';
 import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
+import { notifyFinanceOnPaymentReturnFailure } from "@/lib/notify-payment-return-failure";
 
 const PAYMENT_CONFIRM_ALLOWED_EMAIL = "mortari@gentlemenmc.com.br";
 
@@ -40,6 +41,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
 
   const status = useValue(status$);
   const name = useValue(name$);
+  const notifiedRef = useRef(false);
 
   useEffect(() => {
     const confirmPayment = async () => {
@@ -66,6 +68,10 @@ export default function PaymentReturnClient({ searchParams }: Props) {
         const email = authData?.user?.email?.trim().toLowerCase() ?? "";
         if (email !== PAYMENT_CONFIRM_ALLOWED_EMAIL) {
           status$.set("failed");
+          if (!notifiedRef.current) {
+            notifiedRef.current = true;
+            void notifyFinanceOnPaymentReturnFailure(searchParams);
+          }
           return;
         }
 
@@ -96,6 +102,10 @@ export default function PaymentReturnClient({ searchParams }: Props) {
       } catch (err) {
         console.error("Erro ao confirmar pagamento:", err);
         status$.set("failed");
+        if (!notifiedRef.current) {
+          notifiedRef.current = true;
+          void notifyFinanceOnPaymentReturnFailure(searchParams);
+        }
       }
     };
 
