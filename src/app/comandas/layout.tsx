@@ -1,7 +1,9 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import AuthListener from "@/components/AuthListener";
 import { ModeToggle } from '@/components/mode-toggle';
+import { Toaster } from '@/components/ui/toaster';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,10 +16,12 @@ export default async function ComandasLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={routing.defaultLocale}>
+      <AuthListener />
       <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
         <ModeToggle />
       </header>
       {children}
+      <Toaster />
     </NextIntlClientProvider>
   );
 }

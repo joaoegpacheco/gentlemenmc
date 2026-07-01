@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormCommand } from "@/components/Form/page";
@@ -25,6 +25,7 @@ import { ProspectsPage } from "../ProspectsPage/page";
 import { ToolLoanForm } from "../ToolLoanForm/page";
 import { NotificationBell } from "../NotificationBell/page";
 import { appStore$ } from "@/stores/appStore";
+import { syncEventNotifications } from "@/lib/sync-event-notifications";
 
 // Keep the app store in the main bundle so dynamically loaded tab panels share one singleton.
 void appStore$;
@@ -77,6 +78,7 @@ function tabHasContent(tab: TabItem): tab is { key: string; label: React.ReactNo
 
 export default function TabsComponent() {
   const t = useTranslations('tabs');
+  const locale = useLocale();
   const admin$ = useObservable<boolean | null>(null);
   const manager$ = useObservable<boolean | null>(null);
   const isBarUser$ = useObservable<boolean>(false);
@@ -102,6 +104,7 @@ export default function TabsComponent() {
   const comandOpenTableRef = useRef<any>(null);
   const paidComandasTableRef = useRef<any>(null);
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => new Set(["1"]));
+  const [notifySyncVersion, setNotifySyncVersion] = useState(0);
 
   useEffect(() => {
     const checkIfUserIsAdmin = async () => {
@@ -154,11 +157,18 @@ export default function TabsComponent() {
         admin$.set(false);
         caseType$.set(null);
       }
+
+      try {
+        await syncEventNotifications(locale === "en" ? "en" : "pt");
+        setNotifySyncVersion((v) => v + 1);
+      } catch (error) {
+        console.error("Error syncing event notifications:", error);
+      }
     };
 
     checkIfUserIsAdmin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     const loadBirthdays = async () => {
@@ -372,7 +382,11 @@ export default function TabsComponent() {
             {birthdaysString}
           </span>
         </div>
-        <NotificationBell onOpenToolLoanTab={() => handleTabChange("26")} />
+        <NotificationBell
+          syncVersion={notifySyncVersion}
+          onOpenToolLoanTab={() => handleTabChange("26")}
+          onOpenCalendarTab={() => handleTabChange("5")}
+        />
       </div>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">

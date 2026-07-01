@@ -667,7 +667,30 @@
     "quantity": "Quantity",
     "value": "Value",
     "paid": "Paid",
-    "markedBy": "Marked by: {user}"
+    "paidAt": "Paid on: {date}",
+    "markedBy": "Marked by: {user}",
+    "report": {
+      "selectMonth": "Report month",
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel",
+      "selectMemberFirst": "Select a member to export the report",
+      "noDataForMonth": "No drinks found for the selected month",
+      "errorExporting": "Error exporting report",
+      "title": "Drinks Report",
+      "member": "Member",
+      "period": "Period",
+      "totalSpent": "Total spent",
+      "summaryByDrink": "Summary by drink",
+      "details": "Details",
+      "drink": "Drink",
+      "totalQuantity": "Total qty.",
+      "totalValue": "Total value",
+      "paidYes": "Yes",
+      "paidNo": "No",
+      "markedByColumn": "Marked by",
+      "sheetSummary": "Summary",
+      "sheetDetails": "Details"
+    }
   },
   "cardDrinksAll": {
     "errorLoadingDebts": "Could not load debts. Check your connection or try again.",

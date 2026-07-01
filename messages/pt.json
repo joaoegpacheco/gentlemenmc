@@ -667,7 +667,30 @@
     "quantity": "Quantidade",
     "value": "Valor",
     "paid": "Pago",
-    "markedBy": "Marcado por: {user}"
+    "paidAt": "Pago em: {date}",
+    "markedBy": "Marcado por: {user}",
+    "report": {
+      "selectMonth": "Mês do relatório",
+      "exportPdf": "Exportar PDF",
+      "exportExcel": "Exportar Excel",
+      "selectMemberFirst": "Selecione um membro para exportar o relatório",
+      "noDataForMonth": "Nenhuma bebida encontrada no mês selecionado",
+      "errorExporting": "Erro ao exportar relatório",
+      "title": "Relatório de Bebidas",
+      "member": "Membro",
+      "period": "Período",
+      "totalSpent": "Total gasto",
+      "summaryByDrink": "Resumo por bebida",
+      "details": "Detalhes",
+      "drink": "Bebida",
+      "totalQuantity": "Qtd. total",
+      "totalValue": "Valor total",
+      "paidYes": "Sim",
+      "paidNo": "Não",
+      "markedByColumn": "Marcado por",
+      "sheetSummary": "Resumo",
+      "sheetDetails": "Detalhes"
+    }
   },
   "cardDrinksAll": {
     "errorLoadingDebts": "Não foi possível carregar as dívidas. Verifique a conexão ou tente de novo.",

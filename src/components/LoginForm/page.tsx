@@ -3,7 +3,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import {
   Form,
@@ -17,10 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { notification } from "@/lib/notification";
 import { supabase } from "@/hooks/use-supabase";
+import { syncEventNotifications, toastEventNotifications } from "@/lib/sync-event-notifications";
+import { toast } from "@/hooks/use-toast";
 import Image from 'next/image';
 
 export const LoginForm: React.FC = () => {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   
   const loginSchema = z.object({
@@ -53,6 +56,7 @@ export const LoginForm: React.FC = () => {
     // Pegar o token da sessão
     const session = await supabase.auth.getSession();
     const authToken = session.data.session?.access_token;
+    const refreshToken = session.data.session?.refresh_token;
     const userEmail = session.data.session?.user.email;
     const userId = session.data.session?.user.id;
 
@@ -85,15 +89,34 @@ export const LoginForm: React.FC = () => {
         }
       }
 
+      const secure =
+        typeof window !== "undefined" && window.location.protocol === "https:"
+          ? "; Secure"
+          : "";
+
       // Se for o usuário especial, usar cookie sem expiração
       if (userEmail === "barmc@gentlemenmc.com.br") {
         // eslint-disable-next-line react-hooks/immutability
-        document.cookie = `authToken=${authToken}; path=/; Secure; SameSite=Lax`;
+        document.cookie = `authToken=${authToken}; path=/; SameSite=Lax${secure}`;
+        if (refreshToken) {
+          // eslint-disable-next-line react-hooks/immutability
+          document.cookie = `refreshToken=${refreshToken}; path=/; SameSite=Lax${secure}`;
+        }
       } else {
         // Para outros usuários, cookie com expiração padrão de 1 dia
         // eslint-disable-next-line react-hooks/immutability
-        document.cookie = `authToken=${authToken}; path=/; max-age=86400; Secure; SameSite=Lax`;
+        document.cookie = `authToken=${authToken}; path=/; max-age=86400; SameSite=Lax${secure}`;
+        if (refreshToken) {
+          // eslint-disable-next-line react-hooks/immutability
+          document.cookie = `refreshToken=${refreshToken}; path=/; max-age=86400; SameSite=Lax${secure}`;
+        }
       }
+
+      const syncResult = await syncEventNotifications(locale === "en" ? "en" : "pt");
+      toastEventNotifications(syncResult.notifications, (opts) =>
+        toast({ title: opts.title, description: opts.description })
+      );
+
       // Redirecionar para a página privada
       router.push("/comandas");
     } else {
