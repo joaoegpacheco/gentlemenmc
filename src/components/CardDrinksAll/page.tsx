@@ -11,6 +11,10 @@ import { message } from "@/lib/message";
 import { supabase } from "@/hooks/use-supabase.js";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useLocale, useTranslations } from 'next-intl';
+import {
+  buildInfinitePayUrl,
+  type CheckoutMember,
+} from "@/lib/infinitepay-checkout";
 
 const WHATSAPP_CHARGE_ALLOWED_EMAIL = "mortari@gentlemenmc.com.br";
 
@@ -26,15 +30,13 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
   const t = useTranslations('cardDrinksAll');
   const totalSum$ = useObservable(0);
   const debtData$ = useObservable<Array<{ name: string; sumPrice: number }>>([]);
-  const members$ = useObservable<Array<{ user_name: string; phone: string; user_email?: string }>>([]);
+  const members$ = useObservable<Array<CheckoutMember>>([]);
   const canChargeViaWhatsApp$ = useObservable(false);
 
   const totalSum = useValue(totalSum$);
   const debtData = useValue(debtData$);
   const members = useValue(members$);
   const canChargeViaWhatsApp = useValue(canChargeViaWhatsApp$);
-
-  const STORE_HANDLE = "gentlemenmc";
 
   const getData = async () => {
     try {
@@ -133,25 +135,14 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
     }
 
     const cleanPhone = member.phone.replace(/\D/g, "");
-    const amountInCents = Math.round(amount * 100);
     const orderNsu = crypto.randomUUID();
-
-    // Construir manualmente os parâmetros
-    const items = `[{"name":"Bebidas Gentlemen","price":${amountInCents},"quantity":1}]`;
-    const redirectUrl = encodeURIComponent(
-      "https://gentlemenmc.vercel.app/payment-return"
+    const paymentUrl = buildInfinitePayUrl(
+      member,
+      amount,
+      "Bebidas Gentlemen",
+      orderNsu
     );
 
-    // Montar a URL sem encode nos campos que devem ser legíveis
-    let paymentUrl = `https://checkout.infinitepay.io/${STORE_HANDLE}?items=${items}&order_nsu=${orderNsu}&redirect_url=${redirectUrl}&customer_name=${encodeURIComponent(
-      member.user_name
-    )}&customer_cellphone=55${cleanPhone}`;
-
-    if (member.user_email) {
-      paymentUrl += `&customer_email=${encodeURIComponent(member.user_email)}`;
-    }
-
-    // Encurtar o link
     const shortenedPaymentUrl = await shortenUrl(paymentUrl);
 
     const whatsappMessage = `Olá ${name}, segue o link para pagamento das *Bebidas Gentlemen* no valor de *${formatCurrency(
@@ -162,13 +153,19 @@ export const CardCommandAll = forwardRef((_: Props, ref) => {
       whatsappMessage
     )}`;
 
-    await supabase.from("charges").insert({
+    const { error } = await supabase.from("charges").insert({
       order_nsu: orderNsu,
       customer_name: name,
       customer_email: member.user_email,
       customer_phone: cleanPhone,
       status: "pending",
     });
+
+    if (error) {
+      console.error(error);
+      message.error(t("memberPhoneNotFound"));
+      return;
+    }
 
     window.open(whatsappUrl, "_blank");
   };
