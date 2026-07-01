@@ -4,15 +4,25 @@ import {
   forwardRef,
   useImperativeHandle,
   useCallback,
+  useMemo,
+  useState,
 } from "react";
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/utils/formatDateTime";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Download, FileText, XCircle } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from "next-intl";
+import { message } from "@/lib/message";
+import {
+  exportDrinksReportExcel,
+  exportDrinksReportPDF,
+  getMonthRangeISO,
+  type DrinkReportRow,
+} from "@/lib/drinks-report-export";
 
 interface Drink {
   id: string;
@@ -20,6 +30,7 @@ interface Drink {
   name: string;
   drink: string;
   paid: boolean;
+  paid_at: string | null;
   quantity: number;
   price: number;
   user: string;
@@ -29,10 +40,6 @@ interface Drink {
 interface Member {
   user_id: string;
   user_name: string;
-}
-
-interface AdminData {
-  id: string;
 }
 
 const GENERAL_ADMIN_EMAILS = [
@@ -47,9 +54,14 @@ function isGeneralAdminEmail(email?: string | null): boolean {
   );
 }
 
+function getCurrentMonthValue() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export const CardCommand = forwardRef((_, ref) => {
-  const t = useTranslations('cardDrinks');
-  const tCommon = useTranslations('common');
+  const t = useTranslations("cardDrinks");
+  const locale = useLocale();
   const userData$ = useObservable<{ id: string; email?: string } | null>(null);
   const isAdmin$ = useObservable(false);
   const isGeneralAdmin$ = useObservable(false);
@@ -59,6 +71,8 @@ export const CardCommand = forwardRef((_, ref) => {
   const totalAmount$ = useObservable<number>(0);
   const drinksData$ = useObservable<Drink[]>([]);
   const todayBR$ = useObservable<string>("");
+  const [reportMonth, setReportMonth] = useState(getCurrentMonthValue);
+  const [exporting, setExporting] = useState(false);
 
   const userData = useValue(userData$);
   const isAdmin = useValue(isAdmin$);
@@ -70,6 +84,52 @@ export const CardCommand = forwardRef((_, ref) => {
   const drinksData = useValue(drinksData$);
   const todayBR = useValue(todayBR$);
 
+  const monthOptions = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, {
+      month: "long",
+      year: "numeric",
+    });
+    const options = [];
+    const now = new Date();
+
+    for (let i = 0; i < 24; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      options.push({ value, label: formatter.format(date) });
+    }
+
+    return options;
+  }, [locale]);
+
+  const exportTargetUuid = selectedUUID;
+  const canExport = !isBarMC && !!exportTargetUuid && !!userData;
+
+  const getReportLabels = useCallback(
+    (year: number, month: number) => ({
+      title: t("report.title"),
+      member: t("report.member"),
+      period: t("report.period"),
+      totalSpent: t("report.totalSpent"),
+      summaryByDrink: t("report.summaryByDrink"),
+      details: t("report.details"),
+      date: t("date"),
+      drink: t("report.drink"),
+      quantity: t("quantity"),
+      value: t("value"),
+      paid: t("paid"),
+      markedBy: t("report.markedByColumn"),
+      totalQuantity: t("report.totalQuantity"),
+      totalValue: t("report.totalValue"),
+      paidYes: t("report.paidYes"),
+      paidNo: t("report.paidNo"),
+      fileNamePdf: `relatorio_bebidas_${month}_${year}.pdf`,
+      fileNameExcel: `relatorio_bebidas_${month}_${year}.xlsx`,
+      sheetSummary: t("report.sheetSummary"),
+      sheetDetails: t("report.sheetDetails"),
+    }),
+    [t]
+  );
+
   const fetchUserData = async () => {
     const { data: authData } = await supabase.auth.getUser();
     const user = authData?.user;
@@ -77,17 +137,15 @@ export const CardCommand = forwardRef((_, ref) => {
     if (!user) return;
 
     const now = new Date();
-    const brToday = now.toLocaleDateString("pt-BR"); // dd/mm/aaaa
+    const brToday = now.toLocaleDateString("pt-BR");
     todayBR$.set(brToday);
 
-    // Caso seja o email do Bar MC → "admin limitado ao dia atual"
     if (user.email === "barmc@gentlemenmc.com.br") {
       isAdmin$.set(true);
       isBarMC$.set(true);
       return;
     }
 
-    // Verifica se é admin de verdade
     const { data: admins } = await supabase
       .from("admins")
       .select("id")
@@ -108,7 +166,6 @@ export const CardCommand = forwardRef((_, ref) => {
       members$.set(membersData || []);
     }
 
-    // Admin geral: vê todas as marcações (sem filtrar por UUID próprio)
     if (generalAdmin) {
       return;
     }
@@ -118,17 +175,15 @@ export const CardCommand = forwardRef((_, ref) => {
 
   const fetchDrinks = useCallback(
     async (uuid: string | null = null) => {
-      // Limpa os dados antes de buscar para evitar mostrar dados antigos
       drinksData$.set([]);
       totalAmount$.set(0);
 
       let query = supabase
         .from("bebidas")
-        .select("created_at, name, drink, paid, quantity, price, user, uuid")
+        .select("created_at, name, drink, paid, paid_at, quantity, price, user, uuid")
         .order("created_at", { ascending: false });
 
       if (isBarMC) {
-        // Data no fuso de São Paulo (America/Sao_Paulo)
         const formatter = new Intl.DateTimeFormat("sv-SE", {
           timeZone: "America/Sao_Paulo",
           year: "numeric",
@@ -136,9 +191,9 @@ export const CardCommand = forwardRef((_, ref) => {
           day: "2-digit",
         });
         const parts = formatter.formatToParts(new Date());
-        const year = parts.find(p => p.type === "year")?.value;
-        const month = parts.find(p => p.type === "month")?.value;
-        const day = parts.find(p => p.type === "day")?.value;
+        const year = parts.find((p) => p.type === "year")?.value;
+        const month = parts.find((p) => p.type === "month")?.value;
+        const day = parts.find((p) => p.type === "day")?.value;
         const isoToday = `${year}-${month}-${day}`;
 
         const startOfDaySP = new Date(`${isoToday}T00:00:00-03:00`);
@@ -148,12 +203,9 @@ export const CardCommand = forwardRef((_, ref) => {
           .gte("created_at", startOfDaySP.toISOString())
           .lte("created_at", endOfDaySP.toISOString());
       } else if (uuid) {
-        // Admin normal ou usuário comum → filtra pelo UUID
         query = query.eq("uuid", uuid);
       } else if (isGeneralAdmin) {
-        // Admin geral sem membro selecionado → todas as marcações
       } else {
-        // Se não há UUID e não é BarMC, não busca nada
         drinksData$.set([]);
         totalAmount$.set(0);
         return;
@@ -175,6 +227,102 @@ export const CardCommand = forwardRef((_, ref) => {
     [isBarMC, isGeneralAdmin]
   );
 
+  const fetchDrinksForMonth = async (
+    uuid: string,
+    year: number,
+    month: number
+  ): Promise<DrinkReportRow[]> => {
+    const { start, end } = getMonthRangeISO(year, month);
+
+    const { data, error } = await supabase
+      .from("bebidas")
+      .select("created_at, name, drink, paid, quantity, price, user, uuid")
+      .eq("uuid", uuid)
+      .gte("created_at", start)
+      .lte("created_at", end)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  };
+
+  const getReportContext = useCallback(() => {
+    if (!exportTargetUuid) {
+      message.warning(t("report.selectMemberFirst"));
+      return null;
+    }
+
+    const [yearStr, monthStr] = reportMonth.split("-");
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const periodLabel =
+      monthOptions.find((option) => option.value === reportMonth)?.label ??
+      reportMonth;
+    const memberName =
+      members.find((member) => member.user_id === exportTargetUuid)?.user_name ??
+      drinksData.find((drink) => drink.uuid === exportTargetUuid)?.name ??
+      exportTargetUuid;
+
+    return {
+      uuid: exportTargetUuid,
+      year,
+      month,
+      periodLabel,
+      memberName,
+    };
+  }, [
+    drinksData,
+    exportTargetUuid,
+    members,
+    monthOptions,
+    reportMonth,
+    t,
+  ]);
+
+  const handleExport = useCallback(
+    async (format: "pdf" | "excel") => {
+      const context = getReportContext();
+      if (!context) return;
+
+      setExporting(true);
+      try {
+        const drinks = await fetchDrinksForMonth(
+          context.uuid,
+          context.year,
+          context.month
+        );
+
+        if (drinks.length === 0) {
+          message.warning(t("report.noDataForMonth"));
+          return;
+        }
+
+        const labels = getReportLabels(context.year, context.month);
+
+        if (format === "pdf") {
+          exportDrinksReportPDF(
+            drinks,
+            context.memberName,
+            context.periodLabel,
+            labels
+          );
+        } else {
+          exportDrinksReportExcel(
+            drinks,
+            context.memberName,
+            context.periodLabel,
+            labels
+          );
+        }
+      } catch {
+        message.error(t("report.errorExporting"));
+      } finally {
+        setExporting(false);
+      }
+    },
+    [getReportContext, getReportLabels, t]
+  );
+
   useImperativeHandle(ref, () => ({
     refreshData: () => fetchDrinks(selectedUUID),
   }));
@@ -185,8 +333,8 @@ export const CardCommand = forwardRef((_, ref) => {
   }, []);
 
   useEffect(() => {
-    if (!userData) return; // Aguarda os dados do usuário
-    
+    if (!userData) return;
+
     if (isBarMC || isGeneralAdmin) {
       fetchDrinks(selectedUUID);
     } else if (selectedUUID) {
@@ -205,15 +353,15 @@ export const CardCommand = forwardRef((_, ref) => {
             }
           >
             <SelectTrigger className="w-[300px]">
-              <SelectValue placeholder={t('filterByUser')} />
+              <SelectValue placeholder={t("filterByUser")} />
             </SelectTrigger>
             <SelectContent>
               {isGeneralAdmin && (
-                <SelectItem value="all">{t('allMembers')}</SelectItem>
+                <SelectItem value="all">{t("allMembers")}</SelectItem>
               )}
-              {members.map((m) => (
-                <SelectItem key={m.user_id} value={m.user_id}>
-                  {m.user_name}
+              {members.map((member) => (
+                <SelectItem key={member.user_id} value={member.user_id}>
+                  {member.user_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -221,22 +369,62 @@ export const CardCommand = forwardRef((_, ref) => {
         </div>
       )}
 
+      {!isBarMC && userData && (
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <Select value={reportMonth} onValueChange={setReportMonth}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder={t("report.selectMonth")} />
+            </SelectTrigger>
+            <SelectContent>
+              {monthOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            disabled={!canExport || exporting}
+            onClick={() => handleExport("pdf")}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            {t("report.exportPdf")}
+          </Button>
+
+          <Button
+            variant="outline"
+            disabled={!canExport || exporting}
+            onClick={() => handleExport("excel")}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {t("report.exportExcel")}
+          </Button>
+        </div>
+      )}
+
       {userData && (
         <div className="mb-4 text-lg font-semibold">
           {isBarMC
-            ? t('markedDrinksToday', { date: todayBR })
-            : t('unpaidTotal', { amount: formatCurrency(totalAmount) })}
+            ? t("markedDrinksToday", { date: todayBR })
+            : t("unpaidTotal", { amount: formatCurrency(totalAmount) })}
         </div>
       )}
 
       {drinksData.length === 0 ? (
         <div className="text-center text-muted-foreground py-8">
-          {t('noDrinksMarked')}
+          {t("noDrinksMarked")}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {drinksData.map((item) => (
-            <Card key={item.id || `${item.created_at}-${item.drink}-${item.name}-${item.uuid}`}>
+            <Card
+              key={
+                item.id ||
+                `${item.created_at}-${item.drink}-${item.name}-${item.uuid}`
+              }
+            >
               <CardHeader>
                 <CardTitle>
                   {isBarMC || (isGeneralAdmin && !selectedUUID) ? (
@@ -251,12 +439,18 @@ export const CardCommand = forwardRef((_, ref) => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-sm">{t('date')}: {formatDateTime(item.created_at)}</p>
-                <p className="text-sm">{t('quantity')}: {item.quantity}</p>
-                <p className="text-sm">{t('value')}: {formatCurrency(item.price)}</p>
+                <p className="text-sm">
+                  {t("date")}: {formatDateTime(item.created_at)}
+                </p>
+                <p className="text-sm">
+                  {t("quantity")}: {item.quantity}
+                </p>
+                <p className="text-sm">
+                  {t("value")}: {formatCurrency(item.price)}
+                </p>
                 {!isBarMC && (
                   <p className="text-sm flex items-center gap-2">
-                    {t('paid')}{" "}
+                    {t("paid")}{" "}
                     {item.paid ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : (
@@ -264,8 +458,15 @@ export const CardCommand = forwardRef((_, ref) => {
                     )}
                   </p>
                 )}
+                {!isBarMC && item.paid && item.paid_at && (
+                  <p className="text-sm">
+                    {t("paidAt", { date: formatDateTime(item.paid_at) })}
+                  </p>
+                )}
                 {!isBarMC && item.user && (
-                  <p className="text-sm">{t('markedBy', { user: item.user })}</p>
+                  <p className="text-sm">
+                    {t("markedBy", { user: item.user })}
+                  </p>
                 )}
               </CardContent>
             </Card>
