@@ -11,8 +11,7 @@ import Image from 'next/image';
 import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 import { notifyFinanceOnPaymentReturnFailure } from "@/lib/notify-payment-return-failure";
-
-const PAYMENT_CONFIRM_ALLOWED_EMAIL = "mortari@gentlemenmc.com.br";
+import { isPaymentConfirmAllowedEmail } from "@/lib/payment-notify";
 
 type Props = {
   searchParams: {
@@ -66,7 +65,7 @@ export default function PaymentReturnClient({ searchParams }: Props) {
 
         const { data: authData } = await supabase.auth.getUser();
         const email = authData?.user?.email?.trim().toLowerCase() ?? "";
-        if (email !== PAYMENT_CONFIRM_ALLOWED_EMAIL) {
+        if (!isPaymentConfirmAllowedEmail(email)) {
           status$.set("failed");
           if (!notifiedRef.current) {
             notifiedRef.current = true;
