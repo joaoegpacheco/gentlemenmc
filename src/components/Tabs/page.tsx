@@ -82,7 +82,6 @@ export default function TabsComponent() {
   const isBarUser$ = useObservable<boolean>(false);
   const isFacilitiesUser$ = useObservable<boolean>(false);
   const caseType$ = useObservable<string | null>(null);
-  const activeTab$ = useObservable("1");
   const command$ = useObservable<boolean | null>(null);
   const birthdays$ = useObservable<Birthday[]>([]);
   const userEmail$ = useObservable<string | null>(null);
@@ -93,7 +92,7 @@ export default function TabsComponent() {
   const isBarUser = useValue(isBarUser$);
   const isFacilitiesUser = useValue(isFacilitiesUser$);
   const caseType = useValue(caseType$);
-  const activeTab = useValue(activeTab$);
+  const activeTab = useValue(appStore$.tabs.activeTab);
   const birthdays = useValue(birthdays$);
   const userEmail = useValue(userEmail$);
 
@@ -101,7 +100,13 @@ export default function TabsComponent() {
   const comandAllTableRef = useRef<any>(null);
   const comandOpenTableRef = useRef<any>(null);
   const paidComandasTableRef = useRef<any>(null);
-  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => new Set(["1"]));
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
+    const stored =
+      typeof window !== "undefined"
+        ? appStore$.tabs.activeTab.peek()
+        : appStore$.tabs.activeTab.get();
+    return new Set([stored || "1"]);
+  });
   const [notifySyncVersion, setNotifySyncVersion] = useState(0);
 
   useEffect(() => {
@@ -208,7 +213,7 @@ export default function TabsComponent() {
   }, []);
 
   const handleTabChange = (key: string) => {
-    activeTab$.set(key);
+    appStore$.tabs.activeTab.set(key);
     setVisitedTabs((prev) => {
       if (prev.has(key)) return prev;
       const next = new Set(prev);
@@ -365,6 +370,28 @@ export default function TabsComponent() {
   };
 
   const tabs = getCurrentTabs();
+  const rolesResolved = admin !== null && command !== null;
+  const validTabKeysKey = tabs.filter(tabHasContent).map((tab) => tab.key).join(",");
+
+  useEffect(() => {
+    if (!rolesResolved) return;
+
+    const validKeys = validTabKeysKey.split(",");
+    const current = appStore$.tabs.activeTab.peek();
+
+    if (!validKeys.includes(current)) {
+      appStore$.tabs.activeTab.set("1");
+      setVisitedTabs(new Set(["1"]));
+      return;
+    }
+
+    setVisitedTabs((prev) => {
+      if (prev.has(current)) return prev;
+      const next = new Set(prev);
+      next.add(current);
+      return next;
+    });
+  }, [rolesResolved, validTabKeysKey]);
 
   const birthdaysString = birthdays
     .map((birthday) => `${birthday.name} (${birthday.day})`)
