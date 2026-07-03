@@ -3,6 +3,7 @@ import { syncObservable } from "@legendapp/state/sync";
 import { ObservablePersistSessionStorage } from "@legendapp/state/persist-plugins/local-storage";
 
 const FESTA_PARTICULAR_STORAGE_KEY = "gentlemen-festaParticular";
+const ACTIVE_TAB_STORAGE_KEY = "gentlemen-activeTab";
 
 // Global application store
 export const appStore$ = observable({
@@ -29,6 +30,13 @@ if (typeof window !== "undefined") {
   syncObservable(appStore$.switches.festaParticular, {
     persist: {
       name: FESTA_PARTICULAR_STORAGE_KEY,
+      plugin: ObservablePersistSessionStorage,
+    },
+  });
+
+  syncObservable(appStore$.tabs.activeTab, {
+    persist: {
+      name: ACTIVE_TAB_STORAGE_KEY,
       plugin: ObservablePersistSessionStorage,
     },
   });
