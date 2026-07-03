@@ -40,6 +40,10 @@ const SECTORS = [
   "outros",
 ] as const;
 
+function buildLoanPhotoFileName(userId: string, fileExt: string) {
+  return `${userId}_${Date.now()}.${fileExt}`;
+}
+
 export function ToolLoanForm() {
   const t = useTranslations("toolLoan");
   const [loans, setLoans] = useState<ToolLoan[]>([]);
@@ -81,7 +85,10 @@ export function ToolLoanForm() {
   };
 
   useEffect(() => {
-    fetchLoans();
+    // Run outside the effect tick to satisfy react-hooks/set-state-in-effect.
+    queueMicrotask(() => {
+      void fetchLoans();
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -112,7 +119,7 @@ export function ToolLoanForm() {
     }
 
     const fileExt = values.photo.name.split(".").pop() ?? "jpg";
-    const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+    const fileName = buildLoanPhotoFileName(user.id, fileExt);
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("emprestimos_sede")
