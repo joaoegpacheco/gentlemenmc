@@ -46,11 +46,13 @@
   },
   "auth": {
     "login": {
-      "title": "Login",
+      "title": "Sign in",
       "logoAlt": "Gentlemen MC Logo",
       "emailLabel": "Email",
+      "emailPlaceholder": "Enter your email address",
       "passwordLabel": "Password",
-      "submitButton": "Enter",
+      "passwordPlaceholder": "Enter your password",
+      "submitButton": "Sign in",
       "errorTitle": "Login error",
       "tokenError": "Token retrieval error",
       "tokenErrorDescription": "Could not retrieve authentication token.",
@@ -363,7 +365,16 @@
     "prospects": "My Journey",
     "birthdaysOfMonth": "Birthdays of the month:",
     "prospectValidation": "Prospect Validation",
-    "toolLoan": "HQ Loan"
+    "toolLoan": "HQ Loan",
+    "menu": "Menu",
+    "navGroups": {
+      "marking": "Marking",
+      "orders": "Orders",
+      "financial": "Financial",
+      "stock": "Stock",
+      "club": "Club",
+      "admin": "Administration"
+    }
   },
   "byLaw": {
     "estatuto": "Statute",

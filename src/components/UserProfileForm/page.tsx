@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from 'next/image';
+import { RemoteImage } from '@/components/ui/remote-image';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -218,7 +218,7 @@ export function UserProfileForm({ member, user, onSuccess }: UserProfileFormProp
             <CardContent>
               <div className="flex flex-col items-center gap-4">
                 {photoPreview$.get() ? (
-                  <Image
+                  <RemoteImage
                     src={photoPreview$.get() as string}
                     alt="Preview"
                     width={128}

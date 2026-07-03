@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDateTime } from "@/utils/formatDateTime";
-import Image from "next/image";
+import { RemoteImage } from "@/components/ui/remote-image";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import type {
@@ -120,7 +120,7 @@ export function QuickTables({
                 >
                   <div className="flex items-center gap-3">
                     {member.foto_url ? (
-                      <Image
+                      <RemoteImage
                         src={member.foto_url}
                         alt={member.user_name}
                         width={40}

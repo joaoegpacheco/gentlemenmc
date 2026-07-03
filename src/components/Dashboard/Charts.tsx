@@ -18,7 +18,7 @@ import {
   Legend,
 } from "recharts";
 import { formatCurrency } from "@/utils/formatCurrency";
-import Image from "next/image";
+import { RemoteImage } from "@/components/ui/remote-image";
 import { useTranslations } from 'next-intl';
 import type {
   MonthlyRevenue,
@@ -219,7 +219,7 @@ export function Charts({
               {topMembers.map((member, idx) => (
                 <div key={idx} className="flex items-center gap-3">
                   {member.foto_url ? (
-                    <Image
+                    <RemoteImage
                       src={member.foto_url}
                       alt={member.user_name}
                       width={40}

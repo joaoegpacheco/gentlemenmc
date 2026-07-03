@@ -6,7 +6,7 @@ import { useRouter } from "@/i18n/routing";
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Image from 'next/image';
+import { RemoteImage } from '@/components/ui/remote-image';
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -409,7 +409,7 @@ export default function MembrosPage() {
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     {member.foto_url ? (
-                      <Image
+                      <RemoteImage
                         src={member.foto_url}
                         alt={member.user_name}
                         width={48}
@@ -567,7 +567,7 @@ export default function MembrosPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         {member.foto_url ? (
-                          <Image
+                          <RemoteImage
                             src={member.foto_url}
                             alt={member.user_name}
                             width={40}

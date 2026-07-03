@@ -27,6 +27,7 @@ import { NotificationBell } from "../NotificationBell/page";
 import { appStore$ } from "@/stores/appStore";
 import { syncEventNotifications } from "@/lib/sync-event-notifications";
 import { isPaymentConfirmAllowedEmail } from "@/lib/payment-notify";
+import { TabNavigationMenu } from "@/components/TabNavigationMenu/page";
 
 // Keep the app store in the main bundle so dynamically loaded tab panels share one singleton.
 void appStore$;
@@ -379,17 +380,20 @@ export default function TabsComponent() {
     const validKeys = validTabKeysKey.split(",");
     const current = appStore$.tabs.activeTab.peek();
 
-    if (!validKeys.includes(current)) {
-      appStore$.tabs.activeTab.set("1");
-      setVisitedTabs(new Set(["1"]));
-      return;
-    }
+    // Run outside the effect tick to satisfy react-hooks/set-state-in-effect.
+    queueMicrotask(() => {
+      if (!validKeys.includes(current)) {
+        appStore$.tabs.activeTab.set("1");
+        setVisitedTabs(new Set(["1"]));
+        return;
+      }
 
-    setVisitedTabs((prev) => {
-      if (prev.has(current)) return prev;
-      const next = new Set(prev);
-      next.add(current);
-      return next;
+      setVisitedTabs((prev) => {
+        if (prev.has(current)) return prev;
+        const next = new Set(prev);
+        next.add(current);
+        return next;
+      });
     });
   }, [rolesResolved, validTabKeysKey]);
 
@@ -399,7 +403,7 @@ export default function TabsComponent() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="px-5 pb-5 flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 pr-12 pb-3">
         <div>
           <p className="text-sm">{t('birthdaysOfMonth')} </p>
           <span className="text-sm font-semibold">
@@ -413,24 +417,33 @@ export default function TabsComponent() {
         />
       </div>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
-          {tabs.map((tab) => {
-            // Se não tem children, é provavelmente o LogoutButton
-            if (!tabHasContent(tab)) {
+        {!rolesResolved ? (
+          <div className="h-10 w-full animate-pulse rounded-lg bg-muted" />
+        ) : isBarUser ? (
+          <TabsList className="flex-nowrap overflow-x-auto overflow-y-hidden w-full">
+            {tabs.map((tab) => {
+              if (!tabHasContent(tab)) {
+                return (
+                  <div key={tab.key} className="flex-shrink-0 ml-auto">
+                    {tab.label}
+                  </div>
+                );
+              }
+
               return (
-                <div key={tab.key} className="flex-shrink-0 ml-auto">
+                <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap flex-shrink-0">
                   {tab.label}
-                </div>
+                </TabsTrigger>
               );
-            }
-            
-            return (
-              <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap flex-shrink-0">
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+            })}
+          </TabsList>
+        ) : (
+          <TabNavigationMenu
+            tabs={tabs.map((tab) => ({ key: tab.key, label: tab.label }))}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        )}
         {tabs.filter(tabHasContent).map((tab) => (
           <TabsContent
             key={tab.key}

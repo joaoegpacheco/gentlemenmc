@@ -8,7 +8,6 @@ import {
 } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import AuthListener from "@/components/AuthListener";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster";
@@ -53,21 +52,19 @@ export default async function LocaleLayout({
 
   return (
     <div className={`${inter.className} min-h-screen flex flex-col`}>
-      <ThemeProvider attribute="class">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <SetHtmlLang locale={locale} />
-          <AuthListener />
-          <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
-            <ModeToggle />
-          </header>
-          <main className="flex-1 p-6">{children}</main>
-          <footer className="flex items-center justify-center w-full pb-2">
-            <span className="text-xs text-gray-500">{t("copyright")}</span>
-          </footer>
-          <SpeedInsights />
-          <Toaster />
-        </NextIntlClientProvider>
-      </ThemeProvider>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <SetHtmlLang locale={locale} />
+        <AuthListener />
+        <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
+          <ModeToggle />
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+        <footer className="flex items-center justify-center w-full pb-2">
+          <span className="text-xs text-muted-foreground">{t("copyright")}</span>
+        </footer>
+        <SpeedInsights />
+        <Toaster />
+      </NextIntlClientProvider>
     </div>
   );
 }

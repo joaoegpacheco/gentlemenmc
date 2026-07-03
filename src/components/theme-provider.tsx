@@ -1,7 +1,22 @@
 "use client"
 
 import * as React from "react"
+import { Theme } from "@radix-ui/themes"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+
+function RadixTheme({ children }: { children: React.ReactNode }) {
+  return (
+    <Theme
+      accentColor="gold"
+      grayColor="gray"
+      panelBackground="translucent"
+      radius="medium"
+      appearance="inherit"
+    >
+      {children}
+    </Theme>
+  )
+}
 
 function ThemeWatcher() {
   const { theme } = useTheme()
@@ -56,8 +71,10 @@ export function ThemeProvider({
       disableTransitionOnChange
       scriptProps={scriptProps}
     >
-      <ThemeWatcher />
-      {children}
+      <RadixTheme>
+        <ThemeWatcher />
+        {children}
+      </RadixTheme>
     </NextThemesProvider>
   )
 }

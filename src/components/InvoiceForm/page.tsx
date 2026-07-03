@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useObservable, useValue } from "@legendapp/state/react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -144,9 +144,9 @@ export const InvoiceForm = () => {
     }
   };
 
-  const selectedMembers = form.watch("selectedMembers");
-  const totalAmount = form.watch("totalAmount");
-  const visitorNames = form.watch("visitorNames") || [];
+  const selectedMembers = useWatch({ control: form.control, name: "selectedMembers" });
+  const totalAmount = useWatch({ control: form.control, name: "totalAmount" });
+  const visitorNames = useWatch({ control: form.control, name: "visitorNames" }) || [];
 
   const totalParticipants = (selectedMembers?.length || 0) + (visitorCount > 0 ? visitorCount : 0);
   const dividedAmount = totalAmount && totalParticipants > 0 ? totalAmount / totalParticipants : 0;

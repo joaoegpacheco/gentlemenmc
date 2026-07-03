@@ -4,7 +4,7 @@ import { useEffect, useMemo, useCallback } from "react";
 import { useTranslations } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
-import Image from 'next/image';
+import { RemoteImage } from '@/components/ui/remote-image';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -308,7 +308,7 @@ export function ProspectsPage() {
           <div className="flex items-start gap-6 flex-wrap">
             <div>
               {member.foto_url ? (
-                <Image
+                <RemoteImage
                   src={member.foto_url}
                   alt={member.user_name}
                   width={96}
