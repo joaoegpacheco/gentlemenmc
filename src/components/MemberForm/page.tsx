@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from 'next/image';
+import { RemoteImage } from '@/components/ui/remote-image';
 import { useTranslations } from 'next-intl';
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useObservable, useValue } from "@legendapp/state/react";
@@ -74,6 +74,12 @@ function halfDateInputValue(iso?: string | null): string {
   if (!iso) return "";
   const d = iso.slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : "";
+}
+
+function buildMemberPhotoFileName(userId: string | undefined, fileExt: string | undefined) {
+  const stamp = Date.now();
+  const prefix = userId ?? `new_${stamp}`;
+  return `${prefix}_${stamp}.${fileExt}`;
 }
 
 interface MemberFormProps {
@@ -201,7 +207,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
     },
   });
 
-  const watchedCaseType = form.watch("case_type");
+  const watchedCaseType = useWatch({ control: form.control, name: "case_type" });
 
   useEffect(() => {
     if (member) {
@@ -273,7 +279,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
       }
 
       const fileExt = photoFile.name.split(".").pop();
-      const fileName = `${member?.user_id || `new_${Date.now()}`}_${Date.now()}.${fileExt}`;
+      const fileName = buildMemberPhotoFileName(member?.user_id, fileExt);
 
       // Type assertion para garantir compatibilidade com Supabase
       const fileToUpload = photoFile as unknown as File;
@@ -516,7 +522,7 @@ export function MemberForm({ member, onSuccess, onCancel }: MemberFormProps) {
         {/* Foto */}
         <div className="flex flex-col items-center gap-4">
           {photoPreview$.get() ? (
-            <Image
+            <RemoteImage
               src={photoPreview$.get() as string}
               alt="Preview"
               width={128}
