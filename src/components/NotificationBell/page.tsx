@@ -13,7 +13,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
@@ -139,7 +138,10 @@ export function NotificationBell({
 
   useEffect(() => {
     if (syncVersion <= 0) return;
-    void runEventSync(true);
+    // Run outside the effect tick to satisfy react-hooks/set-state-in-effect.
+    queueMicrotask(() => {
+      void runEventSync(true);
+    });
   }, [syncVersion, runEventSync]);
 
   const markAsRead = async (id: string) => {
@@ -201,20 +203,25 @@ export function NotificationBell({
             <span className="sr-only">{t("title")}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80">
-          <DropdownMenuLabel className="flex items-center justify-between">
-            <span>{t("title")}</span>
-            {unreadCount > 0 && (
-              <button
-                type="button"
-                className="text-xs font-normal text-primary hover:underline"
-                onClick={() => void markAllAsRead()}
-              >
-                {t("markAllRead")}
-              </button>
-            )}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
+        <DropdownMenuContent
+          align="end"
+          className="flex w-80 max-h-[min(70vh,24rem)] flex-col overflow-hidden p-0"
+        >
+          <div className="shrink-0 border-b px-2 py-1.5">
+            <DropdownMenuLabel className="flex items-center justify-between px-0">
+              <span>{t("title")}</span>
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  className="text-xs font-normal text-primary hover:underline"
+                  onClick={() => void markAllAsRead()}
+                >
+                  {t("markAllRead")}
+                </button>
+              )}
+            </DropdownMenuLabel>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1">
           {items.length === 0 ? (
             <p className="px-2 py-4 text-sm text-muted-foreground text-center">
               {t("empty")}
@@ -305,6 +312,7 @@ export function NotificationBell({
               );
             })
           )}
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
 
