@@ -49,7 +49,9 @@
       "title": "Entrar",
       "logoAlt": "Logo Gentlemen MC",
       "emailLabel": "Email",
+      "emailPlaceholder": "Digite seu endereço de email",
       "passwordLabel": "Senha",
+      "passwordPlaceholder": "Digite sua senha",
       "submitButton": "Entrar",
       "errorTitle": "Erro ao fazer login",
       "tokenError": "Erro ao recuperar token",
@@ -363,7 +365,16 @@
     "prospects": "Minha Caminhada",
     "birthdaysOfMonth": "Aniversariantes do mês:",
     "prospectValidation": "Validação Prospects",
-    "toolLoan": "Empréstimo Sede"
+    "toolLoan": "Empréstimo Sede",
+    "menu": "Menu",
+    "navGroups": {
+      "marking": "Marcações",
+      "orders": "Comandas",
+      "financial": "Financeiro",
+      "stock": "Estoque",
+      "club": "Clube",
+      "admin": "Administração"
+    }
   },
   "byLaw": {
     "estatuto": "Estatuto",
