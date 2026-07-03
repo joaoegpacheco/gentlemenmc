@@ -1230,7 +1230,8 @@
       "button": "Edit event",
       "save": "Save",
       "saving": "Saving…",
-      "cancelEdit": "Cancel editing"
+      "cancelEdit": "Cancel editing",
+      "saveFailed": "Could not save the event. Please try again."
     },
     "create": {
       "button": "New event",
