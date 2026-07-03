@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatCurrency";
 import type { DashboardStats } from "@/services/dashboardService";
-import Image from "next/image";
+import { RemoteImage } from "@/components/ui/remote-image";
 import { useTranslations, useLocale } from 'next-intl';
 
 interface StatsCardsProps {
@@ -159,7 +159,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
                 {stats.upcomingBirthdays.slice(0, 3).map((birthday, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     {birthday.foto_url ? (
-                      <Image
+                      <RemoteImage
                         src={birthday.foto_url}
                         alt={birthday.user_name}
                         width={32}
