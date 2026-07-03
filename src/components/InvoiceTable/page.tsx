@@ -25,7 +25,7 @@ import { supabase } from "@/hooks/use-supabase";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
 import { useDeviceSizes } from "@/utils/mediaQueries";
-import Image from "next/image";
+import { RemoteImage } from "@/components/ui/remote-image";
 import { useRouter } from "@/i18n/routing";
 
 interface Invoice {
@@ -222,7 +222,7 @@ export const InvoiceTable = () => {
                         <p className="font-medium">{formatDate(invoice.data_evento)}</p>
                       </div>
                       {invoice.arquivo_url && (
-                        <Image
+                        <RemoteImage
                           src={invoice.arquivo_url}
                           alt="Nota Fiscal"
                           width={60}
@@ -364,7 +364,7 @@ export const InvoiceTable = () => {
                       </TableCell>
                       <TableCell>
                         {invoice.arquivo_url ? (
-                          <Image
+                          <RemoteImage
                             src={invoice.arquivo_url}
                             alt="Nota Fiscal"
                             width={100}
@@ -451,7 +451,7 @@ export const InvoiceTable = () => {
             <DialogHeader>
               <DialogTitle>{tInvoiceTable('invoice')}</DialogTitle>
             </DialogHeader>
-            <Image
+            <RemoteImage
               src={selectedImage}
               alt={tInvoiceTable('invoice')}
               width={800}
