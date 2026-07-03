@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import Image from 'next/image';
+import { RemoteImage } from '@/components/ui/remote-image';
 import { useTranslations, useLocale } from 'next-intl';
 import { useObservable, useValue } from "@legendapp/state/react";
 import { Button } from "@/components/ui/button";
@@ -278,7 +278,7 @@ export function MemberProfile({
       <div className="flex items-start gap-6 flex-wrap justify-center">
         <div>
           {member.foto_url ? (
-            <Image
+            <RemoteImage
               src={member.foto_url}
               alt={member.user_name}
               width={96}
