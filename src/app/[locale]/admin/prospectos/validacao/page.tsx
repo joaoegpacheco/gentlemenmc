@@ -48,6 +48,7 @@ import {
   HALF_PATCH_REQUIREMENTS,
   FULL_PATCH_REQUIREMENTS,
 } from "@/lib/prospect-points";
+import { formatDateOnly } from "@/lib/format-date-only";
 
 interface Member {
   id?: number;
@@ -1102,7 +1103,10 @@ export default function ProspectValidationPage() {
                         )}
                         {stats.halfPatchDate && (
                           <div className="text-xs text-muted-foreground mt-2">
-                            {tProspects('virouHalfEm')} {format(stats.halfPatchDate, "dd/MM/yyyy", { locale: ptBR })}
+                            {tProspects('virouHalfEm')}{" "}
+                            {member.half_date
+                              ? formatDateOnly(member.half_date)
+                              : format(stats.halfPatchDate, "dd/MM/yyyy", { locale: ptBR })}
                           </div>
                         )}
                       </div>
@@ -1165,7 +1169,7 @@ export default function ProspectValidationPage() {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>{getActivityLabel(activity.activity_type)}</span>
                       <span>·</span>
-                      <span>{activity.activity_date ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}</span>
+                      <span>{activity.activity_date ? formatDateOnly(activity.activity_date) : "-"}</span>
                       <Badge variant="outline" className="ml-auto font-semibold text-xs">+{activity.points} pts</Badge>
                     </div>
                     {activity.description && (
@@ -1200,7 +1204,7 @@ export default function ProspectValidationPage() {
                         <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
                         <TableCell>
                           {activity.activity_date
-                            ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR })
+                            ? formatDateOnly(activity.activity_date)
                             : "-"}
                         </TableCell>
                         <TableCell>
@@ -1509,7 +1513,7 @@ export default function ProspectValidationPage() {
                           <Badge variant="outline" className="font-semibold text-xs shrink-0">+{activity.points} pts</Badge>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {getActivityLabel(activity.activity_type)} · {activity.activity_date ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                          {getActivityLabel(activity.activity_type)} · {activity.activity_date ? formatDateOnly(activity.activity_date) : "-"}
                         </div>
                         {activity.description && <p className="text-xs text-muted-foreground">{activity.description}</p>}
                         <div className="flex gap-2 pt-1">
@@ -1541,7 +1545,7 @@ export default function ProspectValidationPage() {
                           <TableRow key={activity.id}>
                             <TableCell className="font-medium">{getProspectName(activity.prospect_id)}</TableCell>
                             <TableCell>{getActivityLabel(activity.activity_type)}</TableCell>
-                            <TableCell>{activity.activity_date ? format(new Date(activity.activity_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}</TableCell>
+                            <TableCell>{activity.activity_date ? formatDateOnly(activity.activity_date) : "-"}</TableCell>
                             <TableCell><Badge variant="outline" className="font-semibold">+{activity.points} pts</Badge></TableCell>
                             <TableCell className="max-w-xs">{activity.description || "-"}</TableCell>
                             <TableCell>
