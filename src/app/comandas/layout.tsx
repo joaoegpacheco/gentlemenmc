@@ -17,7 +17,7 @@ export default async function ComandasLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={routing.defaultLocale}>
       <AuthListener />
-      <header className="fixed top-0 right-0 p-4 z-50 flex gap-2">
+      <header className="fixed top-0 right-0 p-6 z-50 flex gap-2">
         <ModeToggle />
       </header>
       {children}
