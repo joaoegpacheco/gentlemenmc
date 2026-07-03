@@ -510,7 +510,7 @@ const CalendarEvents = () => {
     const timePg = pgTimeFromTimeInput(editTimeHm);
 
     setEditSaving(true);
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("events")
       .update({
         name: editName.trim(),
@@ -518,11 +518,18 @@ const CalendarEvents = () => {
         date: editDate,
         time: timePg,
       })
-      .eq("id", selected.dbId);
+      .eq("id", selected.dbId)
+      .select("id")
+      .maybeSingle();
     setEditSaving(false);
 
     if (error) {
       setEditError(error.message);
+      return;
+    }
+
+    if (!updated) {
+      setEditError(t("edit.saveFailed"));
       return;
     }
 

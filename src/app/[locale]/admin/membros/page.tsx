@@ -33,6 +33,7 @@ import { useDeviceSizes } from "@/utils/mediaQueries";
 import { Card, CardContent } from "@/components/ui/card";
 import { MEMBROS_ADMIN_SELECT } from "@/lib/membros-query";
 import { getMemberManagementPermissions } from "@/lib/member-permissions";
+import { formatDateOnlyLocale } from "@/lib/format-date-only";
 
 type MemberStatus = "ativo" | "inativo" | "suspenso";
 
@@ -63,12 +64,8 @@ export default function MembrosPage() {
   const locale = useLocale();
   const dateLocale = locale === "en" ? "en-US" : "pt-BR";
 
-  const formatTableDate = (iso?: string | null) => {
-    if (!iso) return "-";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "-";
-    return d.toLocaleDateString(dateLocale);
-  };
+  const formatTableDate = (iso?: string | null) =>
+    formatDateOnlyLocale(iso, dateLocale);
 
   const caseTypeLabel = (ct?: string | null) => {
     if (!ct) return "-";
