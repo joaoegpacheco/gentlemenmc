@@ -254,7 +254,7 @@ export default function TabsComponent() {
         { key: "14", label: t('stock'), children: <EstoquePage /> },
         { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
-        { key: "23", label: "Financeiro", children: <OverviewFinancePage /> },
+        { key: "23", label: t('finance'), children: <OverviewFinancePage /> },
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },
         { key: "11", label: <LogoutButton /> },
@@ -277,7 +277,8 @@ export default function TabsComponent() {
         { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
         ...(canSeeConfirmPaymentTabAsCommand
           ? [{ key: "9", label: t('confirmPayment'), children: <FormMonthlyFee /> } as const,
-            { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> } as const
+            { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> } as const,
+            { key: "23", label: t('finance'), children: <OverviewFinancePage /> } as const,
           ]
 
           : []),

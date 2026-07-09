@@ -8,7 +8,7 @@ export interface DrinkReportRow {
   created_at: string;
   name: string;
   drink: string;
-  paid: boolean;
+  paid: boolean | null;
   quantity: number;
   price: number;
   user: string;
@@ -140,7 +140,7 @@ export function exportDrinksReportPDF(
       drink.drink,
       drink.quantity.toString(),
       formatCurrency(drink.price),
-      drink.paid ? labels.paidYes : labels.paidNo,
+      isDrinkPaid(drink.paid) ? labels.paidYes : labels.paidNo,
       drink.user || "—",
     ]),
   });
@@ -183,11 +183,181 @@ export function exportDrinksReportExcel(
       drink.drink,
       drink.quantity,
       parseFloat(drink.price.toString()),
-      drink.paid ? labels.paidYes : labels.paidNo,
+      isDrinkPaid(drink.paid) ? labels.paidYes : labels.paidNo,
       drink.user || "—",
     ]),
   ]);
   XLSX.utils.book_append_sheet(wb, wsDetails, labels.sheetDetails);
+
+  XLSX.writeFile(wb, labels.fileNameExcel);
+}
+
+export interface FinanceOverviewExportLabels {
+  member: string;
+  date: string;
+  drink: string;
+  quantity: string;
+  value: string;
+  paid: string;
+  paidYes: string;
+  paidNo: string;
+  period: string;
+  total: string;
+  fileNameExcel: string;
+  sheetDetails: string;
+}
+
+export function isDrinkPaid(paid: boolean | null | undefined): boolean {
+  return paid === true;
+}
+
+function buildFinanceOverviewSheetRows(
+  drinks: DrinkReportRow[],
+  periodLabel: string,
+  labels: FinanceOverviewExportLabels
+) {
+  const total = getTotalSpent(drinks);
+
+  return [
+    [`${labels.period}: ${periodLabel}`],
+    [`${labels.total}: ${formatCurrency(total)}`],
+    [],
+    [
+      labels.member,
+      labels.date,
+      labels.drink,
+      labels.quantity,
+      labels.value,
+      labels.paid,
+    ],
+    ...drinks.map((drink) => [
+      drink.name,
+      formatDateTime(drink.created_at),
+      drink.drink,
+      drink.quantity,
+      parseFloat(drink.price.toString()),
+      isDrinkPaid(drink.paid) ? labels.paidYes : labels.paidNo,
+    ]),
+  ];
+}
+
+export function exportFinanceOverviewExcel(
+  drinks: DrinkReportRow[],
+  periodLabel: string,
+  labels: FinanceOverviewExportLabels
+) {
+  const wb = XLSX.utils.book_new();
+  const wsDetails = XLSX.utils.aoa_to_sheet(
+    buildFinanceOverviewSheetRows(drinks, periodLabel, labels)
+  );
+
+  XLSX.utils.book_append_sheet(wb, wsDetails, labels.sheetDetails);
+  XLSX.writeFile(wb, labels.fileNameExcel);
+}
+
+export interface MonthPeriod {
+  year: number;
+  month: number;
+  key: string;
+  label: string;
+}
+
+/** Months from start (inclusive) through end (inclusive). month is 1–12. */
+export function listMonthPeriods(
+  startYear: number,
+  startMonth: number,
+  endYear: number,
+  endMonth: number,
+  locale: string
+): MonthPeriod[] {
+  const formatter = new Intl.DateTimeFormat(locale, {
+    month: "short",
+    year: "numeric",
+  });
+  const periods: MonthPeriod[] = [];
+  let year = startYear;
+  let month = startMonth;
+
+  while (year < endYear || (year === endYear && month <= endMonth)) {
+    const date = new Date(year, month - 1, 1);
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    periods.push({
+      year,
+      month,
+      key,
+      label: formatter.format(date),
+    });
+
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+  }
+
+  return periods;
+}
+
+function sanitizeSheetName(name: string, used: Set<string>): string {
+  let base = name.replace(/[\\/?*[\]]/g, "").trim().slice(0, 31);
+  if (!base) base = "Mes";
+
+  let candidate = base;
+  let suffix = 1;
+  while (used.has(candidate)) {
+    const suffixText = `_${suffix}`;
+    candidate = `${base.slice(0, 31 - suffixText.length)}${suffixText}`;
+    suffix += 1;
+  }
+
+  used.add(candidate);
+  return candidate;
+}
+
+export function getDrinkMonthKeySaoPaulo(isoDate: string): string {
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+  });
+  const parts = formatter.formatToParts(new Date(isoDate));
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  return `${year}-${month}`;
+}
+
+export function exportFinanceOverviewFullExcel(
+  drinks: DrinkReportRow[],
+  periods: MonthPeriod[],
+  labels: FinanceOverviewExportLabels
+) {
+  const wb = XLSX.utils.book_new();
+  const usedNames = new Set<string>();
+  const byMonth = new Map<string, DrinkReportRow[]>();
+
+  for (const drink of drinks) {
+    const key = getDrinkMonthKeySaoPaulo(drink.created_at);
+    const list = byMonth.get(key) ?? [];
+    list.push(drink);
+    byMonth.set(key, list);
+  }
+
+  for (const period of periods) {
+    const monthDrinks = (byMonth.get(period.key) ?? []).slice().sort((a, b) => {
+      const nameCmp = a.name.localeCompare(b.name);
+      if (nameCmp !== 0) return nameCmp;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(
+      buildFinanceOverviewSheetRows(monthDrinks, period.label, labels)
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      sanitizeSheetName(period.label, usedNames)
+    );
+  }
 
   XLSX.writeFile(wb, labels.fileNameExcel);
 }

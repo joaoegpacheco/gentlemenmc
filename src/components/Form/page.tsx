@@ -610,7 +610,7 @@ export function FormCommand() {
 
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full bg-[#7A5C12] text-white shadow hover:bg-[#634A0E] focus-visible:ring-[#7A5C12]" 
           disabled={
             form.formState.isSubmitting ||
             items.length === 0 ||
