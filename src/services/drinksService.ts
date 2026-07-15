@@ -121,7 +121,10 @@ export async function getDrinksByCategory() {
   const result: any = {};
 
   data?.forEach((drink: any) => {
-    const categoryName = drink.categories?.name || "Outros";
+    const categoryName = drink.categories?.name;
+    // Sem categoria (null): não agrupar em "Outros" nem exibir ao marcar bebida
+    if (!categoryName) return;
+
     const categoryId = drink.categories?.id ?? drink.category_id ?? "";
     const orderBy = sortByCategoryName.get(categoryName) ?? Number.MAX_SAFE_INTEGER;
 
