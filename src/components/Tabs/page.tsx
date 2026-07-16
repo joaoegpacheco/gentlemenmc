@@ -14,6 +14,7 @@ import { LogoutButton } from "@/components/LogoutButton/page";
 import dayjs from "dayjs";
 import CalendarEvents from "../Calendar/page";
 import ByLaw from "../ByLaw/page";
+import HierarchyPage from "../HierarchyPage/page";
 import { FormMonthlyFee } from "../FormMonthlyFee/page";
 import { supabase } from "@/hooks/use-supabase";
 import { PostgrestResponse } from "@supabase/supabase-js";
@@ -234,6 +235,7 @@ export default function TabsComponent() {
     const canSeeConfirmPaymentTabAsCommand = isPaymentConfirmAllowedEmail(userEmail);
 
     const toolLoanTab = { key: "26", label: t('toolLoan'), children: <ToolLoanForm /> };
+    const hierarchyTab = { key: "27", label: t('hierarchy'), children: <HierarchyPage /> };
 
     if (admin) {
       const tabs = [
@@ -242,6 +244,7 @@ export default function TabsComponent() {
         { key: "12", label: t('guestOrder'), children: <CreateComandaPage /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        hierarchyTab,
         toolLoanTab,
         { key: "18", label: t('members'), children: <MembrosPage /> },
         { key: "20", label: t('dashboard'), children: <DashboardTab /> },
@@ -272,6 +275,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        hierarchyTab,
         toolLoanTab,
         { key: "18", label: t('members'), children: <MembrosPage /> },
         { key: "10", label: t('allDebts'), children: <CardCommandAll ref={comandAllTableRef} /> },
@@ -299,6 +303,7 @@ export default function TabsComponent() {
         { key: "12", label: t('guestOrder'), children: <CreateComandaPage /> },
         { key: "13", label: t('openOrders'), children: <OpenComandasPageContent ref={comandOpenTableRef} /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        hierarchyTab,
       ];
     } else if (isFacilitiesUser) {
       const tabs = [
@@ -311,6 +316,7 @@ export default function TabsComponent() {
         { key: "25", label: t('stockLosses'), children: <PerdasConsumoPage /> },
         { key: "15", label: t('stockHistory'), children: <HistoricoEstoquePage /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        hierarchyTab,
         toolLoanTab,
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         { key: "11", label: <LogoutButton /> },
@@ -328,6 +334,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        hierarchyTab,
         toolLoanTab,
         { key: "16", label: t('globalStock'), children: <EstoqueGlobalPage /> },
         { key: "24", label: t('globalStockHistory'), children: <HistoricoEstoqueGlobalPage /> },
@@ -351,6 +358,7 @@ export default function TabsComponent() {
         { key: "2", label: t('viewMarks'), children: <CardCommand ref={cardComandRef} /> },
         { key: "5", label: t('events'), children: <CalendarEvents /> },
         { key: "6", label: t('statute'), children: <ByLaw /> },
+        hierarchyTab,
         toolLoanTab,
         { key: "19", label: t('myProfile'), children: <UserProfileTab /> },
         // { key: "7", label: "Alterar senha", children: <ChangePasswordForm /> },

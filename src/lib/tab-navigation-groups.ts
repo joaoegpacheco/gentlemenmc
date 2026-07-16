@@ -22,7 +22,7 @@ export const TAB_NAV_GROUP_KEYS: Record<TabNavGroupId, string[]> = {
   orders: ["12", "13", "17"],
   financial: ["9", "10", "23"],
   stock: ["16", "24", "14", "25", "15"],
-  club: ["5", "6", "26", "21"],
+  club: ["5", "6", "27", "26", "21"],
   admin: ["18", "20"],
 };
 
