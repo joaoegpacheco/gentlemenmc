@@ -366,6 +366,7 @@
     "birthdaysOfMonth": "Aniversariantes do mês:",
     "prospectValidation": "Validação Prospects",
     "toolLoan": "Empréstimo Sede",
+    "hierarchy": "Hierarquia",
     "finance": "Financeiro",
     "menu": "Menu",
     "navGroups": {
@@ -375,6 +376,24 @@
       "stock": "Estoque",
       "club": "Clube",
       "admin": "Administração"
+    }
+  },
+  "hierarchy": {
+    "title": "Hierarquia do Moto Clube",
+    "subtitle": "Organograma oficial dos membros Gentlemen MC.",
+    "loading": "Carregando hierarquia...",
+    "loadError": "Não foi possível carregar as fotos dos membros. A hierarquia continua disponível.",
+    "sections": {
+      "board": "Diretoria",
+      "boardDescription": "Cargos da diretoria do clube (ordenado por hierarquia)",
+      "roles": "Cargos",
+      "rolesDescription": "Funções de apoio (não são diretoria e não possuem hierarquia entre eles)",
+      "fullPatch": "Membros Full Patch",
+      "fullPatchDescription": "Não possuem hierarquia entre eles, salvo quando são NOMADs",
+      "halfPatch": "Prospects Half Patch",
+      "halfPatchDescription": "Não possuem hierarquia entre eles, salvo quando possuem cargos",
+      "prospectPp": "Prospects PP",
+      "prospectPpDescription": "Não possuem hierarquia entre eles, salvo quando possuem cargos"
     }
   },
   "byLaw": {

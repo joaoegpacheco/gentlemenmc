@@ -366,6 +366,7 @@
     "birthdaysOfMonth": "Birthdays of the month:",
     "prospectValidation": "Prospect Validation",
     "toolLoan": "HQ Loan",
+    "hierarchy": "Hierarchy",
     "finance": "Finance",
     "menu": "Menu",
     "navGroups": {
@@ -375,6 +376,24 @@
       "stock": "Stock",
       "club": "Club",
       "admin": "Administration"
+    }
+  },
+  "hierarchy": {
+    "title": "Motorcycle Club Hierarchy",
+    "subtitle": "Official Gentlemen MC member organogram.",
+    "loading": "Loading hierarchy...",
+    "loadError": "Could not load member photos. The hierarchy is still available.",
+    "sections": {
+      "board": "Board",
+      "boardDescription": "Club board positions (ordered by hierarchy)",
+      "roles": "Roles",
+      "rolesDescription": "Support roles (not board and with no hierarchy among them)",
+      "fullPatch": "Full Patch Members",
+      "fullPatchDescription": "There is no hierarchy among them, except when they are NOMADs",
+      "halfPatch": "Half Patch Prospects",
+      "halfPatchDescription": "There is no hierarchy among them, except when they hold roles",
+      "prospectPp": "PP Prospects",
+      "prospectPpDescription": "There is no hierarchy among them, except when they hold roles"
     }
   },
   "byLaw": {
