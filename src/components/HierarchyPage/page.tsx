@@ -1,8 +1,14 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { supabase } from "@/hooks/use-supabase";
 import { RemoteImage } from "@/components/ui/remote-image";
 import {
@@ -13,6 +19,17 @@ import {
   type HierarchySectionId,
 } from "@/lib/club-hierarchy";
 import { cn } from "@/lib/utils";
+
+const BOARD_CARD_WIDTH_PX = 120; // 7.5rem
+const BOARD_GAP_X_PX = 16; // gap-x-4
+
+function chunkMembers<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    rows.push(items.slice(i, i + size));
+  }
+  return rows;
+}
 
 type MemberRow = {
   id: number;
@@ -36,7 +53,9 @@ function HierarchyCard({
 }) {
   const sizeClasses = {
     lg: "w-28 h-28 sm:w-32 sm:h-32",
-    md: compact ? "w-14 h-14 sm:w-16 sm:h-16" : "w-24 h-24",
+    md: compact
+      ? "w-24 h-24 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 2xl:w-32 2xl:h-32"
+      : "w-24 h-24",
     sm: "w-20 h-20",
   } as const;
 
@@ -46,7 +65,9 @@ function HierarchyCard({
     <div
       className={cn(
         "flex flex-col items-center gap-1.5 text-center",
-        compact ? "min-w-0 flex-1 self-start" : "w-[7.5rem] sm:w-36"
+        compact
+          ? "w-[7.5rem] self-start sm:min-w-0 sm:w-auto sm:max-w-[7rem] sm:flex-1 md:max-w-[8rem] lg:max-w-[9rem] xl:max-w-[10rem] 2xl:max-w-[11rem]"
+          : "w-[7.5rem] sm:w-36"
       )}
     >
       <div
@@ -61,13 +82,19 @@ function HierarchyCard({
             alt={member.displayName}
             fill
             className="object-cover"
-            sizes="128px"
+            sizes={
+              compact
+                ? "(min-width: 1536px) 128px, (min-width: 1280px) 112px, (min-width: 1024px) 96px, (min-width: 768px) 80px, 96px"
+                : "128px"
+            }
           />
         ) : (
           <div
             className={cn(
               "flex h-full w-full items-center justify-center font-semibold text-muted-foreground",
-              compact ? "text-base" : "text-2xl"
+              compact
+                ? "text-2xl sm:text-base md:text-lg lg:text-xl xl:text-2xl"
+                : "text-2xl"
             )}
           >
             {initial}
@@ -77,13 +104,15 @@ function HierarchyCard({
       <div
         className={cn(
           "flex w-full flex-col items-center gap-0.5 leading-snug",
-          compact ? "px-0.5" : "px-1"
+          compact ? "px-1 sm:px-0.5" : "px-1"
         )}
       >
         <p
           className={cn(
             "w-full font-semibold",
-            compact ? "min-h-[1.25rem] text-[10px] sm:text-[11px]" : "min-h-5 text-sm"
+            compact
+              ? "min-h-5 text-sm sm:min-h-[1.25rem] sm:text-[11px] md:text-xs lg:text-sm"
+              : "min-h-5 text-sm"
           )}
         >
           {member.displayName}
@@ -92,7 +121,7 @@ function HierarchyCard({
           className={cn(
             "w-full text-muted-foreground",
             compact
-              ? "min-h-[2.5rem] text-[10px] sm:text-[11px]"
+              ? "min-h-8 text-xs sm:min-h-[2.5rem] sm:text-[11px] md:text-xs lg:text-sm"
               : "min-h-8 text-xs"
           )}
         >
@@ -108,6 +137,87 @@ function SectionConnector() {
     <div className="flex justify-center py-2" aria-hidden>
       <div className="h-6 w-px bg-border" />
     </div>
+  );
+}
+
+function HierarchyBoardFlow({
+  members,
+  size = "md",
+}: {
+  members: HierarchyMember[];
+  size?: "lg" | "md" | "sm";
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [perRow, setPerRow] = useState(2);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updatePerRow = () => {
+      const width = container.clientWidth;
+      const next = Math.max(
+        1,
+        Math.floor(
+          (width + BOARD_GAP_X_PX) / (BOARD_CARD_WIDTH_PX + BOARD_GAP_X_PX)
+        )
+      );
+      setPerRow((prev) => (prev === next ? prev : next));
+    };
+
+    updatePerRow();
+    const observer = new ResizeObserver(updatePerRow);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  const rows = chunkMembers(members, perRow);
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        className="flex w-full flex-col items-center gap-3 sm:hidden"
+      >
+        {rows.map((row, rowIndex) => (
+          <Fragment key={`board-row-${rowIndex}`}>
+            <div className="flex items-start justify-center gap-x-4">
+              {row.map((member, index) => (
+                <Fragment key={`${member.section}-${member.displayName}`}>
+                  <HierarchyCard member={member} size={size} compact />
+                  {index < row.length - 1 ? (
+                    <ArrowRight
+                      className="mt-6 h-3.5 w-3.5 shrink-0 self-start text-muted-foreground"
+                      aria-hidden
+                    />
+                  ) : null}
+                </Fragment>
+              ))}
+            </div>
+            {rowIndex < rows.length - 1 ? (
+              <ArrowDown
+                className="h-3.5 w-3.5 text-muted-foreground"
+                aria-hidden
+              />
+            ) : null}
+          </Fragment>
+        ))}
+      </div>
+
+      <div className="hidden w-full items-start justify-between gap-1 md:gap-2 sm:flex">
+        {members.map((member, index) => (
+          <Fragment key={`${member.section}-${member.displayName}`}>
+            <HierarchyCard member={member} size={size} compact />
+            {index < members.length - 1 ? (
+              <ArrowRight
+                className="mt-6 h-3.5 w-3.5 shrink-0 self-start text-muted-foreground md:mt-8 md:h-4 md:w-4 lg:mt-10 lg:h-4 lg:w-4 xl:mt-12"
+                aria-hidden
+              />
+            ) : null}
+          </Fragment>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -136,31 +246,24 @@ function HierarchySection({
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      <div
-        className={cn(
-          "flex w-full",
-          showHierarchyArrows
-            ? "flex-nowrap items-start justify-between gap-0"
-            : "flex-wrap items-start justify-center gap-x-4 gap-y-6",
-          columns
-        )}
-      >
-        {members.map((member, index) => (
-          <Fragment key={`${member.section}-${member.displayName}`}>
+      {showHierarchyArrows ? (
+        <HierarchyBoardFlow members={members} size={size} />
+      ) : (
+        <div
+          className={cn(
+            "flex w-full flex-wrap items-start justify-center gap-x-4 gap-y-6",
+            columns
+          )}
+        >
+          {members.map((member) => (
             <HierarchyCard
+              key={`${member.section}-${member.displayName}`}
               member={member}
               size={size}
-              compact={showHierarchyArrows}
             />
-            {showHierarchyArrows && index < members.length - 1 ? (
-              <ArrowRight
-                className="mt-5 h-3 w-3 shrink-0 self-start text-muted-foreground sm:mt-6 sm:h-3.5 sm:w-3.5"
-                aria-hidden
-              />
-            ) : null}
-          </Fragment>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
