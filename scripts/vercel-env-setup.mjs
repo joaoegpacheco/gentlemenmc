@@ -103,13 +103,14 @@ function run(cmd, args, input) {
   });
 }
 
-function vercelBin() {
-  const local = resolve(root, "node_modules", ".bin", "vercel");
-  return existsSync(local) ? local : "vercel";
-}
-
 function vercel(args, input) {
-  return run(vercelBin(), args, input);
+  const local = resolve(root, "node_modules", ".bin", "vercel");
+  if (existsSync(local)) return run(local, args, input);
+
+  const global = run("vercel", args, input);
+  if (global.error?.code !== "ENOENT") return global;
+
+  return run("npx", ["--yes", "vercel", ...args], input);
 }
 
 function checkAuth() {
